@@ -1,0 +1,3593 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diseño Geométrico de Carreteras — AASHTO 2018 — Dr. Elvis A. Castillo-Camarena, Ph.D.</title>
+<meta name="author" content="Dr. Elvis A. Castillo-Camarena, Ph.D.">
+<script src="../assets/vendor/plotly-2.35.2.min.js"></script>
+<script src="../assets/vendor/geotiff-2.1.3.js"></script>
+<style>
+:root{
+  --bg:#0f172a;--panel:#1e293b;--panel2:#0b1220;
+  --text:#e2e8f0;--muted:#94a3b8;--accent:#a855f7;
+  --accent2:#f59e0b;--good:#22c55e;--warn:#ef4444;
+  --border:#334155;--hdr1:#5b21b6;--hdr2:#1e293b;
+  --cut:#ef4444;--fill:#3b82f6;
+}
+:root.light{
+  --bg:#f1f5f9;--panel:#ffffff;--panel2:#f8fafc;
+  --text:#1e293b;--muted:#64748b;--accent:#7c3aed;
+  --accent2:#b45309;--good:#15803d;--warn:#dc2626;
+  --border:#e2e8f0;--hdr1:#7c3aed;--hdr2:#ddd6fe;
+  --cut:#dc2626;--fill:#2563eb;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:14px;line-height:1.45;transition:background .25s,color .25s}
+header{background:linear-gradient(135deg,var(--hdr1) 0%,var(--hdr2) 100%);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;border-bottom:1px solid var(--border)}
+header h1{margin:0;font-size:18px;font-weight:700;color:#fff;letter-spacing:.3px}
+header .sub{font-size:12px;color:rgba(255,255,255,.75)}
+header .author{font-size:11px;color:rgba(255,255,255,.5);margin-top:2px}
+.hdr-right{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;background:rgba(255,255,255,.15);color:#fff}
+:root.light .badge{background:rgba(0,0,0,.08);color:var(--text)}
+.mode-btn{display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff;transition:background .2s}
+:root.light .mode-btn{color:var(--text);border-color:var(--border);background:var(--panel2)}
+.mode-btn:hover{background:rgba(255,255,255,.25)}
+:root.light .mode-btn:hover{background:var(--border)}
+
+/* TABS */
+.tab-bar{display:flex;gap:0;background:var(--panel);border-bottom:2px solid var(--border);overflow-x:auto;padding:0 16px}
+.tab-bar button{background:transparent;color:var(--muted);border:none;padding:10px 16px;cursor:pointer;font-size:13px;font-weight:600;border-bottom:3px solid transparent;white-space:nowrap;transition:all .15s}
+.tab-bar button:hover{color:var(--text)}
+.tab-bar button.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-content{display:none;padding:16px}
+.tab-content.active{display:block}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:340px 1fr;gap:14px;align-items:start}
+@media(max-width:1100px){.layout{grid-template-columns:1fr}}
+.sidebar{display:flex;flex-direction:column;gap:12px}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px}
+.panel h2{margin:0 0 10px;font-size:13px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);padding-bottom:6px}
+.panel h3{margin:12px 0 6px;font-size:12px;font-weight:600;color:var(--accent2)}
+.main-area{min-width:0}
+
+/* CONTROLS */
+.ctrl{margin-bottom:10px}
+.ctrl label{display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:4px;color:var(--muted)}
+.ctrl label .v{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}
+.ctrl input[type=range]{width:100%;accent-color:var(--accent)}
+.ctrl input[type=number],.ctrl input[type=text],.ctrl select{width:100%;background:var(--panel2);color:var(--text);border:1px solid var(--border);padding:5px 8px;border-radius:5px;font-size:13px}
+.ctrl input[type=file]{font-size:12px;color:var(--muted)}
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+
+/* BUTTONS */
+.btn{padding:7px 16px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:opacity .2s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{opacity:.85}
+.btn-secondary{background:var(--panel2);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--border)}
+.btn-sm{padding:4px 10px;font-size:11px;border-radius:4px}
+.btn-danger{background:var(--warn);color:#fff}
+.btn-danger:hover{opacity:.85}
+.btn-full{width:100%}
+.btn-row{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+
+/* RESULTS */
+.results{background:var(--panel2);padding:10px;border-radius:8px;margin-top:8px}
+.results .kv{display:flex;justify-content:space-between;padding:3px 0;font-variant-numeric:tabular-nums;border-bottom:1px dashed var(--border);font-size:12px}
+.results .kv:last-child{border-bottom:none}
+.results .kv .k{color:var(--muted)}
+.results .kv .v{font-weight:600}
+.results .kv .v.good{color:var(--good)}
+.results .kv .v.warn{color:var(--warn)}
+
+/* TABLES */
+.tbl-wrap{overflow:auto;max-height:400px;background:var(--panel2);border-radius:6px;margin-top:8px}
+table.tbl{border-collapse:collapse;width:100%;font-size:11px;font-variant-numeric:tabular-nums}
+table.tbl th,table.tbl td{border:1px solid var(--border);padding:4px 8px;text-align:right;white-space:nowrap}
+table.tbl th{background:var(--panel);color:var(--muted);position:sticky;top:0;font-weight:600}
+table.tbl td.lbl{font-weight:600;color:var(--accent2);text-align:left}
+
+/* POINT LIST */
+.point-card{background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;margin-bottom:6px;position:relative}
+.point-card .title{font-weight:600;color:var(--accent2);font-size:12px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+.point-card .remove{background:rgba(239,68,68,.15);color:var(--warn);border:none;width:20px;height:20px;border-radius:4px;cursor:pointer;font-size:13px;line-height:1}
+.point-card .remove:hover{background:rgba(239,68,68,.3)}
+.point-card .fields{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.point-card .fields label{font-size:11px;color:var(--muted)}
+.point-card .fields input{width:100%;background:var(--panel);color:var(--text);border:1px solid var(--border);padding:3px 6px;border-radius:4px;font-size:12px}
+
+/* CANVAS */
+canvas.cv{display:block;width:100%;background:var(--panel2);border-radius:8px;cursor:crosshair;border:1px solid var(--border)}
+canvas.cv.panning{cursor:grab}
+
+/* TOOL BAR */
+.toolbar{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.tool-btn{padding:5px 10px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--panel2);color:var(--text);transition:all .15s}
+.tool-btn:hover{background:var(--border)}
+.tool-btn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* HELP */
+.help{background:var(--panel2);border-radius:6px;padding:8px 10px;font-size:11px;color:var(--muted);border-left:3px solid var(--accent2);margin-top:8px;line-height:1.5}
+.hint{font-size:11px;color:var(--muted);margin:4px 0}
+
+/* STATUS */
+.status-bar{display:flex;gap:12px;padding:6px 12px;background:var(--panel);border-top:1px solid var(--border);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.status-bar .item{display:flex;gap:4px;align-items:center}
+.status-bar .dot{width:6px;height:6px;border-radius:50%}
+
+/* PLOT */
+.plot{width:100%;height:450px}
+.plot-sm{height:350px}
+
+/* CHECK */
+.check{display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;color:var(--text);margin-bottom:6px}
+.check input{accent-color:var(--accent)}
+
+/* FOOTER */
+.footer{color:var(--muted);font-size:11px;text-align:center;padding:8px;border-top:1px solid var(--border);margin-top:16px}
+
+/* LEGEND */
+.legend-bar{display:flex;flex-wrap:wrap;gap:10px;font-size:11px;color:var(--muted);margin:6px 0;align-items:center}
+.legend-bar span{display:inline-flex;align-items:center;gap:4px}
+.swatch{display:inline-block;width:10px;height:10px;border-radius:50%}
+.swatch.sq{border-radius:2px}
+.swatch.line{width:16px;height:3px;border-radius:0}
+
+/* AASHTO check pill */
+.pill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;color:#fff}
+.pill.ok{background:var(--good)}
+.pill.fail{background:var(--warn)}
+</style>
+<link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="app-shell.css">
+</head>
+<body>
+
+<header class="ec-topbar">
+  <a class="ec-back" href="../index.html" title="Volver al índice de herramientas" aria-label="Volver al índice de herramientas">‹</a>
+  <div class="ec-id">
+    <h1>Diseño Geométrico de Carreteras</h1>
+    <div class="ec-sub">AASHTO — A Policy on Geometric Design of Highways and Streets (2018) · Sistema métrico</div>
+    <div class="ec-author">Autor: <b>Dr. Elvis A. Castillo-Camarena, Ph.D.</b></div>
+  </div>
+  <div class="ec-tools">
+    <span class="badge" id="bdgSpeed">V = 80 km/h</span>
+    <span class="badge" id="bdgEmax">e<sub>max</sub> = 8%</span>
+    <button class="mode-btn" onclick="toggleLight()">☀ Modo claro</button>
+    <button class="mode-btn" onclick="saveProject()">💾 Guardar</button>
+    <button class="mode-btn" onclick="document.getElementById('loadProject').click()">📂 Abrir</button>
+    <input type="file" id="loadProject" accept=".json" style="display:none" onchange="loadProject(this)">
+    <button class="mode-btn" onclick="exportReport()">📄 Reporte</button>
+  </div>
+</header>
+
+<!-- ==================== TAB BAR ==================== -->
+<div class="tab-bar" id="tabBar">
+  <button data-tab="terrain" class="active">Terreno</button>
+  <button data-tab="hAlign">Alin. Horizontal</button>
+  <button data-tab="vAlign">Alin. Vertical</button>
+  <button data-tab="xsect">Sección Transversal</button>
+  <button data-tab="super">Peralte</button>
+  <button data-tab="volumes">Volúmenes</button>
+</div>
+
+<!-- ==================== TAB: TERRENO ==================== -->
+<div class="tab-content active" id="tab-terrain">
+  <div class="layout">
+    <div class="sidebar">
+      <div class="panel">
+        <h2>Generación del terreno</h2>
+        <div class="ctrl">
+          <label>Ancho (m) <span class="v" id="twVal">2000</span></label>
+          <input type="range" id="tWidth" min="500" max="4000" step="100" value="2000">
+        </div>
+        <div class="ctrl">
+          <label>Alto (m) <span class="v" id="thVal">1000</span></label>
+          <input type="range" id="tHeight" min="300" max="2000" step="100" value="1000">
+        </div>
+        <div class="ctrl">
+          <label>Resolución (m) <span class="v" id="trVal">10</span></label>
+          <input type="range" id="tRes" min="5" max="50" step="5" value="10">
+        </div>
+        <div class="ctrl">
+          <label>Elevación base (m) <span class="v" id="teVal">100</span></label>
+          <input type="range" id="tElev" min="0" max="500" step="10" value="100">
+        </div>
+        <div class="ctrl">
+          <label>Relieve <span class="v" id="trfVal">60</span></label>
+          <input type="range" id="tRelief" min="10" max="200" step="5" value="60">
+        </div>
+        <div class="ctrl">
+          <label>Semilla <span class="v" id="tsVal">42</span></label>
+          <input type="range" id="tSeed" min="1" max="999" step="1" value="42">
+        </div>
+        <button class="btn btn-primary btn-full" onclick="generateTerrain()">Generar terreno</button>
+      </div>
+      <div class="panel">
+        <h2>Importar GeoTIFF (.tif)</h2>
+        <div class="ctrl">
+          <input type="file" id="tifFile" accept=".tif,.tiff">
+        </div>
+        <button class="btn btn-secondary btn-full" onclick="loadGeoTIFF()">Cargar archivo</button>
+        <div class="help">Importa un archivo .tif con datos de elevación. El programa leerá los valores de cada píxel como elevaciones en metros.</div>
+      </div>
+      <div class="panel">
+        <h2>Información del terreno</h2>
+        <div class="results" id="terrainInfo">
+          <div class="kv"><span class="k">Estado</span><span class="v">Sin terreno</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="main-area">
+      <div class="panel">
+        <h2>Vista 3D del terreno</h2>
+        <div id="terrain3d" class="plot"></div>
+      </div>
+      <div class="panel" style="margin-top:12px">
+        <h2>Curvas de nivel</h2>
+        <div id="terrainContour" class="plot"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB: ALINEAMIENTO HORIZONTAL ==================== -->
+<div class="tab-content" id="tab-hAlign">
+  <div class="layout">
+    <div class="sidebar">
+      <div class="panel">
+        <h2>Parámetros de diseño</h2>
+        <div class="ctrl">
+          <label>Velocidad de diseño (km/h) <span class="v" id="vdVal">80</span></label>
+          <input type="range" id="Vd" min="20" max="130" step="10" value="80">
+        </div>
+        <div class="ctrl">
+          <label>e<sub>max</sub> <span class="v" id="emVal">8%</span></label>
+          <select id="eMax">
+            <option value="0.04">4%</option>
+            <option value="0.06">6%</option>
+            <option value="0.08" selected>8%</option>
+            <option value="0.10">10%</option>
+            <option value="0.12">12%</option>
+          </select>
+        </div>
+        <div class="results" id="aashtoLimits">
+          <div class="kv"><span class="k">R<sub>mín</sub></span><span class="v">250 m</span></div>
+          <div class="kv"><span class="k">f<sub>max</sub></span><span class="v">0.14</span></div>
+          <div class="kv"><span class="k">SSD</span><span class="v">130 m</span></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Punto inicial</h2>
+        <div class="row-2">
+          <div class="ctrl"><label>X (m)</label><input type="number" id="startX" value="100" step="1" oninput="computeAlignment()"></div>
+          <div class="ctrl"><label>Y (m)</label><input type="number" id="startY" value="500" step="1" oninput="computeAlignment()"></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Puntos de intersección (PI)</h2>
+        <div id="piList"></div>
+        <button class="btn btn-primary btn-full" onclick="addPI()">+ Agregar PI</button>
+      </div>
+      <div class="panel">
+        <h2>Punto final</h2>
+        <div class="row-2">
+          <div class="ctrl"><label>X (m)</label><input type="number" id="endX" value="1900" step="1" oninput="computeAlignment()"></div>
+          <div class="ctrl"><label>Y (m)</label><input type="number" id="endY" value="500" step="1" oninput="computeAlignment()"></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Datos de curvas</h2>
+        <div id="curveResults" class="results">
+          <div class="kv"><span class="k">Sin curvas</span><span class="v">—</span></div>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="computeAlignment()" style="margin-top:8px">Calcular alineamiento</button>
+    </div>
+    <div class="main-area">
+      <div class="panel">
+        <h2>Vista en planta</h2>
+        <div class="toolbar">
+          <button class="tool-btn on" data-tool="pan" onclick="setTool('pan',this)">Mover</button>
+          <button class="tool-btn" data-tool="addPI" onclick="setTool('addPI',this)">+ PI</button>
+          <button class="tool-btn" data-tool="moveStart" onclick="setTool('moveStart',this)">Mover inicio</button>
+          <button class="tool-btn" data-tool="moveEnd" onclick="setTool('moveEnd',this)">Mover fin</button>
+          <button class="btn btn-sm btn-secondary" onclick="fitView()">Ajustar vista</button>
+        </div>
+        <canvas id="planCanvas" class="cv" width="1200" height="700"></canvas>
+        <div class="legend-bar">
+          <span><span class="swatch" style="background:#64748b"></span>Tangente</span>
+          <span><span class="swatch" style="background:#f59e0b"></span>Curva</span>
+          <span><span class="swatch" style="background:#a855f7"></span>Espiral</span>
+          <span><span class="swatch" style="background:#ef4444"></span>PI</span>
+          <span><span class="swatch" style="background:#22c55e"></span>PC/PT</span>
+          <span><span class="swatch" style="background:#3b82f6"></span>Inicio/Fin</span>
+        </div>
+        <div class="help">Clic en «+ PI» y luego clic sobre el plano para agregar puntos de intersección. Usa la rueda del ratón para hacer zoom.</div>
+      </div>
+      <div class="panel" style="margin-top:12px">
+        <h2>Tabla de estacionamiento</h2>
+        <div class="tbl-wrap" id="stationTable"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB: ALINEAMIENTO VERTICAL ==================== -->
+<div class="tab-content" id="tab-vAlign">
+  <div class="layout">
+    <div class="sidebar">
+      <div class="panel">
+        <h2>Puntos de intersección vertical (PIV)</h2>
+        <div id="pivList"></div>
+        <button class="btn btn-primary btn-full" onclick="addPIV()">+ Agregar PIV</button>
+        <button class="btn btn-secondary btn-full" style="margin-top:6px" onclick="autoGeneratePIVs()">Auto-generar desde terreno</button>
+      </div>
+      <div class="panel">
+        <h2>Verificación AASHTO</h2>
+        <div id="vAlignChecks" class="results">
+          <div class="kv"><span class="k">Sin curvas verticales</span><span class="v">—</span></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Opciones de visualización</h2>
+        <label class="check"><input type="checkbox" id="showTerrainProfile" checked onchange="drawProfile()"> Perfil del terreno</label>
+        <label class="check"><input type="checkbox" id="showGrades" checked onchange="drawProfile()"> Rasantes</label>
+        <label class="check"><input type="checkbox" id="showVCurves" checked onchange="drawProfile()"> Curvas verticales</label>
+        <label class="check"><input type="checkbox" id="showCutFillZones" checked onchange="drawProfile()"> Zonas corte/relleno</label>
+        <div class="ctrl" style="margin-top:8px">
+          <label>Exageración vertical <span class="v" id="vExagVal">5</span>x</label>
+          <input type="range" id="vExag" min="1" max="20" step="1" value="5" oninput="document.getElementById('vExagVal').textContent=this.value;drawProfile()">
+        </div>
+      </div>
+    </div>
+    <div class="main-area">
+      <div class="panel">
+        <h2>Perfil longitudinal</h2>
+        <canvas id="profileCanvas" class="cv" width="1200" height="550"></canvas>
+        <div class="legend-bar">
+          <span><span class="swatch line" style="background:#94a3b8"></span>Terreno</span>
+          <span><span class="swatch line" style="background:#a855f7"></span>Rasante</span>
+          <span><span class="swatch line" style="background:#f59e0b;height:3px"></span>Curva vertical</span>
+          <span><span class="swatch sq" style="background:rgba(239,68,68,.3)"></span>Corte</span>
+          <span><span class="swatch sq" style="background:rgba(59,130,246,.3)"></span>Relleno</span>
+        </div>
+        <div class="help">El perfil muestra el terreno natural a lo largo del alineamiento horizontal y la rasante de diseño. Las zonas coloreadas indican corte (rojo) y relleno (azul).</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB: SECCIÓN TRANSVERSAL ==================== -->
+<div class="tab-content" id="tab-xsect">
+  <div class="layout">
+    <div class="sidebar">
+      <div class="panel">
+        <h2>Sección típica</h2>
+        <div class="ctrl">
+          <label>Carriles por sentido <span class="v" id="nLanesVal">1</span></label>
+          <input type="range" id="nLanes" min="1" max="4" step="1" value="1" oninput="document.getElementById('nLanesVal').textContent=this.value;drawCrossSection()">
+        </div>
+        <div class="ctrl">
+          <label>Ancho de carril (m) <span class="v" id="laneWVal">3.65</span></label>
+          <input type="range" id="laneW" min="2.7" max="4.2" step="0.05" value="3.65" oninput="document.getElementById('laneWVal').textContent=parseFloat(this.value).toFixed(2);drawCrossSection()">
+        </div>
+        <div class="ctrl">
+          <label>Hombro exterior (m) <span class="v" id="shExtVal">1.80</span></label>
+          <input type="range" id="shExt" min="0.5" max="3.6" step="0.1" value="1.8" oninput="document.getElementById('shExtVal').textContent=parseFloat(this.value).toFixed(1);drawCrossSection()">
+        </div>
+        <div class="ctrl">
+          <label>Hombro interior (m) <span class="v" id="shIntVal">0.60</span></label>
+          <input type="range" id="shInt" min="0" max="2.4" step="0.1" value="0.6" oninput="document.getElementById('shIntVal').textContent=parseFloat(this.value).toFixed(1);drawCrossSection()">
+        </div>
+        <div class="ctrl">
+          <label>Bombeo (%) <span class="v" id="crownVal">2.0</span></label>
+          <input type="range" id="crown" min="1" max="4" step="0.5" value="2" oninput="document.getElementById('crownVal').textContent=parseFloat(this.value).toFixed(1);drawCrossSection()">
+        </div>
+        <h3>Taludes</h3>
+        <div class="row-2">
+          <div class="ctrl">
+            <label>Corte H:V</label>
+            <input type="number" id="cutSlope" value="1.5" step="0.25" min="0.25" oninput="drawCrossSection()">
+          </div>
+          <div class="ctrl">
+            <label>Relleno H:V</label>
+            <input type="number" id="fillSlope" value="2.0" step="0.25" min="0.5" oninput="drawCrossSection()">
+          </div>
+        </div>
+        <h3>Cuneta</h3>
+        <div class="row-2">
+          <div class="ctrl">
+            <label>Ancho (m)</label>
+            <input type="number" id="ditchW" value="1.0" step="0.1" min="0" oninput="drawCrossSection()">
+          </div>
+          <div class="ctrl">
+            <label>Profundidad (m)</label>
+            <input type="number" id="ditchD" value="0.5" step="0.1" min="0" oninput="drawCrossSection()">
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Estación</h2>
+        <div class="ctrl">
+          <label>Estación (m) <span class="v" id="xsStaVal">0</span></label>
+          <input type="range" id="xsStation" min="0" max="1000" step="1" value="0" oninput="document.getElementById('xsStaVal').textContent=parseFloat(this.value).toFixed(0);drawCrossSection()">
+        </div>
+        <div class="results" id="xsResults">
+          <div class="kv"><span class="k">Área corte</span><span class="v">— m²</span></div>
+          <div class="kv"><span class="k">Área relleno</span><span class="v">— m²</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="main-area">
+      <div class="panel">
+        <h2>Sección transversal</h2>
+        <canvas id="xsCanvas" class="cv" width="1200" height="600"></canvas>
+        <div class="legend-bar">
+          <span><span class="swatch line" style="background:#94a3b8"></span>Terreno</span>
+          <span><span class="swatch sq" style="background:rgba(239,68,68,.3)"></span>Corte</span>
+          <span><span class="swatch sq" style="background:rgba(59,130,246,.3)"></span>Relleno</span>
+          <span><span class="swatch line" style="background:#a855f7"></span>Sección de diseño</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB: PERALTE ==================== -->
+<div class="tab-content" id="tab-super">
+  <div class="layout">
+    <div class="sidebar">
+      <div class="panel">
+        <h2>Parámetros de peralte</h2>
+        <div class="ctrl">
+          <label>Eje de rotación</label>
+          <select id="rotAxis" onchange="drawSuper()">
+            <option value="center">Eje central</option>
+            <option value="inner">Borde interior</option>
+            <option value="outer">Borde exterior</option>
+          </select>
+        </div>
+        <div class="ctrl">
+          <label>Curva a analizar</label>
+          <select id="superCurve" onchange="drawSuper()"></select>
+        </div>
+        <div class="ctrl">
+          <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="superAbsElev" onchange="drawSuper()"> Elevaciones absolutas</label>
+        </div>
+        <div class="results" id="superResults">
+          <div class="kv"><span class="k">Sin curvas</span><span class="v">—</span></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Tabla AASHTO — e vs R</h2>
+        <div class="tbl-wrap" id="eTable" style="max-height:300px"></div>
+      </div>
+    </div>
+    <div class="main-area">
+      <div class="panel">
+        <h2>Diagrama de rotación del pavimento</h2>
+        <canvas id="superCanvas" class="cv" width="1200" height="500"></canvas>
+        <div class="legend-bar">
+          <span><span class="swatch line" style="background:var(--accent)"></span>Borde exterior</span>
+          <span><span class="swatch line" style="background:var(--good)"></span>Borde interior</span>
+          <span><span class="swatch line" style="background:var(--muted)"></span>Eje de rotación</span>
+        </div>
+      </div>
+      <div class="panel" style="margin-top:12px">
+        <h2>Sección transversal animada</h2>
+        <div class="ctrl">
+          <label>Posición a lo largo de la transición <span class="v" id="superPosVal">0%</span></label>
+          <input type="range" id="superPos" min="0" max="100" step="1" value="0" oninput="document.getElementById('superPosVal').textContent=this.value+'%';drawSuperSection()">
+        </div>
+        <canvas id="superSectCanvas" class="cv" width="1200" height="350"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB: VOLÚMENES ==================== -->
+<div class="tab-content" id="tab-volumes">
+  <div class="layout">
+    <div class="sidebar">
+      <div class="panel">
+        <h2>Cálculo de volúmenes</h2>
+        <div class="ctrl">
+          <label>Intervalo (m) <span class="v" id="volIntVal">20</span></label>
+          <input type="range" id="volInterval" min="5" max="50" step="5" value="20" oninput="document.getElementById('volIntVal').textContent=this.value">
+        </div>
+        <button class="btn btn-primary btn-full" onclick="computeVolumes()">Calcular volúmenes</button>
+        <div class="results" id="volSummary" style="margin-top:10px">
+          <div class="kv"><span class="k">Vol. corte total</span><span class="v">— m³</span></div>
+          <div class="kv"><span class="k">Vol. relleno total</span><span class="v">— m³</span></div>
+          <div class="kv"><span class="k">Balance</span><span class="v">— m³</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="main-area">
+      <div class="panel">
+        <h2>Diagrama de masas</h2>
+        <div id="massDiagram" class="plot"></div>
+      </div>
+      <div class="panel" style="margin-top:12px">
+        <h2>Áreas de corte y relleno por estación</h2>
+        <div id="cutFillChart" class="plot-sm"></div>
+      </div>
+      <div class="panel" style="margin-top:12px">
+        <h2>Tabla de volúmenes</h2>
+        <div class="tbl-wrap" id="volTable" style="max-height:400px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STATUS BAR -->
+<div class="status-bar" id="statusBar">
+  <div class="item"><span class="dot" style="background:var(--accent)"></span> <span id="statusText">Listo</span></div>
+  <div class="item">Coords: <span id="statusCoords">—</span></div>
+  <div class="item">Estación: <span id="statusStation">—</span></div>
+</div>
+
+<div class="footer">Diseño Geométrico de Carreteras · AASHTO 2018 · Autor: Dr. Elvis A. Castillo-Camarena, Ph.D.</div>
+
+<!-- ==================== JAVASCRIPT ==================== -->
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+
+// ==================== AASHTO 2018 DATA ====================
+const AASHTO={
+  speeds:[20,30,40,50,60,70,80,90,100,110,120,130],
+  ssd:[20,35,50,65,85,105,130,160,185,220,250,285],
+  psd:[0,200,270,345,410,485,540,615,670,730,775,815],
+  kCrest:[1,2,4,7,11,17,26,39,52,74,95,124],
+  kSag:[3,6,9,13,18,23,30,38,45,55,63,73],
+  fmax:[0.35,0.28,0.23,0.19,0.15,0.15,0.14,0.13,0.12,0.11,0.09,0.08],
+  maxGradeLevel:[6,6,5,5,4,4,3,3,3,3,3,3],
+  maxGradeRolling:[7,7,7,6,6,5,5,5,4,4,4,4],
+  maxGradeMountain:[10,10,9,8,7,7,7,6,6,5,5,5],
+  relGradient:[0.80,0.75,0.70,0.65,0.60,0.55,0.50,0.47,0.44,0.41,0.38,0.35],
+  emax8_Rmin:[15,30,55,90,135,190,250,340,440,560,700,875],
+  emax6_Rmin:[20,40,75,120,180,250,340,460,590,760,950,1190],
+  emax4_Rmin:[30,60,110,175,270,380,510,690,900,1140,1430,1790],
+  vrun:[20,30,40,47,55,63,70,77,85,91,98,102]
+};
+
+function aashtoLookup(table,V){
+  const s=AASHTO.speeds;
+  if(V<=s[0])return table[0];
+  if(V>=s[s.length-1])return table[s.length-1];
+  let i=1;while(s[i]<V)i++;
+  const t=(V-s[i-1])/(s[i]-s[i-1]);
+  return table[i-1]+t*(table[i]-table[i-1]);
+}
+
+function getRmin(V,emax){
+  const f=aashtoLookup(AASHTO.fmax,V);
+  return V*V/(127*(emax+f));
+}
+
+function getSuper(R,V,emax){
+  const Rmin=getRmin(V,emax);
+  if(R>=5000) return 0.02;
+  const Rnc=V*V/(127*0.02);
+  if(R>=Rnc) return 0.02;
+  const f=aashtoLookup(AASHTO.fmax,V);
+  const e=V*V/(127*R)-f;
+  return Math.min(Math.max(e,0.02),emax);
+}
+
+function methodDist(method,V,R,emax){
+  const fmax=aashtoLookup(AASHTO.fmax,V);
+  const VR=aashtoLookup(AASHTO.vrun,V);
+  const Rmin=getRmin(V,emax);
+  const emax_d=emax;
+  if(R<Rmin)return{e:NaN,f:NaN,invalid:true};
+  const eDemand=V*V/(127*R);
+  let e=0,f=0;
+  if(method===1){e=emax_d*Rmin/R;f=fmax*Rmin/R;}
+  else if(method===2){const R2=V*V/(127*fmax);if(R>=R2){e=0;f=eDemand;}else{f=fmax;e=eDemand-fmax;}}
+  else if(method===3){const R3=V*V/(127*emax_d);if(R>=R3){e=eDemand;f=0;}else{e=emax_d;f=eDemand-emax_d;}}
+  else if(method===4){const RPI=VR*VR/(127*emax_d);if(R>=RPI){e=VR*VR/(127*R);f=eDemand-e;}else{e=emax_d;f=eDemand-emax_d;}}
+  else if(method===5){
+    const RPI=VR*VR/(127*emax_d);
+    const hPI=V*V/(127*RPI)-emax_d;
+    const L1=1/RPI;
+    const L2=1/Rmin-1/RPI;
+    const S1=hPI/L1;
+    const S2=(fmax-hPI)/L2;
+    const M0=L1*L2*(S2-S1)/(2*(L1+L2));
+    if(1/R<=1/RPI){const y1=M0*Math.pow(RPI/R,2);f=S1*(1/R)+y1;}
+    else{const num=(1/Rmin-1/R);const den=(1/Rmin-1/RPI);const y2=M0*(num*num)/(den*den);f=hPI+S2*(1/R-1/RPI)+y2;}
+    e=eDemand-f;
+  }
+  if(e<0)e=0;if(e>emax_d)e=emax_d;if(f<0)f=0;
+  return{e,f};
+}
+
+function getCurveEd(curveIdx){
+  const pi=state.hAlign.pis[curveIdx];
+  if(!pi)return getSuper(300,state.designSpeed,state.emax);
+  const R=pi.R||300;
+  const V=state.designSpeed;
+  const emax=state.emax;
+  if(pi.eMethod>=1&&pi.eMethod<=5){
+    const res=methodDist(pi.eMethod,V,R,emax);
+    if(res.invalid)return getSuper(R,V,emax);
+    return Math.max(res.e,0.02);
+  }
+  if(pi.eDesign!=null&&pi.eDesign>0)return pi.eDesign;
+  return getSuper(R,V,emax);
+}
+
+function getRunoffLength(e,V,w,n){
+  const delta=aashtoLookup(AASHTO.relGradient,V)/100;
+  return Math.max((w*n*e)/delta,15);
+}
+
+function getSpiralLength(V,R){
+  const C=1.2;
+  return Math.max(0.0214*V*V*V/(R*C),30);
+}
+function spiralXY(l,Ls,R){
+  const th=l*l/(2*R*Ls);
+  const x=l*(1-th*th/10+Math.pow(th,4)/216);
+  const y=l*(th/3-th*th*th/42+Math.pow(th,5)/1320);
+  return{x,y,theta:th};
+}
+
+// ==================== NOISE / TERRAIN ====================
+function hashNoise(x,y,seed){
+  let n=Math.sin(x*127.1+y*311.7+seed*1731.5)*43758.5453;
+  return n-Math.floor(n);
+}
+function smoothNoise(x,y,scale,seed){
+  const sx=x/scale,sy=y/scale;
+  const ix=Math.floor(sx),iy=Math.floor(sy);
+  const fx=sx-ix,fy=sy-iy;
+  const ux=fx*fx*(3-2*fx),uy=fy*fy*(3-2*fy);
+  const a=hashNoise(ix,iy,seed),b=hashNoise(ix+1,iy,seed);
+  const c=hashNoise(ix,iy+1,seed),d=hashNoise(ix+1,iy+1,seed);
+  return a*(1-ux)*(1-uy)+b*ux*(1-uy)+c*(1-ux)*uy+d*ux*uy;
+}
+function terrainElev(x,y,cfg){
+  let e=cfg.base;
+  e+=smoothNoise(x,y,500,cfg.seed)*cfg.relief*0.6;
+  e+=smoothNoise(x,y,200,cfg.seed+100)*cfg.relief*0.25;
+  e+=smoothNoise(x,y,80,cfg.seed+200)*cfg.relief*0.1;
+  e+=smoothNoise(x,y,30,cfg.seed+300)*cfg.relief*0.05;
+  const vy=cfg.height/2;
+  const d=Math.abs(y-vy)/(cfg.height/2);
+  e+=d*d*cfg.relief*0.4;
+  return e;
+}
+
+// ==================== STATE ====================
+var state={
+  terrain:null,
+  hAlign:{
+    startX:100,startY:500,
+    endX:1900,endY:500,
+    pis:[],
+    computed:null
+  },
+  vAlign:{pivs:[],computed:null},
+  tool:'pan',
+  designSpeed:80,
+  emax:0.08,
+  view:{cx:1000,cy:500,scale:0.5,dragging:false,lastX:0,lastY:0},
+  profileView:{cx:0,cy:0,zoom:1,dragging:false,lastX:0,lastY:0,fitted:false},
+  dragPI:{active:false,idx:-1,type:null},
+  dragPIV:{active:false,idx:-1}
+};
+
+// ==================== TERRAIN GENERATION ====================
+window.generateTerrain=function(){
+  const w=parseInt($('tWidth').value);
+  const h=parseInt($('tHeight').value);
+  const res=parseInt($('tRes').value);
+  const base=parseInt($('tElev').value);
+  const relief=parseInt($('tRelief').value);
+  const seed=parseInt($('tSeed').value);
+
+  const cols=Math.floor(w/res)+1;
+  const rows=Math.floor(h/res)+1;
+  const cfg={width:w,height:h,base,relief,seed};
+  const data=[];
+  let emin=Infinity,emax_=-Infinity;
+
+  for(let j=0;j<rows;j++){
+    const row=[];
+    for(let i=0;i<cols;i++){
+      const e=terrainElev(i*res,j*res,cfg);
+      row.push(e);
+      if(e<emin)emin=e;
+      if(e>emax_)emax_=e;
+    }
+    data.push(row);
+  }
+
+  state.terrain={data,cols,rows,res,width:w,height:h,emin,emax:emax_,cfg};
+  updateTerrainInfo();
+  plotTerrain3D();
+  plotTerrainContour();
+  fitAlignmentToTerrain();
+  $('statusText').textContent='Terreno generado: '+cols+'×'+rows+' celdas';
+};
+
+window.loadGeoTIFF=async function(){
+  const file=$('tifFile').files[0];
+  if(!file){alert('Selecciona un archivo .tif');return;}
+  try{
+    const ab=await file.arrayBuffer();
+    const tiff=await GeoTIFF.fromArrayBuffer(ab);
+    const img=await tiff.getImage();
+    const w=img.getWidth(),h=img.getHeight();
+    const rasters=await img.readRasters();
+    const band=rasters[0];
+    const bbox=img.getBoundingBox();
+    let resX=(bbox[2]-bbox[0])/w;
+    let resY=(bbox[3]-bbox[1])/h;
+    const isGeo=Math.abs(bbox[2]-bbox[0])<1||Math.abs(bbox[3]-bbox[1])<1;
+    if(isGeo){
+      const midLat=(bbox[1]+bbox[3])/2;
+      resX*=111320*Math.cos(midLat*Math.PI/180);
+      resY*=110540;
+    }
+    const res=Math.max(Math.round((resX+resY)/2),1);
+
+    const data=[];
+    let emin=Infinity,emax_=-Infinity;
+    for(let j=0;j<h;j++){
+      const row=[];
+      for(let i=0;i<w;i++){
+        let e=band[j*w+i];
+        if(e<-1000||e>9000)e=0;
+        row.push(e);
+        if(e<emin)emin=e;
+        if(e>emax_)emax_=e;
+      }
+      data.push(row);
+    }
+    const width=(w-1)*res,height=(h-1)*res;
+    state.terrain={data,cols:w,rows:h,res,width,height,emin,emax:emax_,cfg:{width,height,base:emin,relief:emax_-emin,seed:0}};
+    updateTerrainInfo();
+    plotTerrain3D();
+    plotTerrainContour();
+    fitAlignmentToTerrain();
+    $('statusText').textContent='GeoTIFF cargado: '+w+'×'+h;
+  }catch(err){
+    alert('Error al leer GeoTIFF: '+err.message);
+  }
+};
+
+function updateTerrainInfo(){
+  const t=state.terrain;
+  if(!t){$('terrainInfo').innerHTML='<div class="kv"><span class="k">Estado</span><span class="v">Sin terreno</span></div>';return;}
+  $('terrainInfo').innerHTML=`
+    <div class="kv"><span class="k">Dimensiones</span><span class="v">${t.width}×${t.height} m</span></div>
+    <div class="kv"><span class="k">Resolución</span><span class="v">${t.res} m</span></div>
+    <div class="kv"><span class="k">Celdas</span><span class="v">${t.cols}×${t.rows}</span></div>
+    <div class="kv"><span class="k">Elev. mín</span><span class="v">${t.emin.toFixed(1)} m</span></div>
+    <div class="kv"><span class="k">Elev. máx</span><span class="v">${t.emax.toFixed(1)} m</span></div>`;
+}
+
+function plotTerrain3D(){
+  const t=state.terrain;if(!t)return;
+  const step=Math.max(1,Math.floor(Math.max(t.cols,t.rows)/150));
+  const x=[],y=[];
+  const z=[];
+  for(let j=0;j<t.rows;j+=step){
+    const zr=[];
+    for(let i=0;i<t.cols;i+=step){
+      if(j===0){x.push(i*t.res);}
+      zr.push(t.data[j][i]);
+    }
+    y.push(j*t.res);
+    z.push(zr);
+  }
+  const isDark=!document.documentElement.classList.contains('light');
+  Plotly.newPlot('terrain3d',[{type:'surface',x,y,z,colorscale:'Earth',showscale:true,colorbar:{title:'Elev (m)',titlefont:{size:11}}}],{
+    margin:{l:0,r:0,t:0,b:0},
+    scene:{
+      xaxis:{title:'X (m)',color:isDark?'#94a3b8':'#64748b'},
+      yaxis:{title:'Y (m)',color:isDark?'#94a3b8':'#64748b'},
+      zaxis:{title:'Elev (m)',color:isDark?'#94a3b8':'#64748b'},
+      aspectmode:'manual',
+      aspectratio:{x:t.width/Math.max(t.width,t.height),y:t.height/Math.max(t.width,t.height),z:0.3},
+      bgcolor:isDark?'#0b1220':'#f8fafc'
+    },
+    paper_bgcolor:'rgba(0,0,0,0)',
+    font:{color:isDark?'#e2e8f0':'#1e293b'}
+  },{responsive:true});
+}
+
+function plotTerrainContour(){
+  const t=state.terrain;if(!t)return;
+  const step=Math.max(1,Math.floor(Math.max(t.cols,t.rows)/200));
+  const x=[],y=[];
+  const z=[];
+  for(let j=0;j<t.rows;j+=step){
+    const zr=[];
+    for(let i=0;i<t.cols;i+=step){
+      if(j===0)x.push(i*t.res);
+      zr.push(t.data[j][i]);
+    }
+    y.push(j*t.res);
+    z.push(zr);
+  }
+  const isDark=!document.documentElement.classList.contains('light');
+  Plotly.newPlot('terrainContour',[{type:'contour',x,y,z,colorscale:'Earth',
+    contours:{coloring:'heatmap',showlabels:true,labelfont:{size:10,color:isDark?'#fff':'#000'}},
+    colorbar:{title:'Elev (m)',titlefont:{size:11}}}],{
+    margin:{l:50,r:20,t:10,b:50},
+    xaxis:{title:'X (m)',color:isDark?'#94a3b8':'#64748b'},
+    yaxis:{title:'Y (m)',scaleanchor:'x',color:isDark?'#94a3b8':'#64748b'},
+    paper_bgcolor:'rgba(0,0,0,0)',
+    plot_bgcolor:isDark?'#0b1220':'#f8fafc',
+    font:{color:isDark?'#e2e8f0':'#1e293b'}
+  },{responsive:true});
+}
+
+// ==================== TERRAIN ELEVATION LOOKUP ====================
+function getTerrainElev(x,y){
+  const t=state.terrain;
+  if(!t)return 100;
+  const ci=x/t.res,cj=y/t.res;
+  const i0=Math.max(0,Math.min(t.cols-2,Math.floor(ci)));
+  const j0=Math.max(0,Math.min(t.rows-2,Math.floor(cj)));
+  const fx=ci-i0,fy=cj-j0;
+  const a=t.data[j0][i0],b=t.data[j0][Math.min(i0+1,t.cols-1)];
+  const c=t.data[Math.min(j0+1,t.rows-1)][i0],d=t.data[Math.min(j0+1,t.rows-1)][Math.min(i0+1,t.cols-1)];
+  return a*(1-fx)*(1-fy)+b*fx*(1-fy)+c*(1-fx)*fy+d*fx*fy;
+}
+
+function fitAlignmentToTerrain(){
+  const t=state.terrain;
+  if(!t)return;
+  const w=t.width,h=t.height;
+  const margin=w*0.05;
+  const sx=margin,sy=h/2;
+  const ex=w-margin,ey=h/2;
+  state.hAlign.startX=Math.round(sx);
+  state.hAlign.startY=Math.round(sy);
+  state.hAlign.endX=Math.round(ex);
+  state.hAlign.endY=Math.round(ey);
+  $('startX').value=state.hAlign.startX;
+  $('startY').value=state.hAlign.startY;
+  $('endX').value=state.hAlign.endX;
+  $('endY').value=state.hAlign.endY;
+  const n=state.hAlign.pis.length;
+  if(n>0){
+    const segW=(ex-sx)/(n+1);
+    state.hAlign.pis.forEach((pi,i)=>{
+      pi.x=Math.round(sx+(i+1)*segW);
+      pi.y=Math.round(h/2+(i%2?1:-1)*h*0.15);
+      pi.R=Math.max(Math.round(w*0.1),100);
+    });
+  }
+  state.view={cx:w/2,cy:h/2,scale:Math.min(800/w,500/h),dragging:false,lastX:0,lastY:0};
+  renderPIList();
+  computeAlignment();
+}
+
+// ==================== HORIZONTAL ALIGNMENT ====================
+window.addPI=function(){
+  const t=state.terrain;
+  const cx=t?t.width/2:1000;
+  const cy=t?t.height/2:500;
+  const n=state.hAlign.pis.length;
+  const ox=(n-1)*200;
+  state.hAlign.pis.push({x:cx+ox,y:cy+(n%2?100:-100),R:300,useSpiral:false,spiralLen:0,eDesign:null,eMethod:null});
+  renderPIList();
+  computeAlignment();
+};
+
+window.removePI=function(idx){
+  state.hAlign.pis.splice(idx,1);
+  renderPIList();
+  computeAlignment();
+};
+
+function renderPIList(){
+  const el=$('piList');
+  el.innerHTML='';
+  state.hAlign.pis.forEach((pi,i)=>{
+    const card=document.createElement('div');
+    card.className='point-card';
+    card.innerHTML=`
+      <div class="title"><span>PI ${i+1}</span><button class="remove" onclick="removePI(${i})">×</button></div>
+      <div class="fields">
+        <div><label>X (m)</label><input type="number" value="${pi.x.toFixed(1)}" step="1" oninput="state.hAlign.pis[${i}].x=parseFloat(this.value);computeAlignment()"></div>
+        <div><label>Y (m)</label><input type="number" value="${pi.y.toFixed(1)}" step="1" oninput="state.hAlign.pis[${i}].y=parseFloat(this.value);computeAlignment()"></div>
+        <div><label>R (m)</label><input type="number" value="${pi.R}" step="10" min="10" oninput="state.hAlign.pis[${i}].R=parseFloat(this.value);computeAlignment()"></div>
+        <div><label style="display:flex;align-items:center;gap:4px"><input type="checkbox" ${pi.useSpiral?'checked':''} onchange="state.hAlign.pis[${i}].useSpiral=this.checked;computeAlignment()"> Espiral</label></div>
+        ${pi.useSpiral?`<div style="grid-column:1/-1;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <label style="font-size:0.78em;opacity:0.7">L<sub>s</sub> mín = <span id="lsMin_${i}">${(Math.ceil(getSpiralLength(state.designSpeed,pi.R)/5)*5).toFixed(0)}</span> m</label>
+          <input type="number" value="${pi.spiralLen||''}" step="5" min="0" placeholder="Auto" style="width:80px" oninput="state.hAlign.pis[${i}].spiralLen=parseFloat(this.value)||0;computeAlignment()">
+          <span style="font-size:0.75em;opacity:0.7">m</span>
+        </div>`:''}
+        <div style="grid-column:1/-1;display:flex;align-items:center;gap:6px;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:6px;margin-top:2px">
+          <label style="font-size:0.78em;opacity:0.7">e<sub>d</sub></label>
+          <select style="font-size:0.82em;padding:2px 4px;border-radius:4px;border:1px solid var(--border);background:var(--bg2);color:var(--fg)" onchange="window.setEMethod(${i},this.value)">
+            <option value="auto" ${!pi.eMethod&&pi.eDesign==null?'selected':''}>Auto</option>
+            <option value="manual" ${pi.eDesign!=null&&!pi.eMethod?'selected':''}>Manual</option>
+            <option value="1" ${pi.eMethod===1?'selected':''}>M1</option>
+            <option value="2" ${pi.eMethod===2?'selected':''}>M2</option>
+            <option value="3" ${pi.eMethod===3?'selected':''}>M3</option>
+            <option value="4" ${pi.eMethod===4?'selected':''}>M4</option>
+            <option value="5" ${pi.eMethod===5?'selected':''}>M5</option>
+          </select>
+          ${pi.eDesign!=null&&!pi.eMethod?`<input type="number" value="${(pi.eDesign*100).toFixed(1)}" step="0.1" min="0" max="${(state.emax*100).toFixed(0)}" style="width:60px;font-size:0.82em" oninput="state.hAlign.pis[${i}].eDesign=parseFloat(this.value)/100||null;computeAlignment()"><span style="font-size:0.75em;opacity:0.7">%</span>`
+          :`<span style="font-size:0.78em;opacity:0.7">${(getCurveEd(i)*100).toFixed(1)}%</span>`}
+        </div>
+      </div>`;
+    el.appendChild(card);
+  });
+}
+
+window.setEMethod=function(idx,val){
+  const pi=state.hAlign.pis[idx];
+  if(val==='auto'){pi.eMethod=null;pi.eDesign=null;}
+  else if(val==='manual'){pi.eMethod=null;pi.eDesign=getSuper(pi.R,state.designSpeed,state.emax);}
+  else{pi.eMethod=parseInt(val);pi.eDesign=null;}
+  renderPIList();
+  computeAlignment();
+};
+
+window.computeAlignment=function(){
+  state.hAlign.startX=parseFloat($('startX').value);
+  state.hAlign.startY=parseFloat($('startY').value);
+  state.hAlign.endX=parseFloat($('endX').value);
+  state.hAlign.endY=parseFloat($('endY').value);
+  state.designSpeed=parseInt($('Vd').value);
+  state.emax=parseFloat($('eMax').value);
+
+  $('bdgSpeed').innerHTML='V = '+state.designSpeed+' km/h';
+  $('bdgEmax').innerHTML='e<sub>max</sub> = '+(state.emax*100).toFixed(0)+'%';
+
+  const Rmin=getRmin(state.designSpeed,state.emax);
+  const fmax=aashtoLookup(AASHTO.fmax,state.designSpeed);
+  const ssd=aashtoLookup(AASHTO.ssd,state.designSpeed);
+  $('aashtoLimits').innerHTML=`
+    <div class="kv"><span class="k">R<sub>mín</sub></span><span class="v">${Rmin.toFixed(0)} m</span></div>
+    <div class="kv"><span class="k">f<sub>max</sub></span><span class="v">${fmax.toFixed(3)}</span></div>
+    <div class="kv"><span class="k">SSD</span><span class="v">${ssd.toFixed(0)} m</span></div>`;
+
+  const pts=[{x:state.hAlign.startX,y:state.hAlign.startY},...state.hAlign.pis,{x:state.hAlign.endX,y:state.hAlign.endY}];
+  if(pts.length<3){
+    state.hAlign.computed={segments:[],totalLength:dist(pts[0],pts[pts.length-1]),stations:[]};
+    drawPlan();return;
+  }
+
+  const curves=[];
+  for(let i=1;i<pts.length-1;i++){
+    const prev=pts[i-1],pi=pts[i],next=pts[i+1];
+    const az1=Math.atan2(pi.x-prev.x,pi.y-prev.y);
+    const az2=Math.atan2(next.x-pi.x,next.y-pi.y);
+    let delta=az2-az1;
+    while(delta>Math.PI)delta-=2*Math.PI;
+    while(delta<-Math.PI)delta+=2*Math.PI;
+    const R=pi.R||300;
+    const absDelta=Math.abs(delta);
+    const T=R*Math.tan(absDelta/2);
+    const L=R*absDelta;
+    const E=R*(1/Math.cos(absDelta/2)-1);
+    const M=R*(1-Math.cos(absDelta/2));
+    const Ch=2*R*Math.sin(absDelta/2);
+    let Ls=0;
+    let LsMin=0;
+    if(pi.useSpiral){
+      LsMin=getSpiralLength(state.designSpeed,R);
+      LsMin=Math.ceil(LsMin/5)*5;
+      Ls=(pi.spiralLen&&pi.spiralLen>0)?pi.spiralLen:LsMin;
+      if(2*Ls/(2*R)>=absDelta) Ls=0;
+    }
+    const dir=delta>0?'D':'I';
+    const signD=delta>0?1:-1;
+    const signY=delta>0?1:-1;
+    let thetaS=0,Xs=0,Ys=0,p=0,k=0,Te=T,Lc=L;
+    let tsx,tsy,stx,sty,scx,scy,csx,csy;
+
+    if(Ls>0){
+      thetaS=Ls/(2*R);
+      const sp=spiralXY(Ls,Ls,R);
+      Xs=sp.x; Ys=sp.y;
+      p=Ys-R*(1-Math.cos(thetaS));
+      k=Xs-R*Math.sin(thetaS);
+      Te=(R+p)*Math.tan(absDelta/2)+k;
+      Lc=R*(absDelta-2*thetaS);
+      tsx=pi.x-Te*Math.sin(az1);
+      tsy=pi.y-Te*Math.cos(az1);
+      stx=pi.x+Te*Math.sin(az2);
+      sty=pi.y+Te*Math.cos(az2);
+      scx=tsx+Xs*Math.sin(az1)+signY*Ys*Math.cos(az1);
+      scy=tsy+Xs*Math.cos(az1)-signY*Ys*Math.sin(az1);
+      csx=stx-Xs*Math.sin(az2)+signY*Ys*Math.cos(az2);
+      csy=sty-Xs*Math.cos(az2)-signY*Ys*Math.sin(az2);
+    }else{
+      tsx=pi.x-T*Math.sin(az1); tsy=pi.y-T*Math.cos(az1);
+      stx=pi.x+T*Math.sin(az2); sty=pi.y+T*Math.cos(az2);
+      scx=tsx; scy=tsy; csx=stx; csy=sty;
+    }
+
+    const azSC=az1+signD*thetaS;
+    const ccx=scx+signY*R*Math.cos(azSC);
+    const ccy=scy-signY*R*Math.sin(azSC);
+
+    curves.push({idx:i-1,pi,R,delta,absDelta,T:Ls>0?Te:T,L:Ls>0?Lc:L,
+      E,M,Ch,Ls,LsMin,dir,az1,az2,thetaS,Xs,Ys,p,k,Te,Lc,
+      pc:{x:tsx,y:tsy},pt:{x:stx,y:sty},
+      sc:{x:scx,y:scy},cs:{x:csx,y:csy},
+      center:{x:ccx,y:ccy},
+      okR:R>=Rmin});
+  }
+
+  const segments=[];
+  let sta=0;
+  const stations=[];
+
+  for(let i=0;i<pts.length-1;i++){
+    const from=i===0?pts[0]:(curves[i-1]?curves[i-1].pt:pts[i]);
+    const to=i<curves.length?curves[i].pc:pts[pts.length-1];
+    const tLen=dist(from,to);
+    if(tLen>0.01){
+      segments.push({type:'tangent',from,to,staStart:sta,staEnd:sta+tLen,az:Math.atan2(to.x-from.x,to.y-from.y)});
+      if(i===0) stations.push({label:'INICIO',sta,x:from.x,y:from.y});
+      sta+=tLen;
+    }
+    if(i<curves.length){
+      const c=curves[i];
+      if(c.Ls>0){
+        segments.push({type:'spiral',staStart:sta,staEnd:sta+c.Ls,curve:c,entry:true});
+        stations.push({label:'TE '+(i+1),sta,x:c.pc.x,y:c.pc.y});
+        sta+=c.Ls;
+        stations.push({label:'EC '+(i+1),sta,x:c.sc.x,y:c.sc.y});
+      }else{
+        stations.push({label:'PC '+(i+1),sta,x:c.pc.x,y:c.pc.y});
+      }
+      segments.push({type:'curve',staStart:sta,staEnd:sta+c.Lc,curve:c});
+      c.staPC=sta;
+      sta+=c.Lc;
+      if(c.Ls>0){
+        stations.push({label:'CE '+(i+1),sta,x:c.cs.x,y:c.cs.y});
+        segments.push({type:'spiral',staStart:sta,staEnd:sta+c.Ls,curve:c,entry:false});
+        sta+=c.Ls;
+        stations.push({label:'ET '+(i+1),sta,x:c.pt.x,y:c.pt.y});
+      }else{
+        stations.push({label:'PT '+(i+1),sta,x:c.pt.x,y:c.pt.y});
+      }
+    }
+  }
+  stations.push({label:'FIN',sta,x:pts[pts.length-1].x,y:pts[pts.length-1].y});
+
+  state.hAlign.computed={segments,curves,totalLength:sta,stations};
+  updateCurveResults();
+  updateStationTable();
+  drawPlan();
+  updateVAlignSlider();
+  populateSuperCurveSelect();
+  drawProfile();
+  drawCrossSection();
+  drawSuper();
+  drawSuperSection();
+};
+
+function dist(a,b){return Math.sqrt((a.x-b.x)**2+(a.y-b.y)**2)}
+
+function pointOnAlignment(sta){
+  const c=state.hAlign.computed;
+  if(!c||!c.segments.length)return null;
+  sta=Math.max(0,Math.min(sta,c.totalLength));
+  for(const seg of c.segments){
+    if(sta>=seg.staStart&&sta<=seg.staEnd+0.001){
+      const t=(sta-seg.staStart)/(seg.staEnd-seg.staStart||1);
+      if(seg.type==='tangent'){
+        return{
+          x:seg.from.x+t*(seg.to.x-seg.from.x),
+          y:seg.from.y+t*(seg.to.y-seg.from.y),
+          az:seg.az
+        };
+      }else if(seg.type==='curve'){
+        const cv=seg.curve;
+        const startPt=cv.Ls>0?cv.sc:cv.pc;
+        const arcAng=cv.Ls>0?(cv.absDelta-2*cv.thetaS):cv.absDelta;
+        const angleStart=Math.atan2(startPt.y-cv.center.y,startPt.x-cv.center.x);
+        const sign=cv.delta>0?-1:1;
+        const ang=angleStart+sign*arcAng*t;
+        const signD=cv.delta>0?1:-1;
+        const azStart=cv.az1+signD*cv.thetaS;
+        return{
+          x:cv.center.x+cv.R*Math.cos(ang),
+          y:cv.center.y+cv.R*Math.sin(ang),
+          az:azStart+signD*arcAng*t
+        };
+      }else{
+        const cv=seg.curve;
+        const signD=cv.delta>0?1:-1;
+        const signY=cv.delta>0?1:-1;
+        if(seg.entry){
+          const l=cv.Ls*t;
+          const sp=spiralXY(l,cv.Ls,cv.R);
+          return{
+            x:cv.pc.x+sp.x*Math.sin(cv.az1)+signY*sp.y*Math.cos(cv.az1),
+            y:cv.pc.y+sp.x*Math.cos(cv.az1)-signY*sp.y*Math.sin(cv.az1),
+            az:cv.az1+signD*sp.theta
+          };
+        }else{
+          const d=cv.Ls*(1-t);
+          const sp=spiralXY(d,cv.Ls,cv.R);
+          return{
+            x:cv.pt.x-sp.x*Math.sin(cv.az2)+signY*sp.y*Math.cos(cv.az2),
+            y:cv.pt.y-sp.x*Math.cos(cv.az2)-signY*sp.y*Math.sin(cv.az2),
+            az:cv.az2-signD*sp.theta
+          };
+        }
+      }
+    }
+  }
+  return null;
+}
+
+function updateCurveResults(){
+  const c=state.hAlign.computed;
+  if(!c||!c.curves||!c.curves.length){
+    $('curveResults').innerHTML='<div class="kv"><span class="k">Sin curvas</span><span class="v">—</span></div>';
+    return;
+  }
+  let html=`<div class="kv"><span class="k">Longitud total</span><span class="v">${c.totalLength.toFixed(2)} m</span></div>`;
+  c.curves.forEach((cv,i)=>{
+    const rCheck=cv.okR?'<span class="pill ok">OK</span>':'<span class="pill fail">R < Rmín</span>';
+    html+=`<div style="margin-top:8px;padding-top:6px;border-top:1px solid var(--border)">
+      <div class="kv"><span class="k" style="color:var(--accent2);font-weight:600">Curva ${i+1} (${cv.dir})</span><span class="v">${rCheck}</span></div>
+      <div class="kv"><span class="k">R</span><span class="v">${cv.R.toFixed(1)} m</span></div>
+      <div class="kv"><span class="k">Δ</span><span class="v">${(cv.absDelta*180/Math.PI).toFixed(2)}°</span></div>
+      <div class="kv"><span class="k">${cv.Ls>0?'T<sub>e</sub>':'T'}</span><span class="v">${cv.T.toFixed(2)} m</span></div>
+      <div class="kv"><span class="k">${cv.Ls>0?'L<sub>c</sub>':'L'}</span><span class="v">${cv.L.toFixed(2)} m</span></div>
+      <div class="kv"><span class="k">E</span><span class="v">${cv.E.toFixed(2)} m</span></div>
+      <div class="kv"><span class="k">M</span><span class="v">${cv.M.toFixed(2)} m</span></div>
+      <div class="kv"><span class="k">C</span><span class="v">${cv.Ch.toFixed(2)} m</span></div>
+      ${cv.Ls>0?`<div class="kv"><span class="k">L<sub>s</sub></span><span class="v">${cv.Ls.toFixed(1)} m${cv.Ls<cv.LsMin?' <span class="pill fail">< mín '+cv.LsMin.toFixed(0)+'</span>':''}</span></div>
+      <div class="kv"><span class="k">L<sub>s</sub> mín</span><span class="v">${cv.LsMin.toFixed(1)} m</span></div>
+      <div class="kv"><span class="k">θ<sub>e</sub></span><span class="v">${(cv.thetaS*180/Math.PI).toFixed(4)}°</span></div>
+      <div class="kv"><span class="k">p</span><span class="v">${cv.p.toFixed(4)} m</span></div>
+      <div class="kv"><span class="k">k</span><span class="v">${cv.k.toFixed(4)} m</span></div>`:''}
+      <div class="kv"><span class="k">e</span><span class="v">${(getCurveEd(i)*100).toFixed(1)}%</span></div>
+    </div>`;
+  });
+  $('curveResults').innerHTML=html;
+}
+
+function updateStationTable(){
+  const c=state.hAlign.computed;
+  if(!c||!c.stations.length){$('stationTable').innerHTML='';return;}
+  let html='<table class="tbl"><thead><tr><th>Punto</th><th>Estación (m)</th><th>X (m)</th><th>Y (m)</th></tr></thead><tbody>';
+  c.stations.forEach(s=>{
+    const p=pointOnAlignment(s.sta);
+    const px=p?p.x:s.x, py=p?p.y:s.y;
+    html+=`<tr><td class="lbl">${s.label}</td><td>${formatStation(s.sta)}</td><td>${px.toFixed(2)}</td><td>${py.toFixed(2)}</td></tr>`;
+  });
+  html+='</tbody></table>';
+  $('stationTable').innerHTML=html;
+}
+
+function formatStation(m){
+  const km=Math.floor(m/1000);
+  const rest=(m%1000).toFixed(2);
+  return km+'+'+rest.padStart(7,'0');
+}
+
+// ==================== PLAN VIEW CANVAS ====================
+const planCv=$('planCanvas');
+const planCtx=planCv.getContext('2d');
+
+function worldToScreen(wx,wy){
+  const v=state.view;
+  const cx=planCv.width/2, cy=planCv.height/2;
+  return{x:cx+(wx-v.cx)*v.scale, y:cy-(wy-v.cy)*v.scale};
+}
+function screenToWorld(sx,sy){
+  const v=state.view;
+  const cx=planCv.width/2, cy=planCv.height/2;
+  return{x:v.cx+(sx-cx)/v.scale, y:v.cy-(sy-cy)/v.scale};
+}
+
+window.setTool=function(t,btn){
+  state.tool=t;
+  document.querySelectorAll('.toolbar .tool-btn').forEach(b=>b.classList.remove('on'));
+  if(btn)btn.classList.add('on');
+};
+
+window.fitView=function(){
+  const t=state.terrain;
+  if(t){
+    state.view.cx=t.width/2;
+    state.view.cy=t.height/2;
+    state.view.scale=Math.min(planCv.width/t.width,planCv.height/t.height)*0.9;
+  }else{
+    state.view.cx=1000;state.view.cy=500;state.view.scale=0.5;
+  }
+  drawPlan();
+};
+
+function hitTestPlanPI(sx,sy){
+  const thr=12;
+  const pts=[{x:state.hAlign.startX,y:state.hAlign.startY,type:'start',idx:-1},
+             {x:state.hAlign.endX,y:state.hAlign.endY,type:'end',idx:-1}];
+  state.hAlign.pis.forEach((pi,i)=>pts.push({x:pi.x,y:pi.y,type:'pi',idx:i}));
+  let best=null,bestD=thr;
+  for(const p of pts){
+    const s=worldToScreen(p.x,p.y);
+    const d=Math.hypot(s.x-sx,s.y-sy);
+    if(d<bestD){bestD=d;best=p;}
+  }
+  return best;
+}
+
+planCv.addEventListener('mousedown',e=>{
+  const rect=planCv.getBoundingClientRect();
+  const sx=(e.clientX-rect.left)*(planCv.width/rect.width);
+  const sy=(e.clientY-rect.top)*(planCv.height/rect.height);
+  const w=screenToWorld(sx,sy);
+
+  if(state.tool==='pan'){
+    const hit=hitTestPlanPI(sx,sy);
+    if(hit){
+      state.dragPI={active:true,idx:hit.idx,type:hit.type};
+      planCv.style.cursor='grabbing';
+      return;
+    }
+    state.view.dragging=true;
+    state.view.lastX=e.clientX;
+    state.view.lastY=e.clientY;
+    planCv.classList.add('panning');
+  }else if(state.tool==='addPI'){
+    state.hAlign.pis.push({x:Math.round(w.x),y:Math.round(w.y),R:300,useSpiral:false,spiralLen:0,eDesign:null,eMethod:null});
+    renderPIList();
+    computeAlignment();
+  }else if(state.tool==='moveStart'){
+    $('startX').value=Math.round(w.x);
+    $('startY').value=Math.round(w.y);
+    computeAlignment();
+  }else if(state.tool==='moveEnd'){
+    $('endX').value=Math.round(w.x);
+    $('endY').value=Math.round(w.y);
+    computeAlignment();
+  }
+});
+
+planCv.addEventListener('mousemove',e=>{
+  const rect=planCv.getBoundingClientRect();
+  const sx=(e.clientX-rect.left)*(planCv.width/rect.width);
+  const sy=(e.clientY-rect.top)*(planCv.height/rect.height);
+  const w=screenToWorld(sx,sy);
+
+  if(state.dragPI.active){
+    const d=state.dragPI;
+    if(d.type==='pi'){
+      state.hAlign.pis[d.idx].x=Math.round(w.x);
+      state.hAlign.pis[d.idx].y=Math.round(w.y);
+    }else if(d.type==='start'){
+      $('startX').value=Math.round(w.x);
+      $('startY').value=Math.round(w.y);
+    }else if(d.type==='end'){
+      $('endX').value=Math.round(w.x);
+      $('endY').value=Math.round(w.y);
+    }
+    renderPIList();
+    computeAlignment();
+  }else if(state.view.dragging){
+    const dx=e.clientX-state.view.lastX;
+    const dy=e.clientY-state.view.lastY;
+    const ratio=planCv.width/rect.width;
+    state.view.cx-=dx*ratio/state.view.scale;
+    state.view.cy+=dy*ratio/state.view.scale;
+    state.view.lastX=e.clientX;
+    state.view.lastY=e.clientY;
+    drawPlan();
+  }else if(state.tool==='pan'){
+    const hit=hitTestPlanPI(sx,sy);
+    planCv.style.cursor=hit?'pointer':'grab';
+  }
+
+  $('statusCoords').textContent=w.x.toFixed(1)+', '+w.y.toFixed(1);
+});
+
+planCv.addEventListener('mouseup',()=>{
+  if(state.dragPI.active){state.dragPI.active=false;planCv.style.cursor='grab';}
+  state.view.dragging=false;
+  planCv.classList.remove('panning');
+});
+planCv.addEventListener('mouseleave',()=>{
+  if(state.dragPI.active){state.dragPI.active=false;}
+  state.view.dragging=false;
+  planCv.classList.remove('panning');
+});
+
+planCv.addEventListener('wheel',e=>{
+  e.preventDefault();
+  const factor=e.deltaY>0?0.9:1.1;
+  const rect=planCv.getBoundingClientRect();
+  const sx=(e.clientX-rect.left)*(planCv.width/rect.width);
+  const sy=(e.clientY-rect.top)*(planCv.height/rect.height);
+  const wBefore=screenToWorld(sx,sy);
+  state.view.scale*=factor;
+  state.view.scale=Math.max(0.01,Math.min(10,state.view.scale));
+  const wAfter=screenToWorld(sx,sy);
+  state.view.cx-=(wAfter.x-wBefore.x);
+  state.view.cy-=(wAfter.y-wBefore.y);
+  drawPlan();
+},{passive:false});
+
+function drawPlan(){
+  const W=planCv.width,H=planCv.height;
+  const ctx=planCtx;
+  const isDark=!document.documentElement.classList.contains('light');
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle=isDark?'#0b1220':'#f8fafc';
+  ctx.fillRect(0,0,W,H);
+
+  // terrain contours
+  const t=state.terrain;
+  if(t){
+    const interval=Math.max(2,Math.round((t.emax-t.emin)/20));
+    const startElev=Math.ceil(t.emin/interval)*interval;
+    ctx.lineWidth=0.5;
+    for(let elev=startElev;elev<=t.emax;elev+=interval){
+      ctx.strokeStyle=isDark?'rgba(148,163,184,0.15)':'rgba(100,116,139,0.15)';
+      if(elev%(interval*5)===0){
+        ctx.strokeStyle=isDark?'rgba(148,163,184,0.3)':'rgba(100,116,139,0.3)';
+        ctx.lineWidth=1;
+      }else{ctx.lineWidth=0.5;}
+      drawContourLine(ctx,t,elev);
+    }
+  }
+
+  // grid
+  ctx.strokeStyle=isDark?'rgba(148,163,184,0.08)':'rgba(100,116,139,0.08)';
+  ctx.lineWidth=0.5;
+  const tlW=screenToWorld(0,0),brW=screenToWorld(W,H);
+  const gridStep=getGridStep(Math.abs(brW.x-tlW.x));
+  const gxMin=Math.floor(Math.min(tlW.x,brW.x)/gridStep)*gridStep;
+  const gxMax=Math.ceil(Math.max(tlW.x,brW.x)/gridStep)*gridStep;
+  const gyMin=Math.floor(Math.min(tlW.y,brW.y)/gridStep)*gridStep;
+  const gyMax=Math.ceil(Math.max(tlW.y,brW.y)/gridStep)*gridStep;
+  ctx.font='10px -apple-system,sans-serif';
+  ctx.fillStyle=isDark?'#475569':'#94a3b8';
+  for(let gx=gxMin;gx<=gxMax;gx+=gridStep){
+    const s=worldToScreen(gx,0);
+    ctx.beginPath();ctx.moveTo(s.x,0);ctx.lineTo(s.x,H);ctx.stroke();
+    ctx.fillText(gx.toFixed(0),s.x+3,H-4);
+  }
+  for(let gy=gyMin;gy<=gyMax;gy+=gridStep){
+    const s=worldToScreen(0,gy);
+    ctx.beginPath();ctx.moveTo(0,s.y);ctx.lineTo(W,s.y);ctx.stroke();
+    ctx.fillText(gy.toFixed(0),4,s.y-3);
+  }
+
+  // alignment
+  const al=state.hAlign.computed;
+  if(al&&al.segments.length){
+    al.segments.forEach(seg=>{
+      if(seg.type==='tangent'){
+        const p1=worldToScreen(seg.from.x,seg.from.y);
+        const p2=worldToScreen(seg.to.x,seg.to.y);
+        ctx.strokeStyle=isDark?'#64748b':'#475569';
+        ctx.lineWidth=2;
+        ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(p2.x,p2.y);ctx.stroke();
+      }else if(seg.type==='curve'){
+        ctx.strokeStyle='#f59e0b';
+        ctx.lineWidth=3;
+        ctx.beginPath();
+        const steps=Math.max(30,Math.round(seg.curve.absDelta*180/Math.PI*2));
+        for(let i=0;i<=steps;i++){
+          const s=seg.staStart+(seg.staEnd-seg.staStart)*i/steps;
+          const p=pointOnAlignment(s);
+          if(!p)continue;
+          const sp=worldToScreen(p.x,p.y);
+          if(i===0)ctx.moveTo(sp.x,sp.y);else ctx.lineTo(sp.x,sp.y);
+        }
+        ctx.stroke();
+      }else if(seg.type==='spiral'){
+        ctx.strokeStyle='#a855f7';
+        ctx.lineWidth=2.5;
+        ctx.beginPath();
+        const steps=20;
+        for(let i=0;i<=steps;i++){
+          const s=seg.staStart+(seg.staEnd-seg.staStart)*i/steps;
+          const p=pointOnAlignment(s);
+          if(!p)continue;
+          const sp=worldToScreen(p.x,p.y);
+          if(i===0)ctx.moveTo(sp.x,sp.y);else ctx.lineTo(sp.x,sp.y);
+        }
+        ctx.stroke();
+      }
+    });
+
+    // points
+    const drawPoint=(x,y,color,label)=>{
+      const s=worldToScreen(x,y);
+      ctx.fillStyle=color;
+      ctx.beginPath();ctx.arc(s.x,s.y,5,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();
+      ctx.fillStyle=isDark?'#e2e8f0':'#1e293b';
+      ctx.font='bold 10px -apple-system,sans-serif';
+      ctx.fillText(label,s.x+8,s.y-6);
+    };
+
+    drawPoint(state.hAlign.startX,state.hAlign.startY,'#3b82f6','INICIO');
+    drawPoint(state.hAlign.endX,state.hAlign.endY,'#3b82f6','FIN');
+
+    if(al.curves){
+      al.curves.forEach((cv,i)=>{
+        drawPoint(cv.pi.x,cv.pi.y,'#ef4444','PI'+(i+1));
+        drawPoint(cv.pc.x,cv.pc.y,'#22c55e',cv.Ls>0?'TE':'PC');
+        drawPoint(cv.pt.x,cv.pt.y,'#22c55e',cv.Ls>0?'ET':'PT');
+        if(cv.Ls>0){
+          drawPoint(cv.sc.x,cv.sc.y,'#a855f7','EC');
+          drawPoint(cv.cs.x,cv.cs.y,'#a855f7','CE');
+        }
+      });
+    }
+
+    // stationing labels along alignment
+    const totalL=al.totalLength;
+    const staStep=getGridStep(totalL)*0.5;
+    ctx.font='9px -apple-system,sans-serif';
+    ctx.fillStyle=isDark?'rgba(168,85,247,0.7)':'rgba(124,58,237,0.7)';
+    for(let s=0;s<=totalL;s+=staStep){
+      const p=pointOnAlignment(s);
+      if(!p)continue;
+      const sp=worldToScreen(p.x,p.y);
+      ctx.beginPath();ctx.arc(sp.x,sp.y,2,0,Math.PI*2);ctx.fill();
+    }
+  }
+}
+
+function drawContourLine(ctx,terrain,elev){
+  const step=Math.max(1,Math.floor(Math.max(terrain.cols,terrain.rows)/200));
+  for(let j=0;j<terrain.rows-step;j+=step){
+    for(let i=0;i<terrain.cols-step;i+=step){
+      const a=terrain.data[j][i];
+      const b=terrain.data[j][i+step];
+      const c=terrain.data[j+step][i+step];
+      const d=terrain.data[j+step][i];
+      const edges=[];
+      const interp=(v1,v2,p1x,p1y,p2x,p2y)=>{
+        if((v1-elev)*(v2-elev)<0){
+          const t=(elev-v1)/(v2-v1);
+          edges.push({x:p1x+t*(p2x-p1x),y:p1y+t*(p2y-p1y)});
+        }
+      };
+      const x0=i*terrain.res,y0=j*terrain.res;
+      const x1=(i+step)*terrain.res,y1=(j+step)*terrain.res;
+      interp(a,b,x0,y0,x1,y0);
+      interp(b,c,x1,y0,x1,y1);
+      interp(c,d,x1,y1,x0,y1);
+      interp(d,a,x0,y1,x0,y0);
+      if(edges.length>=2){
+        const s0=worldToScreen(edges[0].x,edges[0].y);
+        const s1=worldToScreen(edges[1].x,edges[1].y);
+        ctx.beginPath();ctx.moveTo(s0.x,s0.y);ctx.lineTo(s1.x,s1.y);ctx.stroke();
+        if(edges.length===4){
+          const s2=worldToScreen(edges[2].x,edges[2].y);
+          const s3=worldToScreen(edges[3].x,edges[3].y);
+          ctx.beginPath();ctx.moveTo(s2.x,s2.y);ctx.lineTo(s3.x,s3.y);ctx.stroke();
+        }
+      }
+    }
+  }
+}
+
+function getGridStep(range){
+  const raw=range/8;
+  const mag=Math.pow(10,Math.floor(Math.log10(raw)));
+  const norm=raw/mag;
+  if(norm<2)return mag;
+  if(norm<5)return 2*mag;
+  return 5*mag;
+}
+
+// ==================== VERTICAL ALIGNMENT ====================
+window.addPIV=function(){
+  const al=state.hAlign.computed;
+  const totalL=al?al.totalLength:2000;
+  const n=state.vAlign.pivs.length;
+  const sta=totalL*(n+1)/(n+3);
+  const elev=getTerrainElevAtStation(sta);
+  state.vAlign.pivs.push({sta:Math.round(sta),elev:Math.round(elev),Lvc:200});
+  renderPIVList();
+  drawProfile();
+};
+
+window.removePIV=function(idx){
+  state.vAlign.pivs.splice(idx,1);
+  renderPIVList();
+  drawProfile();
+};
+
+window.autoGeneratePIVs=function(){
+  const al=state.hAlign.computed;
+  if(!al||!al.totalLength){alert('Primero calcula el alineamiento horizontal.');return;}
+  const L=al.totalLength;
+  state.vAlign.pivs=[];
+  const nPIV=Math.max(2,Math.round(L/400));
+  for(let i=1;i<=nPIV;i++){
+    const sta=L*i/(nPIV+1);
+    const elev=getTerrainElevAtStation(sta);
+    const kDesign=aashtoLookup(AASHTO.kCrest,state.designSpeed);
+    state.vAlign.pivs.push({sta:Math.round(sta),elev:Math.round(elev*10)/10,Lvc:Math.round(kDesign*3)});
+  }
+  renderPIVList();
+  drawProfile();
+};
+
+function getTerrainElevAtStation(sta){
+  const p=pointOnAlignment(sta);
+  if(!p)return 100;
+  return getTerrainElev(p.x,p.y);
+}
+
+function renderPIVList(){
+  const el=$('pivList');
+  el.innerHTML='';
+  state.vAlign.pivs.sort((a,b)=>a.sta-b.sta);
+  state.vAlign.pivs.forEach((piv,i)=>{
+    const card=document.createElement('div');
+    card.className='point-card';
+    card.innerHTML=`
+      <div class="title"><span>PIV ${i+1}</span><button class="remove" onclick="removePIV(${i})">×</button></div>
+      <div class="fields">
+        <div><label>Est (m)</label><input type="number" value="${piv.sta}" step="10" oninput="state.vAlign.pivs[${i}].sta=parseFloat(this.value);drawProfile();drawCrossSection()"></div>
+        <div><label>Elev (m)</label><input type="number" value="${piv.elev}" step="0.5" oninput="state.vAlign.pivs[${i}].elev=parseFloat(this.value);drawProfile();drawCrossSection()"></div>
+        <div><label>L<sub>cv</sub> (m)</label><input type="number" value="${piv.Lvc}" step="10" min="20" oninput="state.vAlign.pivs[${i}].Lvc=parseFloat(this.value);drawProfile();drawCrossSection()"></div>
+      </div>`;
+    el.appendChild(card);
+  });
+}
+
+function updateVAlignSlider(){
+  const al=state.hAlign.computed;
+  if(al){
+    $('xsStation').max=Math.round(al.totalLength);
+  }
+}
+
+function computeVerticalAlignment(){
+  const pivs=state.vAlign.pivs;
+  const al=state.hAlign.computed;
+  if(!al||!pivs.length)return null;
+  const totalL=al.totalLength;
+
+  const pts=[{sta:0,elev:getTerrainElevAtStation(0)},...pivs,{sta:totalL,elev:getTerrainElevAtStation(totalL)}];
+  pts.sort((a,b)=>a.sta-b.sta);
+
+  const grades=[];
+  for(let i=0;i<pts.length-1;i++){
+    const g=(pts[i+1].elev-pts[i].elev)/(pts[i+1].sta-pts[i].sta);
+    grades.push(g);
+  }
+
+  const vcurves=[];
+  for(let i=1;i<pts.length-1;i++){
+    const g1=grades[i-1],g2=grades[i];
+    const A=Math.abs(g2-g1)*100;
+    const Lvc=pivs[i-1]?pivs[i-1].Lvc:200;
+    const K=A>0?Lvc/A:999;
+    const bvc=pts[i].sta-Lvc/2;
+    const evc=pts[i].sta+Lvc/2;
+    const elevBVC=pts[i].elev-g1*Lvc/2;
+    const isCrest=g1>g2;
+    const r=(g2-g1)/Lvc;
+
+    const kReq=isCrest?aashtoLookup(AASHTO.kCrest,state.designSpeed):aashtoLookup(AASHTO.kSag,state.designSpeed);
+    const LminK=kReq*A;
+
+    vcurves.push({piv:pts[i],g1,g2,A,Lvc,K,bvc,evc,elevBVC,isCrest,r,kReq,LminK,okL:Lvc>=LminK});
+  }
+
+  const elevAt=(sta)=>{
+    for(const vc of vcurves){
+      if(sta>=vc.bvc&&sta<=vc.evc){
+        const x=sta-vc.bvc;
+        return vc.elevBVC+vc.g1*x+(vc.r/2)*x*x;
+      }
+    }
+    for(let i=0;i<pts.length-1;i++){
+      if(sta>=pts[i].sta&&sta<=pts[i+1].sta){
+        return pts[i].elev+grades[i]*(sta-pts[i].sta);
+      }
+    }
+    return pts[0].elev;
+  };
+
+  return{pts,grades,vcurves,elevAt,totalL};
+}
+
+// ==================== PROFILE CANVAS ====================
+const profCv=$('profileCanvas');
+const profCtx=profCv.getContext('2d');
+
+function fitProfileView(){
+  const al=state.hAlign.computed;
+  if(!al||!al.totalLength)return;
+  const totalL=al.totalLength;
+  const nSamples=Math.min(500,Math.round(totalL/2));
+  let emin=Infinity,emax_=-Infinity;
+  for(let i=0;i<=nSamples;i++){
+    const sta=totalL*i/nSamples;
+    const elev=getTerrainElevAtStation(sta);
+    if(elev<emin)emin=elev;if(elev>emax_)emax_=elev;
+  }
+  const va=computeVerticalAlignment();
+  if(va){for(let i=0;i<=nSamples;i++){const e=va.elevAt(totalL*i/nSamples);if(e<emin)emin=e;if(e>emax_)emax_=e;}}
+  state.profileView.cx=totalL/2;
+  state.profileView.cy=(emin+emax_)/2;
+  state.profileView.zoom=1;
+  state.profileView.fitted=true;
+}
+window.fitProfileView=function(){fitProfileView();drawProfile();};
+
+function drawProfile(){
+  const W=profCv.width,H=profCv.height;
+  const ctx=profCtx;
+  const isDark=!document.documentElement.classList.contains('light');
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle=isDark?'#0b1220':'#f8fafc';
+  ctx.fillRect(0,0,W,H);
+
+  const al=state.hAlign.computed;
+  if(!al||!al.totalLength){
+    ctx.fillStyle=isDark?'#64748b':'#94a3b8';
+    ctx.font='14px -apple-system,sans-serif';
+    ctx.textAlign='center';
+    ctx.fillText('Calcula primero el alineamiento horizontal',W/2,H/2);
+    return;
+  }
+
+  const totalL=al.totalLength;
+  const vExag=parseInt($('vExag').value)||5;
+  const showTerrain=$('showTerrainProfile').checked;
+  const showGrades=$('showGrades').checked;
+  const showVC=$('showVCurves').checked;
+  const showCF=$('showCutFillZones').checked;
+
+  const nSamples=Math.min(500,Math.round(totalL/2));
+  const terrainProfile=[];
+  let emin=Infinity,emax_=-Infinity;
+  for(let i=0;i<=nSamples;i++){
+    const sta=totalL*i/nSamples;
+    const elev=getTerrainElevAtStation(sta);
+    terrainProfile.push({sta,elev});
+    if(elev<emin)emin=elev;if(elev>emax_)emax_=elev;
+  }
+  const va=computeVerticalAlignment();
+  if(va){for(let i=0;i<=nSamples;i++){const e=va.elevAt(totalL*i/nSamples);if(e<emin)emin=e;if(e>emax_)emax_=e;}}
+
+  if(!state.profileView.fitted){fitProfileView();}
+
+  const m={l:70,r:30,t:30,b:50};
+  const pw=W-m.l-m.r, ph=H-m.t-m.b;
+  const pv=state.profileView;
+  const elevRange=Math.max(emax_-emin,5);
+  const baseSx=pw/totalL;
+  const baseSy=ph/(elevRange*1.3);
+  const sxZ=baseSx*pv.zoom;
+  const syZ=baseSy*pv.zoom;
+
+  const X=sta=>m.l+pw/2+(sta-pv.cx)*sxZ;
+  const Y=elev=>m.t+ph/2-(elev-pv.cy)*syZ;
+
+  // visible range for grid
+  const staL=(0-pw/2)/sxZ+pv.cx;
+  const staR=(pw)/sxZ+pv.cx;
+  const visElevT=pv.cy+ph/2/syZ;
+  const visElevB=pv.cy-ph/2/syZ;
+
+  // clip to plot area
+  ctx.save();
+  ctx.beginPath();ctx.rect(m.l,m.t,pw,ph);ctx.clip();
+
+  // grid
+  ctx.strokeStyle=isDark?'rgba(148,163,184,0.1)':'rgba(100,116,139,0.1)';
+  ctx.lineWidth=0.5;
+  ctx.font='10px -apple-system,sans-serif';
+  ctx.fillStyle=isDark?'#475569':'#94a3b8';
+  const visStaRange=totalL/pv.zoom;
+  const staStep=getGridStep(visStaRange);
+  ctx.textAlign='center';ctx.textBaseline='top';
+  for(let s=Math.floor(Math.max(0,staL)/staStep)*staStep;s<=Math.min(totalL,staR);s+=staStep){
+    const px=X(s);
+    if(px<m.l||px>m.l+pw)continue;
+    ctx.beginPath();ctx.moveTo(px,m.t);ctx.lineTo(px,m.t+ph);ctx.stroke();
+  }
+  const visElevRange=(visElevT-visElevB)||elevRange;
+  const elevStep=getGridStep(visElevRange);
+  ctx.textAlign='right';ctx.textBaseline='middle';
+  for(let e=Math.floor(visElevB/elevStep)*elevStep;e<=visElevT+elevStep;e+=elevStep){
+    const py=Y(e);
+    if(py<m.t||py>m.t+ph)continue;
+    ctx.beginPath();ctx.moveTo(m.l,py);ctx.lineTo(m.l+pw,py);ctx.stroke();
+  }
+
+  // cut/fill zones
+  if(showCF&&va){
+    for(let i=0;i<nSamples;i++){
+      const sta1=terrainProfile[i].sta, sta2=terrainProfile[i+1].sta;
+      const te1=terrainProfile[i].elev, te2=terrainProfile[i+1].elev;
+      const de1=va.elevAt(sta1), de2=va.elevAt(sta2);
+      const x1=X(sta1),x2=X(sta2);
+      const isCut=(de1<=te1||de2<=te2);
+      ctx.fillStyle=isCut?'rgba(239,68,68,0.12)':'rgba(59,130,246,0.12)';
+      ctx.beginPath();
+      ctx.moveTo(x1,Y(te1));ctx.lineTo(x2,Y(te2));
+      ctx.lineTo(x2,Y(de2));ctx.lineTo(x1,Y(de1));
+      ctx.closePath();ctx.fill();
+    }
+  }
+
+  // terrain profile
+  if(showTerrain){
+    ctx.strokeStyle=isDark?'#94a3b8':'#64748b';
+    ctx.lineWidth=1.5;
+    ctx.beginPath();
+    terrainProfile.forEach((p,i)=>{
+      const px=X(p.sta),py=Y(p.elev);
+      if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
+    });
+    ctx.stroke();
+  }
+
+  // design grade line
+  if(va&&showGrades){
+    ctx.strokeStyle=isDark?'#a855f7':'#7c3aed';
+    ctx.lineWidth=2;
+    ctx.setLineDash([8,4]);
+    ctx.beginPath();
+    for(let i=0;i<=nSamples;i++){
+      const sta=totalL*i/nSamples;
+      const e=va.elevAt(sta);
+      if(i===0)ctx.moveTo(X(sta),Y(e));else ctx.lineTo(X(sta),Y(e));
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    if(showVC){
+      ctx.strokeStyle='#f59e0b';
+      ctx.lineWidth=3;
+      va.vcurves.forEach(vc=>{
+        ctx.beginPath();
+        const steps=40;
+        for(let i=0;i<=steps;i++){
+          const sta=vc.bvc+(vc.evc-vc.bvc)*i/steps;
+          const x=sta-vc.bvc;
+          const e=vc.elevBVC+vc.g1*x+(vc.r/2)*x*x;
+          if(i===0)ctx.moveTo(X(sta),Y(e));else ctx.lineTo(X(sta),Y(e));
+        }
+        ctx.stroke();
+      });
+    }
+
+    va.pts.forEach((p,i)=>{
+      if(i===0||i===va.pts.length-1)return;
+      const px=X(p.sta),py=Y(p.elev);
+      ctx.fillStyle='#ef4444';
+      ctx.beginPath();ctx.arc(px,py,5,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();
+      ctx.fillStyle=isDark?'#e2e8f0':'#1e293b';
+      ctx.font='bold 10px -apple-system,sans-serif';
+      ctx.textAlign='center';ctx.textBaseline='bottom';
+      ctx.fillText('PIV'+(i),px,py-8);
+    });
+
+    va.vcurves.forEach(vc=>{
+      [{sta:vc.bvc,lbl:'BVC'},{sta:vc.evc,lbl:'EVC'}].forEach(pt=>{
+        const e=va.elevAt(pt.sta);
+        const px=X(pt.sta),py=Y(e);
+        ctx.fillStyle='#22c55e';
+        ctx.beginPath();ctx.arc(px,py,4,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle='#fff';ctx.lineWidth=1;ctx.stroke();
+      });
+    });
+
+    ctx.font='11px -apple-system,sans-serif';
+    ctx.fillStyle=isDark?'#a855f7':'#7c3aed';
+    for(let i=0;i<va.grades.length;i++){
+      const sta1=va.pts[i].sta,sta2=va.pts[i+1].sta;
+      const midSta=(sta1+sta2)/2;
+      const midElev=(va.pts[i].elev+va.pts[i+1].elev)/2;
+      ctx.textAlign='center';
+      ctx.fillText((va.grades[i]*100).toFixed(2)+'%',X(midSta),Y(midElev)-15);
+    }
+  }
+
+  ctx.restore();
+
+  // grid labels outside clip
+  ctx.font='10px -apple-system,sans-serif';
+  ctx.fillStyle=isDark?'#475569':'#94a3b8';
+  ctx.textAlign='center';ctx.textBaseline='top';
+  for(let s=Math.floor(Math.max(0,staL)/staStep)*staStep;s<=Math.min(totalL,staR);s+=staStep){
+    const px=X(s);
+    if(px<m.l||px>m.l+pw)continue;
+    ctx.fillText(formatStation(s),px,m.t+ph+5);
+  }
+  ctx.textAlign='right';ctx.textBaseline='middle';
+  for(let e=Math.floor(visElevB/elevStep)*elevStep;e<=visElevT+elevStep;e+=elevStep){
+    const py=Y(e);
+    if(py<m.t||py>m.t+ph)continue;
+    ctx.fillText(e.toFixed(0)+' m',m.l-5,py);
+  }
+  ctx.strokeStyle=isDark?'#334155':'#cbd5e1';
+  ctx.strokeRect(m.l,m.t,pw,ph);
+
+  // axis labels
+  ctx.fillStyle=isDark?'#94a3b8':'#64748b';
+  ctx.font='12px -apple-system,sans-serif';
+  ctx.textAlign='center';ctx.textBaseline='top';
+  ctx.fillText('Estación (m)',m.l+pw/2,H-14);
+  ctx.save();ctx.translate(14,m.t+ph/2);ctx.rotate(-Math.PI/2);
+  ctx.fillText('Elevación (m)',0,0);ctx.restore();
+
+  updateVAlignChecks(va);
+}
+
+// profile zoom/pan + PIV drag
+function profScaleFactors(){
+  const al=state.hAlign.computed;
+  if(!al||!al.totalLength)return null;
+  const pv=state.profileView;
+  const m={l:70,r:30,t:30,b:50};
+  const pw=profCv.width-m.l-m.r,ph=profCv.height-m.t-m.b;
+  const totalL=al.totalLength;
+  let emin=Infinity,emax_=-Infinity;
+  const nS=100;
+  for(let i=0;i<=nS;i++){const elev=getTerrainElevAtStation(totalL*i/nS);if(elev<emin)emin=elev;if(elev>emax_)emax_=elev;}
+  const va=computeVerticalAlignment();
+  if(va){for(let i=0;i<=nS;i++){const e2=va.elevAt(totalL*i/nS);if(e2<emin)emin=e2;if(e2>emax_)emax_=e2;}}
+  const elevRange=Math.max(emax_-emin,5);
+  const baseSx=pw/totalL;
+  const baseSy=ph/(elevRange*1.3);
+  const sxZ=baseSx*pv.zoom;
+  const syZ=baseSy*pv.zoom;
+  return{m,pw,ph,totalL,sxZ,syZ,pv};
+}
+function profScreenToWorld(sx,sy){
+  const f=profScaleFactors();
+  if(!f)return null;
+  const sta=f.pv.cx+(sx-f.m.l-f.pw/2)/f.sxZ;
+  const elev=f.pv.cy-(sy-f.m.t-f.ph/2)/f.syZ;
+  return{sta,elev};
+}
+function hitTestPIV(sx,sy){
+  const f=profScaleFactors();
+  if(!f)return null;
+  const thr=12;
+  let best=null,bestD=thr;
+  state.vAlign.pivs.forEach((piv,i)=>{
+    const px=f.m.l+f.pw/2+(piv.sta-f.pv.cx)*f.sxZ;
+    const py=f.m.t+f.ph/2-(piv.elev-f.pv.cy)*f.syZ;
+    const d=Math.hypot(px-sx,py-sy);
+    if(d<bestD){bestD=d;best=i;}
+  });
+  return best;
+}
+
+profCv.addEventListener('mousedown',e=>{
+  const rect=profCv.getBoundingClientRect();
+  const sx=(e.clientX-rect.left)*(profCv.width/rect.width);
+  const sy=(e.clientY-rect.top)*(profCv.height/rect.height);
+  const hitIdx=hitTestPIV(sx,sy);
+  if(hitIdx!==null){
+    state.dragPIV={active:true,idx:hitIdx};
+    profCv.style.cursor='grabbing';
+    return;
+  }
+  state.profileView.dragging=true;
+  state.profileView.lastX=e.clientX;
+  state.profileView.lastY=e.clientY;
+  profCv.style.cursor='grabbing';
+});
+profCv.addEventListener('mousemove',e=>{
+  const rect=profCv.getBoundingClientRect();
+  const sx=(e.clientX-rect.left)*(profCv.width/rect.width);
+  const sy=(e.clientY-rect.top)*(profCv.height/rect.height);
+
+  if(state.dragPIV.active){
+    const pw=profScreenToWorld(sx,sy);
+    if(pw){
+      const piv=state.vAlign.pivs[state.dragPIV.idx];
+      piv.sta=Math.max(0,Math.round(pw.sta));
+      piv.elev=Math.round(pw.elev*10)/10;
+      renderPIVList();
+      drawProfile();
+      drawCrossSection();
+    }
+    return;
+  }
+
+  if(state.profileView.dragging){
+    const pv=state.profileView;
+    const dx=e.clientX-pv.lastX;
+    const dy=e.clientY-pv.lastY;
+    const ratio=profCv.width/rect.width;
+    const f=profScaleFactors();
+    if(!f)return;
+    pv.cx-=dx*ratio/f.sxZ;
+    pv.cy+=dy*ratio/f.syZ;
+    pv.lastX=e.clientX;
+    pv.lastY=e.clientY;
+    drawProfile();
+  }else{
+    const hitIdx=hitTestPIV(sx,sy);
+    profCv.style.cursor=hitIdx!==null?'pointer':'grab';
+  }
+});
+profCv.addEventListener('mouseup',()=>{
+  if(state.dragPIV.active){state.dragPIV.active=false;profCv.style.cursor='grab';}
+  state.profileView.dragging=false;profCv.style.cursor='grab';
+});
+profCv.addEventListener('mouseleave',()=>{
+  if(state.dragPIV.active){state.dragPIV.active=false;}
+  state.profileView.dragging=false;profCv.style.cursor='grab';
+});
+profCv.addEventListener('wheel',e=>{
+  e.preventDefault();
+  const pv=state.profileView;
+  const al=state.hAlign.computed;
+  if(!al||!al.totalLength)return;
+  const factor=e.deltaY>0?0.9:1.1;
+  const rect=profCv.getBoundingClientRect();
+  const sx2=(e.clientX-rect.left)*(profCv.width/rect.width);
+  const sy2=(e.clientY-rect.top)*(profCv.height/rect.height);
+  const m={l:70,r:30,t:30,b:50};
+  const pw=profCv.width-m.l-m.r,ph=profCv.height-m.t-m.b;
+  const totalL=al.totalLength;
+  let emin=Infinity,emax_=-Infinity;
+  const nS=100;
+  for(let i=0;i<=nS;i++){const elev=getTerrainElevAtStation(totalL*i/nS);if(elev<emin)emin=elev;if(elev>emax_)emax_=elev;}
+  const va=computeVerticalAlignment();
+  if(va){for(let i=0;i<=nS;i++){const e2=va.elevAt(totalL*i/nS);if(e2<emin)emin=e2;if(e2>emax_)emax_=e2;}}
+  const elevRange=Math.max(emax_-emin,5);
+  const baseSx=pw/totalL;
+  const baseSy=ph/(elevRange*1.3);
+  const staBefore=pv.cx+(sx2-m.l-pw/2)/(baseSx*pv.zoom);
+  const elevBefore=pv.cy-(sy2-m.t-ph/2)/(baseSy*pv.zoom);
+  pv.zoom*=factor;
+  pv.zoom=Math.max(0.5,Math.min(50,pv.zoom));
+  const staAfter=pv.cx+(sx2-m.l-pw/2)/(baseSx*pv.zoom);
+  const elevAfter=pv.cy-(sy2-m.t-ph/2)/(baseSy*pv.zoom);
+  pv.cx-=(staAfter-staBefore);
+  pv.cy-=(elevAfter-elevBefore);
+  drawProfile();
+},{passive:false});
+profCv.addEventListener('dblclick',()=>{fitProfileView();drawProfile();});
+profCv.style.cursor='grab';
+
+function updateVAlignChecks(va){
+  if(!va||!va.vcurves.length){
+    $('vAlignChecks').innerHTML='<div class="kv"><span class="k">Sin curvas verticales</span><span class="v">—</span></div>';
+    return;
+  }
+  let html='';
+  va.vcurves.forEach((vc,i)=>{
+    const type=vc.isCrest?'Cima':'Columpio';
+    const check=vc.okL?'<span class="pill ok">OK</span>':'<span class="pill fail">L < Lmín</span>';
+    html+=`<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border)">
+      <div class="kv"><span class="k" style="color:var(--accent2);font-weight:600">CV ${i+1} — ${type}</span><span class="v">${check}</span></div>
+      <div class="kv"><span class="k">g₁</span><span class="v">${(vc.g1*100).toFixed(2)}%</span></div>
+      <div class="kv"><span class="k">g₂</span><span class="v">${(vc.g2*100).toFixed(2)}%</span></div>
+      <div class="kv"><span class="k">A</span><span class="v">${vc.A.toFixed(2)}%</span></div>
+      <div class="kv"><span class="k">L</span><span class="v">${vc.Lvc.toFixed(0)} m</span></div>
+      <div class="kv"><span class="k">K</span><span class="v">${vc.K.toFixed(1)}</span></div>
+      <div class="kv"><span class="k">K<sub>req</sub> (AASHTO)</span><span class="v">${vc.kReq.toFixed(0)}</span></div>
+      <div class="kv"><span class="k">L<sub>mín</sub></span><span class="v">${vc.LminK.toFixed(0)} m</span></div>
+    </div>`;
+  });
+
+  // grade checks
+  const maxG=aashtoLookup(AASHTO.maxGradeRolling,state.designSpeed);
+  va.grades.forEach((g,i)=>{
+    const gPct=Math.abs(g*100);
+    const ok=gPct<=maxG;
+    html+=`<div class="kv" style="margin-top:4px"><span class="k">Pendiente ${i+1}: ${(g*100).toFixed(2)}%</span>
+      <span class="v">${ok?'<span class="pill ok">OK</span>':'<span class="pill fail">> '+maxG+'%</span>'}</span></div>`;
+  });
+
+  $('vAlignChecks').innerHTML=html;
+}
+
+// ==================== CROSS SECTION ====================
+function drawCrossSection(){
+  const cv=$('xsCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height;
+  const isDark=!document.documentElement.classList.contains('light');
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle=isDark?'#0b1220':'#f8fafc';
+  ctx.fillRect(0,0,W,H);
+
+  const al=state.hAlign.computed;
+  const sta=parseFloat($('xsStation').value);
+  const nLanes=parseInt($('nLanes').value);
+  const laneW=parseFloat($('laneW').value);
+  const shExt=parseFloat($('shExt').value);
+  const shInt=parseFloat($('shInt').value);
+  const crown=parseFloat($('crown').value)/100;
+  const cutSl=parseFloat($('cutSlope').value);
+  const fillSl=parseFloat($('fillSlope').value);
+  const ditchW=parseFloat($('ditchW').value);
+  const ditchD=parseFloat($('ditchD').value);
+
+  if(!al||!al.totalLength){
+    ctx.fillStyle=isDark?'#64748b':'#94a3b8';
+    ctx.font='14px -apple-system,sans-serif';
+    ctx.textAlign='center';
+    ctx.fillText('Calcula primero el alineamiento horizontal',W/2,H/2);
+    return;
+  }
+
+  const va=computeVerticalAlignment();
+  const designElev=va?va.elevAt(sta):getTerrainElevAtStation(sta);
+  const p=pointOnAlignment(sta);
+  if(!p)return;
+
+  // compute superelevation at this station
+  let eLeft=-crown,eRight=-crown;
+  if(al.curves){
+    for(let ci=0;ci<al.curves.length;ci++){
+      const cv=al.curves[ci];
+      if(cv.staPC!==undefined){
+        const staPC=cv.staPC;
+        const staPT=staPC+cv.L;
+        if(sta>=staPC&&sta<=staPT){
+          const e=getCurveEd(ci);
+          if(cv.dir==='D'){eLeft=e;eRight=-e;}
+          else{eLeft=-e;eRight=e;}
+        }
+      }
+    }
+  }
+
+  const perpAz=p.az+Math.PI/2;
+  const roadHalfW=nLanes*laneW;
+
+  // helper: terrain elevation at perpendicular offset
+  function tAtOff(off){
+    const tx=p.x+off*Math.sin(perpAz),ty=p.y+off*Math.cos(perpAz);
+    return getTerrainElev(tx,ty);
+  }
+
+  // design cross section points (from center)
+  const designXS=[];
+  designXS.push({offset:0,elev:designElev});
+  designXS.push({offset:roadHalfW,elev:designElev+eRight*roadHalfW});
+  designXS.push({offset:roadHalfW+shExt,elev:designElev+eRight*roadHalfW-crown*shExt});
+  designXS.unshift({offset:-roadHalfW,elev:designElev+eLeft*roadHalfW});
+  designXS.unshift({offset:-roadHalfW-shInt,elev:designElev+eLeft*roadHalfW-crown*shInt});
+
+  const rightEdge=designXS[designXS.length-1];
+  const leftEdge=designXS[0];
+  const rightIsCut=rightEdge.elev<tAtOff(rightEdge.offset);
+  const leftIsCut=leftEdge.elev<tAtOff(leftEdge.offset);
+
+  // find slope-terrain intersections by direct terrain sampling (up to 200m)
+  let rightSlopeEnd={offset:rightEdge.offset,elev:rightEdge.elev};
+  if(rightIsCut){
+    for(let off=rightEdge.offset;off<rightEdge.offset+200;off+=0.5){
+      const se=rightEdge.elev+(off-rightEdge.offset)/cutSl;
+      if(se>=tAtOff(off)){rightSlopeEnd={offset:off,elev:se};break;}
+    }
+    if(ditchW>0){
+      designXS.push({offset:rightEdge.offset+ditchW,elev:rightEdge.elev-ditchD});
+      designXS.push(rightSlopeEnd);
+    }else designXS.push(rightSlopeEnd);
+  }else{
+    for(let off=rightEdge.offset;off<rightEdge.offset+200;off+=0.5){
+      const se=rightEdge.elev-(off-rightEdge.offset)/fillSl;
+      if(se<=tAtOff(off)){rightSlopeEnd={offset:off,elev:se};break;}
+    }
+    designXS.push(rightSlopeEnd);
+  }
+
+  let leftSlopeEnd={offset:leftEdge.offset,elev:leftEdge.elev};
+  if(leftIsCut){
+    for(let off=leftEdge.offset;off>leftEdge.offset-200;off-=0.5){
+      const se=leftEdge.elev+(leftEdge.offset-off)/cutSl;
+      if(se>=tAtOff(off)){leftSlopeEnd={offset:off,elev:se};break;}
+    }
+    if(ditchW>0){
+      designXS.unshift({offset:leftEdge.offset-ditchW,elev:leftEdge.elev-ditchD});
+      designXS.unshift(leftSlopeEnd);
+    }else designXS.unshift(leftSlopeEnd);
+  }else{
+    for(let off=leftEdge.offset;off>leftEdge.offset-200;off-=0.5){
+      const se=leftEdge.elev-(leftEdge.offset-off)/fillSl;
+      if(se<=tAtOff(off)){leftSlopeEnd={offset:off,elev:se};break;}
+    }
+    designXS.unshift(leftSlopeEnd);
+  }
+
+  // set halfWidth to encompass all slope endpoints + margin
+  const halfWidth=Math.max(Math.abs(rightSlopeEnd.offset),Math.abs(leftSlopeEnd.offset),roadHalfW+shExt+20)+10;
+  const nPts=80;
+  const terrainXS=[];
+  for(let i=-nPts;i<=nPts;i++){
+    const offset=halfWidth*i/nPts;
+    terrainXS.push({offset,elev:tAtOff(offset)});
+  }
+
+  // compute areas
+  let cutArea=0,fillArea=0;
+  const dOff=halfWidth*2/nPts;
+  for(let i=0;i<terrainXS.length-1;i++){
+    const off1=terrainXS[i].offset,off2=terrainXS[i+1].offset;
+    const te1=terrainXS[i].elev,te2=terrainXS[i+1].elev;
+    const de1=getDesignElevAtOffset(designXS,off1);
+    const de2=getDesignElevAtOffset(designXS,off2);
+    if(de1===null||de2===null)continue;
+    const diff1=de1-te1,diff2=de2-te2;
+    const avgDiff=(diff1+diff2)/2;
+    const width=Math.abs(off2-off1);
+    if(avgDiff<0)cutArea+=Math.abs(avgDiff)*width;
+    else fillArea+=avgDiff*width;
+  }
+
+  // drawing
+  const allOffsets=[...terrainXS.map(p=>p.offset),...designXS.map(p=>p.offset)];
+  const allElevs=[...terrainXS.map(p=>p.elev),...designXS.map(p=>p.elev)];
+  const oMin=Math.min(...allOffsets),oMax=Math.max(...allOffsets);
+  const eMin=Math.min(...allElevs),eMax=Math.max(...allElevs);
+  const pad=2;
+  const oRange=oMax-oMin+pad*2, eRange=Math.max(eMax-eMin+pad*2,5);
+  const margin={l:60,r:20,t:20,b:40};
+  const pW=W-margin.l-margin.r, pH=H-margin.t-margin.b;
+  const sxS=pW/oRange, syS=pH/eRange;
+  const Xo=off=>margin.l+(off-oMin+pad)*sxS;
+  const Ye=elev=>margin.t+(eMax+pad-elev)*syS;
+
+  // grid
+  ctx.strokeStyle=isDark?'rgba(148,163,184,0.1)':'rgba(100,116,139,0.1)';
+  ctx.lineWidth=0.5;
+  ctx.font='10px -apple-system,sans-serif';
+  ctx.fillStyle=isDark?'#475569':'#94a3b8';
+  const oStep=getGridStep(oRange);
+  ctx.textAlign='center';ctx.textBaseline='top';
+  for(let o=Math.ceil((oMin-pad)/oStep)*oStep;o<=oMax+pad;o+=oStep){
+    const px=Xo(o);
+    ctx.beginPath();ctx.moveTo(px,margin.t);ctx.lineTo(px,margin.t+pH);ctx.stroke();
+    ctx.fillText(o.toFixed(0),px,margin.t+pH+5);
+  }
+  const eStep=getGridStep(eRange);
+  ctx.textAlign='right';ctx.textBaseline='middle';
+  for(let e=Math.floor((eMin-pad)/eStep)*eStep;e<=eMax+pad;e+=eStep){
+    const py=Ye(e);
+    if(py<margin.t||py>margin.t+pH)continue;
+    ctx.beginPath();ctx.moveTo(margin.l,py);ctx.lineTo(margin.l+pW,py);ctx.stroke();
+    ctx.fillText(e.toFixed(1),margin.l-5,py);
+  }
+
+  // fill cut/fill areas
+  for(let i=0;i<terrainXS.length-1;i++){
+    const off1=terrainXS[i].offset,off2=terrainXS[i+1].offset;
+    const te1=terrainXS[i].elev,te2=terrainXS[i+1].elev;
+    const de1=getDesignElevAtOffset(designXS,off1);
+    const de2=getDesignElevAtOffset(designXS,off2);
+    if(de1===null||de2===null)continue;
+    const isFill=(de1>=te1&&de2>=te2);
+    ctx.fillStyle=isFill?'rgba(59,130,246,0.2)':'rgba(239,68,68,0.2)';
+    ctx.beginPath();
+    ctx.moveTo(Xo(off1),Ye(te1));ctx.lineTo(Xo(off2),Ye(te2));
+    ctx.lineTo(Xo(off2),Ye(de2));ctx.lineTo(Xo(off1),Ye(de1));
+    ctx.closePath();ctx.fill();
+  }
+
+  // terrain line
+  ctx.strokeStyle=isDark?'#94a3b8':'#64748b';
+  ctx.lineWidth=2;
+  ctx.beginPath();
+  terrainXS.forEach((p,i)=>{
+    const px=Xo(p.offset),py=Ye(p.elev);
+    if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
+  });
+  ctx.stroke();
+
+  // terrain fill
+  ctx.fillStyle=isDark?'rgba(148,163,184,0.05)':'rgba(100,116,139,0.05)';
+  ctx.beginPath();
+  terrainXS.forEach((p,i)=>{
+    const px=Xo(p.offset),py=Ye(p.elev);
+    if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
+  });
+  ctx.lineTo(Xo(terrainXS[terrainXS.length-1].offset),Ye(eMin-pad));
+  ctx.lineTo(Xo(terrainXS[0].offset),Ye(eMin-pad));
+  ctx.closePath();ctx.fill();
+
+  // design section
+  ctx.strokeStyle=isDark?'#a855f7':'#7c3aed';
+  ctx.lineWidth=2.5;
+  ctx.beginPath();
+  designXS.sort((a,b)=>a.offset-b.offset);
+  designXS.forEach((p,i)=>{
+    const px=Xo(p.offset),py=Ye(p.elev);
+    if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
+  });
+  ctx.stroke();
+
+  // road surface highlight
+  const roadPts=designXS.filter(p=>Math.abs(p.offset)<=roadHalfW+shExt+shInt);
+  if(roadPts.length>1){
+    ctx.fillStyle=isDark?'rgba(168,85,247,0.15)':'rgba(124,58,237,0.15)';
+    ctx.beginPath();
+    roadPts.forEach((p,i)=>{
+      if(i===0)ctx.moveTo(Xo(p.offset),Ye(p.elev));else ctx.lineTo(Xo(p.offset),Ye(p.elev));
+    });
+    ctx.lineTo(Xo(roadPts[roadPts.length-1].offset),Ye(p.elev)-3);
+    ctx.closePath();ctx.fill();
+  }
+
+  // center line
+  ctx.strokeStyle=isDark?'#f59e0b':'#b45309';
+  ctx.lineWidth=1;
+  ctx.setLineDash([4,3]);
+  ctx.beginPath();ctx.moveTo(Xo(0),Ye(eMin-pad));ctx.lineTo(Xo(0),Ye(eMax+pad));ctx.stroke();
+  ctx.setLineDash([]);
+
+  // labels
+  ctx.fillStyle=isDark?'#e2e8f0':'#1e293b';
+  ctx.font='12px -apple-system,sans-serif';
+  ctx.textAlign='center';ctx.textBaseline='top';
+  ctx.fillText('Distancia desde el eje (m)',margin.l+pW/2,H-14);
+  ctx.save();ctx.translate(14,margin.t+pH/2);ctx.rotate(-Math.PI/2);
+  ctx.fillText('Elevación (m)',0,0);ctx.restore();
+
+  ctx.font='bold 12px -apple-system,sans-serif';
+  ctx.fillText('Est. '+formatStation(sta),margin.l+pW/2,8);
+
+  // results
+  $('xsResults').innerHTML=`
+    <div class="kv"><span class="k">Área corte</span><span class="v" style="color:var(--cut)">${cutArea.toFixed(2)} m²</span></div>
+    <div class="kv"><span class="k">Área relleno</span><span class="v" style="color:var(--fill)">${fillArea.toFixed(2)} m²</span></div>
+    <div class="kv"><span class="k">Elev. diseño</span><span class="v">${designElev.toFixed(2)} m</span></div>
+    <div class="kv"><span class="k">Elev. terreno</span><span class="v">${getTerrainElevAtStation(sta).toFixed(2)} m</span></div>
+    <div class="kv"><span class="k">Peralte izq.</span><span class="v">${(eLeft*100).toFixed(1)}%</span></div>
+    <div class="kv"><span class="k">Peralte der.</span><span class="v">${(eRight*100).toFixed(1)}%</span></div>`;
+}
+
+function getTerrainElevAtOffset(xs,offset){
+  for(let i=0;i<xs.length-1;i++){
+    if((xs[i].offset<=offset&&xs[i+1].offset>=offset)||(xs[i].offset>=offset&&xs[i+1].offset<=offset)){
+      const t=(offset-xs[i].offset)/(xs[i+1].offset-xs[i].offset);
+      return xs[i].elev+t*(xs[i+1].elev-xs[i].elev);
+    }
+  }
+  return xs[0].elev;
+}
+
+function getDesignElevAtOffset(xs,offset){
+  const sorted=[...xs].sort((a,b)=>a.offset-b.offset);
+  if(offset<sorted[0].offset||offset>sorted[sorted.length-1].offset)return null;
+  for(let i=0;i<sorted.length-1;i++){
+    if(offset>=sorted[i].offset&&offset<=sorted[i+1].offset){
+      const t=(offset-sorted[i].offset)/(sorted[i+1].offset-sorted[i].offset);
+      return sorted[i].elev+t*(sorted[i+1].elev-sorted[i].elev);
+    }
+  }
+  return null;
+}
+
+// ==================== SUPERELEVATION ====================
+function populateSuperCurveSelect(){
+  const sel=$('superCurve');
+  sel.innerHTML='';
+  const al=state.hAlign.computed;
+  if(!al||!al.curves)return;
+  al.curves.forEach((cv,i)=>{
+    const opt=document.createElement('option');
+    opt.value=i;
+    opt.textContent='Curva '+(i+1)+' (R='+cv.R+'m, '+cv.dir+')';
+    sel.appendChild(opt);
+  });
+  buildETable();
+  drawSuper();
+}
+
+function buildETable(){
+  const V=state.designSpeed;
+  const emax=state.emax;
+  let html='<table class="tbl"><thead><tr><th>R (m)</th><th>e (%)</th><th>f</th><th>L<sub>r</sub> (m)</th></tr></thead><tbody>';
+  const radii=[50,75,100,125,150,175,200,250,300,400,500,700,1000,1500,2000,3000,5000];
+  radii.forEach(R=>{
+    const e=getSuper(R,V,emax);
+    const f=V*V/(127*R)-e;
+    const Lr=getRunoffLength(e,V,3.65,1);
+    const Rmin=getRmin(V,emax);
+    const cls=R<Rmin?'style="color:var(--warn)"':'';
+    html+=`<tr ${cls}><td>${R}</td><td>${(e*100).toFixed(1)}</td><td>${f.toFixed(3)}</td><td>${Lr.toFixed(0)}</td></tr>`;
+  });
+  html+='</tbody></table>';
+  $('eTable').innerHTML=html;
+}
+
+function superSlopesEntry(d,Lt,Lr,b0,eVal){
+  if(d<=0)return{mc:-b0,ma:-b0};
+  if(d<=Lt)return{mc:-b0+b0*(d/Lt),ma:-b0};
+  if(d<=2*Lt)return{mc:b0*((d-Lt)/Lt),ma:-b0};
+  if(Lr>Lt&&d<=Lt+Lr){
+    const t=(d-2*Lt)/(Lr-Lt);
+    return{mc:b0+(eVal-b0)*t,ma:-b0-(eVal-b0)*t};
+  }
+  return{mc:eVal,ma:-eVal};
+}
+
+function superGetParams(){
+  const al=state.hAlign.computed;
+  if(!al||!al.curves||!al.curves.length)return null;
+  const ci=parseInt($('superCurve').value)||0;
+  const curve=al.curves[ci];
+  if(!curve)return null;
+  const V=state.designSpeed;
+  const emax=state.emax;
+  const e=getCurveEd(ci);
+  const crown=parseFloat($('crown').value)/100||0.02;
+  const laneW=parseFloat($('laneW').value)||3.65;
+  const nLanes=parseInt($('nLanes').value)||1;
+  const w=laneW*nLanes;
+  const Lr=getRunoffLength(e,V,laneW,nLanes);
+  const Lt=getRunoffLength(crown,V,laneW,nLanes);
+  const axis=$('rotAxis').value;
+  const totalLen=Lt+Lr+curve.L+Lr+Lt;
+  const staA=curve.staPC-Lr-Lt;
+  return{ci,curve,V,e,crown,laneW,nLanes,w,Lr,Lt,axis,totalLen,staA};
+}
+
+function superEdgeElevs(d,p){
+  const{Lt,Lr,crown,e,w,axis,totalLen}=p;
+  let mc,ma;
+  if(d<=0||d>=totalLen){
+    mc=-crown;ma=-crown;
+  }else if(d<=Lt+Lr){
+    ({mc,ma}=superSlopesEntry(d,Lt,Lr,crown,e));
+  }else if(d<=totalLen-Lr-Lt){
+    mc=e;ma=-e;
+  }else{
+    const dm=totalLen-d;
+    ({mc,ma}=superSlopesEntry(dm,Lt,Lr,crown,e));
+  }
+  const eOuter=mc*w,eInner=ma*w;
+  if(axis==='center')return{outer:eOuter,inner:eInner,center:0,mc,ma};
+  if(axis==='inner')return{outer:eOuter-eInner,inner:0,center:-eInner,mc,ma};
+  return{outer:0,inner:eInner-eOuter,center:-eOuter,mc,ma};
+}
+
+function superAbsEdgeElevs(d,p,va){
+  const{Lt,Lr,crown,e,w,axis,totalLen,staA}=p;
+  let mc,ma;
+  if(d<=0||d>=totalLen){
+    mc=-crown;ma=-crown;
+  }else if(d<=Lt+Lr){
+    ({mc,ma}=superSlopesEntry(d,Lt,Lr,crown,e));
+  }else if(d<=totalLen-Lr-Lt){
+    mc=e;ma=-e;
+  }else{
+    const dm=totalLen-d;
+    ({mc,ma}=superSlopesEntry(dm,Lt,Lr,crown,e));
+  }
+  const sta=staA+d;
+  const centerElev=va?va.elevAt(sta):0;
+  const outer=centerElev+mc*w;
+  const inner=centerElev+ma*w;
+  return{outer,inner,center:centerElev,mc,ma,sta};
+}
+
+function drawSuper(){
+  const cv=$('superCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height;
+  const isDark=!document.documentElement.classList.contains('light');
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle=isDark?'#0b1220':'#f8fafc';
+  ctx.fillRect(0,0,W,H);
+
+  const p=superGetParams();
+  if(!p){
+    ctx.fillStyle=isDark?'#64748b':'#94a3b8';
+    ctx.font='14px -apple-system,sans-serif';
+    ctx.textAlign='center';
+    ctx.fillText('Define curvas horizontales primero',W/2,H/2);
+    return;
+  }
+  const{ci,curve,V,e,crown,w,Lr,Lt,totalLen,staA}=p;
+  const absMode=$('superAbsElev')&&$('superAbsElev').checked;
+  const va=absMode?computeVerticalAlignment():null;
+
+  const tanExt=totalLen*0.1;
+  const fullLen=totalLen+2*tanExt;
+
+  const m={l:70,r:30,t:40,b:50};
+  const pw=W-m.l-m.r,ph=H-m.t-m.b;
+
+  const sxD=pw/fullLen;
+  const X=d=>m.l+(d+tanExt)*sxD;
+
+  // Pre-compute all edge values to find Y range
+  const step=fullLen/300;
+  const outerPts=[],innerPts=[],centerPts=[];
+  for(let d=-tanExt;d<=totalLen+tanExt;d+=step){
+    let ov,iv,cv2;
+    if(absMode){
+      const ev=superAbsEdgeElevs(d,p,va);
+      ov=ev.outer;iv=ev.inner;cv2=ev.center;
+    }else{
+      const ev=superEdgeElevs(d,p);
+      ov=ev.outer;iv=ev.inner;cv2=ev.center;
+    }
+    outerPts.push({d,v:ov});
+    innerPts.push({d,v:iv});
+    centerPts.push({d,v:cv2});
+  }
+
+  const allVals=[...outerPts,...innerPts,...centerPts].map(p2=>p2.v);
+  let yMin=Math.min(...allVals),yMax=Math.max(...allVals);
+  const yPad=(yMax-yMin)*0.15||0.01;
+  yMin-=yPad;yMax+=yPad;
+  const syD=ph/(yMax-yMin);
+  const Ye=elev=>m.t+ph-(elev-yMin)*syD;
+
+  // zero line (only in relative mode)
+  if(!absMode){
+    ctx.strokeStyle=isDark?'rgba(148,163,184,0.1)':'rgba(100,116,139,0.1)';
+    ctx.lineWidth=0.5;
+    ctx.beginPath();ctx.moveTo(m.l,Ye(0));ctx.lineTo(m.l+pw,Ye(0));ctx.stroke();
+  }
+
+  // Y-axis grid lines and labels
+  const yRange=yMax-yMin;
+  const rawStep=yRange/6;
+  const mag=Math.pow(10,Math.floor(Math.log10(rawStep)));
+  const niceSteps=[1,2,5,10];
+  let gridStep=mag;
+  for(const ns of niceSteps){if(mag*ns>=rawStep){gridStep=mag*ns;break;}}
+  ctx.font='9px -apple-system,sans-serif';
+  ctx.textAlign='right';ctx.textBaseline='middle';
+  const gridStart=Math.ceil(yMin/gridStep)*gridStep;
+  for(let gv=gridStart;gv<=yMax;gv+=gridStep){
+    const gy=Ye(gv);
+    ctx.strokeStyle=isDark?'rgba(148,163,184,0.12)':'rgba(100,116,139,0.12)';
+    ctx.lineWidth=0.5;
+    ctx.beginPath();ctx.moveTo(m.l,gy);ctx.lineTo(m.l+pw,gy);ctx.stroke();
+    ctx.fillStyle=isDark?'#94a3b8':'#64748b';
+    ctx.fillText(absMode?gv.toFixed(2):gv.toFixed(3),m.l-4,gy);
+  }
+
+  const zones=[
+    {start:-tanExt,end:0,label:'Tangente',color:'rgba(148,163,184,0.05)'},
+    {start:0,end:Lt,label:'Runout (Lt)',color:'rgba(245,158,11,0.08)'},
+    {start:Lt,end:Lt+Lr,label:'Runoff (Lr)',color:'rgba(239,68,68,0.08)'},
+    {start:Lt+Lr,end:Lt+Lr+curve.L,label:'Curva (e completo)',color:'rgba(34,197,94,0.08)'},
+    {start:Lt+Lr+curve.L,end:Lt+Lr+curve.L+Lr,label:'Runoff (Lr)',color:'rgba(239,68,68,0.08)'},
+    {start:Lt+Lr+curve.L+Lr,end:totalLen,label:'Runout (Lt)',color:'rgba(245,158,11,0.08)'},
+    {start:totalLen,end:totalLen+tanExt,label:'Tangente',color:'rgba(148,163,184,0.05)'}
+  ];
+
+  zones.forEach(z=>{
+    ctx.fillStyle=z.color;
+    ctx.fillRect(X(z.start),m.t,X(z.end)-X(z.start),ph);
+    ctx.fillStyle=isDark?'#64748b':'#94a3b8';
+    ctx.font='9px -apple-system,sans-serif';
+    ctx.textAlign='center';
+    ctx.fillText(z.label,(X(z.start)+X(z.end))/2,m.t+10);
+  });
+
+  // key station markers
+  const markers=[
+    {d:0,label:'A'},{d:Lt,label:'B'},{d:Lt+Lr,label:'E'},
+    {d:Lt+Lr+curve.L,label:"E'"},{d:totalLen-Lt,label:"B'"},{d:totalLen,label:"A'"}
+  ];
+  markers.forEach(mk=>{
+    ctx.strokeStyle=isDark?'rgba(148,163,184,0.25)':'rgba(100,116,139,0.25)';
+    ctx.lineWidth=0.5;ctx.setLineDash([3,3]);
+    ctx.beginPath();ctx.moveTo(X(mk.d),m.t);ctx.lineTo(X(mk.d),m.t+ph);ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle=isDark?'#e2e8f0':'#1e293b';
+    ctx.font='bold 10px -apple-system,sans-serif';
+    ctx.textAlign='center';
+    if(absMode){
+      ctx.fillText(mk.label+' ('+((staA+mk.d).toFixed(0))+')',X(mk.d),m.t+ph+12);
+    }else{
+      ctx.fillText(mk.label,X(mk.d),m.t+ph+12);
+    }
+  });
+
+  // draw edge profiles
+  ctx.lineWidth=2.5;
+
+  ctx.strokeStyle=isDark?'#3b82f6':'#2563eb';
+  ctx.beginPath();
+  outerPts.forEach((pt,i)=>{
+    const px=X(pt.d),py=Ye(pt.v);
+    if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
+  });
+  ctx.stroke();
+
+  ctx.strokeStyle=isDark?'#22c55e':'#15803d';
+  ctx.beginPath();
+  innerPts.forEach((pt,i)=>{
+    const px=X(pt.d),py=Ye(pt.v);
+    if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
+  });
+  ctx.stroke();
+
+  ctx.strokeStyle=isDark?'#a855f7':'#7c3aed';
+  ctx.lineWidth=1.5;
+  ctx.setLineDash([4,3]);
+  ctx.beginPath();
+  centerPts.forEach((pt,i)=>{
+    const px=X(pt.d),py=Ye(pt.v);
+    if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
+  });
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // edge elevation labels at key stations
+  if(absMode){
+    ctx.font='8px -apple-system,sans-serif';
+    ctx.textBaseline='bottom';
+    markers.forEach(mk=>{
+      const ev=superAbsEdgeElevs(mk.d,p,va);
+      const px=X(mk.d);
+      ctx.fillStyle=isDark?'#3b82f6':'#2563eb';
+      ctx.textAlign='center';
+      ctx.fillText(ev.outer.toFixed(2),px,Ye(ev.outer)-3);
+      ctx.fillStyle=isDark?'#22c55e':'#15803d';
+      ctx.textBaseline='top';
+      ctx.fillText(ev.inner.toFixed(2),px,Ye(ev.inner)+3);
+      ctx.textBaseline='bottom';
+    });
+  }
+
+  // legend
+  ctx.font='11px -apple-system,sans-serif';
+  ctx.textAlign='left';ctx.textBaseline='alphabetic';
+  const ly=m.t+ph+28;
+  [{c:isDark?'#3b82f6':'#2563eb',t:'c — borde externo'},
+   {c:isDark?'#a855f7':'#7c3aed',t:'b — eje central'},
+   {c:isDark?'#22c55e':'#15803d',t:'a — borde interno'}].forEach((it,i)=>{
+    const lx=m.l+i*180;
+    ctx.fillStyle=it.c;ctx.fillRect(lx,ly-4,14,3);
+    ctx.fillStyle=isDark?'#94a3b8':'#64748b';
+    ctx.fillText(it.t,lx+18,ly);
+  });
+
+  ctx.fillStyle=isDark?'#94a3b8':'#64748b';
+  ctx.font='12px -apple-system,sans-serif';
+  ctx.textAlign='center';ctx.textBaseline='top';
+  ctx.fillText(absMode?'Estación (m)':'Distancia a lo largo de la transición (m)',m.l+pw/2,H-14);
+  ctx.save();ctx.translate(14,m.t+ph/2);ctx.rotate(-Math.PI/2);
+  ctx.fillText(absMode?'Elevación (m)':'Elevación relativa del borde (m)',0,0);ctx.restore();
+
+  $('superResults').innerHTML=`
+    <div class="kv"><span class="k">Curva</span><span class="v">${ci+1} (R=${curve.R} m)</span></div>
+    <div class="kv"><span class="k">e</span><span class="v">${(e*100).toFixed(1)}%</span></div>
+    <div class="kv"><span class="k">L<sub>r</sub> (runoff)</span><span class="v">${Lr.toFixed(1)} m</span></div>
+    <div class="kv"><span class="k">L<sub>t</sub> (runout)</span><span class="v">${Lt.toFixed(1)} m</span></div>
+    <div class="kv"><span class="k">L<sub>s</sub> mín (espiral)</span><span class="v">${getSpiralLength(V,curve.R).toFixed(1)} m</span></div>
+    <div class="kv"><span class="k">Bombeo normal</span><span class="v">${(crown*100).toFixed(1)}%</span></div>
+    <div class="kv"><span class="k">Ancho rotado</span><span class="v">${w.toFixed(2)} m</span></div>`;
+}
+
+function drawSuperSection(){
+  const cv=$('superSectCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height;
+  const isDark=!document.documentElement.classList.contains('light');
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle=isDark?'#0b1220':'#f8fafc';
+  ctx.fillRect(0,0,W,H);
+
+  const p=superGetParams();
+  if(!p)return;
+  const{e,crown,w,totalLen}=p;
+  const shExt=parseFloat($('shExt').value)||1.8;
+  const halfTot=w;
+  const pos=parseInt($('superPos').value)/100;
+  const d=pos*totalLen;
+  const ev=superEdgeElevs(d,p);
+  const mc=ev.mc,ma=ev.ma;
+
+  const fullW=halfTot+shExt;
+  const maxElev=Math.max(e,crown)*(fullW)*1.8;
+
+  const mg={l:50,r:50,t:30,b:40};
+  const pw=W-mg.l-mg.r,ph=H-mg.t-mg.b;
+  const pxPerM=pw/(fullW*2.4);
+  const exag=10;
+  const pxPerMv=pxPerM*exag;
+  const cx=W/2,cy=H*0.52;
+
+  function toX(xm){return cx+xm*pxPerM;}
+  function toY(elev){return cy-elev*pxPerMv;}
+
+  // grid
+  for(let i=0;i<=8;i++){
+    const x=mg.l+i*pw/8;
+    ctx.strokeStyle=isDark?'rgba(148,163,184,0.08)':'rgba(100,116,139,0.08)';
+    ctx.lineWidth=0.4;
+    ctx.beginPath();ctx.moveTo(x,mg.t);ctx.lineTo(x,H-mg.b);ctx.stroke();
+  }
+  ctx.strokeStyle=isDark?'rgba(148,163,184,0.15)':'rgba(100,116,139,0.15)';
+  ctx.lineWidth=0.5;ctx.setLineDash([3,4]);
+  ctx.beginPath();ctx.moveTo(mg.l,cy);ctx.lineTo(W-mg.r,cy);ctx.stroke();
+  ctx.setLineDash([]);
+
+  const cElev=0;
+  const outerElev=mc*halfTot;
+  const innerElev=ma*halfTot;
+  const outerShElev=outerElev+mc*shExt;
+  const innerShElev=innerElev+ma*shExt;
+
+  const xa=toX(halfTot),ya=toY(innerElev);
+  const xb=toX(0),yb=toY(cElev);
+  const xc=toX(-halfTot),yc=toY(outerElev);
+  const xsa=toX(halfTot+shExt),ysa=toY(innerShElev);
+  const xsc=toX(-halfTot-shExt),ysc=toY(outerShElev);
+
+  const pavThick=14;
+  ctx.fillStyle=isDark?'rgba(55,65,81,0.5)':'rgba(203,213,225,0.5)';
+  ctx.beginPath();
+  ctx.moveTo(xsc,ysc);ctx.lineTo(xc,yc);ctx.lineTo(xb,yb);ctx.lineTo(xa,ya);ctx.lineTo(xsa,ysa);
+  ctx.lineTo(xsa,ysa+pavThick);ctx.lineTo(xa,ya+pavThick);ctx.lineTo(xb,yb+pavThick);
+  ctx.lineTo(xc,yc+pavThick);ctx.lineTo(xsc,ysc+pavThick);
+  ctx.closePath();ctx.fill();
+
+  ctx.strokeStyle='#fbbf24';ctx.lineWidth=2.5;
+  ctx.beginPath();
+  ctx.moveTo(xsc,ysc);ctx.lineTo(xc,yc);ctx.lineTo(xb,yb);ctx.lineTo(xa,ya);ctx.lineTo(xsa,ysa);
+  ctx.stroke();
+
+  // lane dividers
+  const nPerSide=parseInt($('nLanes').value)||1;
+  const laneW=parseFloat($('laneW').value)||3.65;
+  if(nPerSide>=2){
+    for(let i=1;i<nPerSide;i++){
+      const xm=i*laneW;
+      const t=xm/halfTot;
+      const xl=toX(-xm),yl=yb+t*(yc-yb);
+      ctx.strokeStyle='rgba(251,191,36,0.4)';ctx.lineWidth=0.8;ctx.setLineDash([3,3]);
+      ctx.beginPath();ctx.moveTo(xl,yl-2);ctx.lineTo(xl,yl+pavThick+2);ctx.stroke();
+      const xr=toX(xm),yr=yb+t*(ya-yb);
+      ctx.beginPath();ctx.moveTo(xr,yr-2);ctx.lineTo(xr,yr+pavThick+2);ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  }
+
+  // center line
+  ctx.strokeStyle='#fbbf24';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(xb,yb-5);ctx.lineTo(xb,yb+pavThick+5);ctx.stroke();
+
+  // rotation axis marker
+  let axX,axY;
+  if(p.axis==='center'){axX=xb;axY=yb;}
+  else if(p.axis==='inner'){axX=xa;axY=ya;}
+  else{axX=xc;axY=yc;}
+  ctx.save();ctx.translate(axX,axY);ctx.rotate(Math.PI/4);
+  ctx.fillStyle='#fde047';ctx.strokeStyle='#a16207';ctx.lineWidth=1.5;
+  ctx.fillRect(-6,-6,12,12);ctx.strokeRect(-6,-6,12,12);
+  ctx.restore();
+  ctx.fillStyle=isDark?'#e2e8f0':'#1e293b';
+  ctx.font='9px -apple-system,sans-serif';ctx.textAlign='center';
+  ctx.fillText('eje rot.',axX,axY-12);
+
+  // edge labels
+  function ptMark(x,y,label,color){
+    ctx.fillStyle=color;
+    ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle=isDark?'#0b1220':'#f8fafc';ctx.lineWidth=1.2;ctx.stroke();
+    ctx.fillStyle=isDark?'#e2e8f0':'#1e293b';
+    ctx.font='bold 11px -apple-system,sans-serif';ctx.textAlign='center';
+    ctx.fillText(label,x,y-10);
+  }
+  ptMark(xc,yc,'c','#3b82f6');
+  ptMark(xb,yb,'b','#a855f7');
+  ptMark(xa,ya,'a','#10b981');
+
+  // slope labels
+  ctx.font='bold 11px -apple-system,sans-serif';ctx.textAlign='center';
+  ctx.fillStyle='#3b82f6';
+  ctx.fillText('m_c = '+(mc*100).toFixed(2)+'%',(xb+xc)/2,Math.min(yb,yc)-18);
+  ctx.fillStyle='#10b981';
+  ctx.fillText('m_a = '+(ma*100).toFixed(2)+'%',(xb+xa)/2,Math.min(yb,ya)-18);
+
+  // title
+  ctx.fillStyle=isDark?'#e2e8f0':'#1e293b';
+  ctx.font='bold 12px -apple-system,sans-serif';ctx.textAlign='center';
+  const phase=d<=0?'Bombeo normal':d<=p.Lt?'Runout':d<=p.Lt+p.Lr?'Runoff':d<=totalLen-p.Lr-p.Lt?'Peralte completo':d<=totalLen-p.Lt?'Runoff':'Runout';
+  ctx.fillText(phase+'  —  e_efect = '+(Math.max(Math.abs(mc),Math.abs(ma))*100).toFixed(1)+'%',W/2,18);
+
+  // drain arrows
+  function drainArr(x1,y1,x2,y2){
+    const high=y1<y2?{x:x1,y:y1}:{x:x2,y:y2};
+    const low=y1<y2?{x:x2,y:y2}:{x:x1,y:y1};
+    const dx=low.x-high.x,dy=low.y-high.y,L=Math.hypot(dx,dy);
+    if(L<10)return;
+    const ux=dx/L,uy=dy/L;
+    ctx.strokeStyle='rgba(96,165,250,0.6)';ctx.lineWidth=1.4;
+    for(let dd=20;dd<L-12;dd+=35){
+      const px=high.x+ux*dd,py=high.y+uy*dd-10;
+      const tx2=ux*8,ty2=uy*8;
+      ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px+tx2,py+ty2);ctx.stroke();
+      ctx.fillStyle='rgba(96,165,250,0.6)';
+      ctx.beginPath();
+      ctx.moveTo(px+tx2,py+ty2);
+      ctx.lineTo(px+tx2-uy*3-ux*3,py+ty2+ux*3-uy*3);
+      ctx.lineTo(px+tx2+uy*3-ux*3,py+ty2-ux*3-uy*3);
+      ctx.closePath();ctx.fill();
+    }
+  }
+  drainArr(xa,ya,xb,yb);
+  drainArr(xb,yb,xc,yc);
+}
+
+// ==================== VOLUMES ====================
+window.computeVolumes=function(){
+  const al=state.hAlign.computed;
+  const va=computeVerticalAlignment();
+  if(!al||!al.totalLength||!va){
+    alert('Define el alineamiento horizontal y vertical primero.');
+    return;
+  }
+
+  const interval=parseInt($('volInterval').value)||20;
+  const totalL=al.totalLength;
+  const nLanes=parseInt($('nLanes').value)||1;
+  const laneW=parseFloat($('laneW').value)||3.65;
+  const shExt=parseFloat($('shExt').value)||1.8;
+  const shInt=parseFloat($('shInt').value)||0.6;
+  const crown=parseFloat($('crown').value)/100||0.02;
+  const cutSl=parseFloat($('cutSlope').value)||1.5;
+  const fillSl=parseFloat($('fillSlope').value)||2;
+  const halfWidth=nLanes*laneW+Math.max(shExt,shInt)+20;
+
+  const stationData=[];
+  let totalCut=0,totalFill=0;
+  let massOrd=0;
+
+  for(let sta=0;sta<=totalL;sta+=interval){
+    const p=pointOnAlignment(sta);
+    if(!p)continue;
+    const designElev=va.elevAt(sta);
+    const perpAz=p.az+Math.PI/2;
+
+    let cutArea=0,fillArea=0;
+    const nPts=40;
+    for(let i=-nPts;i<nPts;i++){
+      const off1=halfWidth*i/nPts;
+      const off2=halfWidth*(i+1)/nPts;
+      const tx1=p.x+off1*Math.sin(perpAz),ty1=p.y+off1*Math.cos(perpAz);
+      const tx2=p.x+off2*Math.sin(perpAz),ty2=p.y+off2*Math.cos(perpAz);
+      const te1=getTerrainElev(tx1,ty1),te2=getTerrainElev(tx2,ty2);
+
+      let de1=designElev,de2=designElev;
+      const roadW=nLanes*laneW;
+      if(Math.abs(off1)<=roadW) de1=designElev-crown*off1;
+      else if(off1>roadW) de1=designElev-crown*roadW-(off1-roadW)/fillSl*((designElev-crown*roadW>te1)?1:-1);
+      else de1=designElev+crown*Math.abs(off1);
+
+      if(Math.abs(off2)<=roadW) de2=designElev-crown*off2;
+
+      const diff1=de1-te1,diff2=de2-te2;
+      const avgDiff=(diff1+diff2)/2;
+      const width=Math.abs(off2-off1);
+
+      if(avgDiff>0)fillArea+=avgDiff*width;
+      else cutArea+=Math.abs(avgDiff)*width;
+    }
+
+    if(stationData.length>0){
+      const prev=stationData[stationData.length-1];
+      const dL=sta-prev.sta;
+      const vCut=(prev.cutArea+cutArea)/2*dL;
+      const vFill=(prev.fillArea+fillArea)/2*dL;
+      totalCut+=vCut;
+      totalFill+=vFill;
+      massOrd+=vCut-vFill;
+    }
+
+    stationData.push({sta,cutArea,fillArea,totalCut,totalFill,massOrd});
+  }
+
+  // update summary
+  $('volSummary').innerHTML=`
+    <div class="kv"><span class="k">Vol. corte total</span><span class="v" style="color:var(--cut)">${totalCut.toFixed(0)} m³</span></div>
+    <div class="kv"><span class="k">Vol. relleno total</span><span class="v" style="color:var(--fill)">${totalFill.toFixed(0)} m³</span></div>
+    <div class="kv"><span class="k">Balance (C-R)</span><span class="v">${(totalCut-totalFill).toFixed(0)} m³</span></div>
+    <div class="kv"><span class="k">Estaciones</span><span class="v">${stationData.length}</span></div>`;
+
+  // mass diagram
+  const isDark=!document.documentElement.classList.contains('light');
+  Plotly.newPlot('massDiagram',[{
+    x:stationData.map(d=>d.sta),
+    y:stationData.map(d=>d.massOrd),
+    type:'scatter',mode:'lines',
+    line:{color:isDark?'#a855f7':'#7c3aed',width:2.5},
+    fill:'tozeroy',
+    fillcolor:isDark?'rgba(168,85,247,0.1)':'rgba(124,58,237,0.1)',
+    name:'Ordinada de masa'
+  }],{
+    margin:{l:60,r:20,t:30,b:50},
+    xaxis:{title:'Estación (m)',color:isDark?'#94a3b8':'#64748b'},
+    yaxis:{title:'Ordinada de masa (m³)',color:isDark?'#94a3b8':'#64748b'},
+    paper_bgcolor:'rgba(0,0,0,0)',
+    plot_bgcolor:isDark?'#0b1220':'#f8fafc',
+    font:{color:isDark?'#e2e8f0':'#1e293b'},
+    title:{text:'Diagrama de Masas',font:{size:14}}
+  },{responsive:true});
+
+  // cut/fill chart
+  Plotly.newPlot('cutFillChart',[
+    {x:stationData.map(d=>d.sta),y:stationData.map(d=>d.cutArea),type:'bar',name:'Corte',marker:{color:'rgba(239,68,68,0.7)'}},
+    {x:stationData.map(d=>d.sta),y:stationData.map(d=>-d.fillArea),type:'bar',name:'Relleno',marker:{color:'rgba(59,130,246,0.7)'}}
+  ],{
+    margin:{l:60,r:20,t:30,b:50},
+    barmode:'relative',
+    xaxis:{title:'Estación (m)',color:isDark?'#94a3b8':'#64748b'},
+    yaxis:{title:'Área (m²)',color:isDark?'#94a3b8':'#64748b'},
+    paper_bgcolor:'rgba(0,0,0,0)',
+    plot_bgcolor:isDark?'#0b1220':'#f8fafc',
+    font:{color:isDark?'#e2e8f0':'#1e293b'},
+    legend:{x:0,y:1.1,orientation:'h',font:{size:11}}
+  },{responsive:true});
+
+  // volume table
+  let html='<table class="tbl"><thead><tr><th>Estación</th><th>A corte (m²)</th><th>A relleno (m²)</th><th>V corte acum. (m³)</th><th>V relleno acum. (m³)</th><th>Ord. masa (m³)</th></tr></thead><tbody>';
+  stationData.forEach(d=>{
+    html+=`<tr><td class="lbl">${formatStation(d.sta)}</td><td>${d.cutArea.toFixed(2)}</td><td>${d.fillArea.toFixed(2)}</td><td>${d.totalCut.toFixed(0)}</td><td>${d.totalFill.toFixed(0)}</td><td>${d.massOrd.toFixed(0)}</td></tr>`;
+  });
+  html+='</tbody></table>';
+  $('volTable').innerHTML=html;
+
+  $('statusText').textContent='Volúmenes calculados: '+stationData.length+' estaciones';
+};
+
+// ==================== UI HANDLERS ====================
+// Tab switching
+document.querySelectorAll('.tab-bar button').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab-bar button').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+    btn.classList.add('active');
+    const tab=$('tab-'+btn.dataset.tab);
+    if(tab)tab.classList.add('active');
+
+    if(btn.dataset.tab==='hAlign')drawPlan();
+    if(btn.dataset.tab==='vAlign')drawProfile();
+    if(btn.dataset.tab==='xsect')drawCrossSection();
+    if(btn.dataset.tab==='super'){drawSuper();drawSuperSection();}
+  });
+});
+
+// Terrain sliders
+['tWidth','tHeight','tRes','tElev','tRelief','tSeed'].forEach(id=>{
+  const el=$(id);
+  const valId={tWidth:'twVal',tHeight:'thVal',tRes:'trVal',tElev:'teVal',tRelief:'trfVal',tSeed:'tsVal'}[id];
+  el.addEventListener('input',()=>{$(valId).textContent=el.value;});
+});
+
+// Design speed & emax
+$('Vd').addEventListener('input',function(){
+  $('vdVal').textContent=this.value;
+  state.designSpeed=parseInt(this.value);
+  computeAlignment();
+});
+$('eMax').addEventListener('change',function(){
+  $('emVal').textContent=(parseFloat(this.value)*100).toFixed(0)+'%';
+  state.emax=parseFloat(this.value);
+  computeAlignment();
+});
+
+// Light mode toggle
+window.toggleLight=function(){
+  document.documentElement.classList.toggle('light');
+  if(state.terrain){plotTerrain3D();plotTerrainContour();}
+  drawPlan();drawProfile();drawCrossSection();drawSuper();drawSuperSection();
+};
+
+// ==================== SAVE / LOAD PROJECT ====================
+window.saveProject=function(){
+  const uiParams={
+    designSpeed:parseInt($('Vd').value),
+    emax:parseFloat($('eMax').value),
+    nLanes:parseInt($('nLanes').value),
+    laneW:parseFloat($('laneW').value),
+    shExt:parseFloat($('shExt').value),
+    shInt:parseFloat($('shInt').value),
+    crown:parseFloat($('crown').value),
+    cutSlope:parseFloat($('cutSlope').value),
+    fillSlope:parseFloat($('fillSlope').value),
+    ditchW:parseFloat($('ditchW').value),
+    ditchD:parseFloat($('ditchD').value),
+    vExag:parseInt($('vExag').value),
+    rotAxis:$('rotAxis').value
+  };
+  const project={
+    version:1,
+    savedAt:new Date().toISOString(),
+    terrain:state.terrain,
+    hAlign:{
+      startX:state.hAlign.startX,
+      startY:state.hAlign.startY,
+      endX:state.hAlign.endX,
+      endY:state.hAlign.endY,
+      pis:state.hAlign.pis.map(p=>({x:p.x,y:p.y,R:p.R,useSpiral:p.useSpiral,spiralLen:p.spiralLen||0,eDesign:p.eDesign!=null?p.eDesign:null,eMethod:p.eMethod||null}))
+    },
+    vAlign:{pivs:state.vAlign.pivs.map(p=>({sta:p.sta,elev:p.elev,Lvc:p.Lvc}))},
+    params:uiParams
+  };
+  const json=JSON.stringify(project);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='proyecto_carretera_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+window.loadProject=function(input){
+  const file=input.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(){
+    try{
+      const project=JSON.parse(reader.result);
+      if(project.terrain){
+        state.terrain=project.terrain;
+        updateTerrainInfo();
+        plotTerrain3D();
+        plotTerrainContour();
+      }
+      if(project.hAlign){
+        state.hAlign.startX=project.hAlign.startX;
+        state.hAlign.startY=project.hAlign.startY;
+        state.hAlign.endX=project.hAlign.endX;
+        state.hAlign.endY=project.hAlign.endY;
+        state.hAlign.pis=project.hAlign.pis.map(p=>({x:p.x,y:p.y,R:p.R,useSpiral:!!p.useSpiral,spiralLen:p.spiralLen||0,eDesign:p.eDesign!=null?p.eDesign:null,eMethod:p.eMethod||null}));
+        $('startX').value=state.hAlign.startX;
+        $('startY').value=state.hAlign.startY;
+        $('endX').value=state.hAlign.endX;
+        $('endY').value=state.hAlign.endY;
+      }
+      if(project.vAlign){
+        state.vAlign.pivs=project.vAlign.pivs.map(p=>({sta:p.sta,elev:p.elev,Lvc:p.Lvc}));
+      }
+      if(project.params){
+        const p=project.params;
+        if(p.designSpeed!==undefined){$('Vd').value=p.designSpeed;state.designSpeed=p.designSpeed;$('vdVal').textContent=p.designSpeed;}
+        if(p.emax!==undefined){$('eMax').value=p.emax;state.emax=p.emax;$('bdgEmax').innerHTML='e<sub>max</sub> = '+(p.emax*100)+'%';}
+        if(p.nLanes!==undefined){$('nLanes').value=p.nLanes;$('nLanesVal').textContent=p.nLanes;}
+        if(p.laneW!==undefined){$('laneW').value=p.laneW;$('laneWVal').textContent=p.laneW.toFixed(2);}
+        if(p.shExt!==undefined){$('shExt').value=p.shExt;$('shExtVal').textContent=p.shExt.toFixed(1);}
+        if(p.shInt!==undefined){$('shInt').value=p.shInt;$('shIntVal').textContent=p.shInt.toFixed(1);}
+        if(p.crown!==undefined){$('crown').value=p.crown;$('crownVal').textContent=p.crown.toFixed(1);}
+        if(p.cutSlope!==undefined)$('cutSlope').value=p.cutSlope;
+        if(p.fillSlope!==undefined)$('fillSlope').value=p.fillSlope;
+        if(p.ditchW!==undefined)$('ditchW').value=p.ditchW;
+        if(p.ditchD!==undefined)$('ditchD').value=p.ditchD;
+        if(p.vExag!==undefined){$('vExag').value=p.vExag;$('vExagVal').textContent=p.vExag;}
+        if(p.rotAxis!==undefined)$('rotAxis').value=p.rotAxis;
+      }
+      if(state.terrain){
+        state.view={cx:state.terrain.width/2,cy:state.terrain.height/2,scale:Math.min(800/state.terrain.width,500/state.terrain.height),dragging:false,lastX:0,lastY:0};
+      }
+      state.profileView.fitted=false;
+      renderPIList();
+      computeAlignment();
+      renderPIVList();
+      setTimeout(()=>{drawProfile();drawCrossSection();drawSuper();drawSuperSection();},300);
+      $('statusText').textContent='Proyecto cargado: '+file.name;
+    }catch(err){
+      alert('Error al cargar proyecto: '+err.message);
+    }
+  };
+  reader.readAsText(file);
+  input.value='';
+};
+
+// ==================== EXPORT REPORT ====================
+window.exportReport=async function(){
+  const al=state.hAlign.computed;
+  if(!al||!al.totalLength){alert('Define el alineamiento horizontal primero.');return;}
+  $('statusText').textContent='Generando reporte...';
+
+  const va=computeVerticalAlignment();
+  const nLanes=parseInt($('nLanes').value)||1;
+  const laneW=parseFloat($('laneW').value)||3.65;
+  const shExt=parseFloat($('shExt').value)||1.8;
+  const shInt=parseFloat($('shInt').value)||0.6;
+  const crown=parseFloat($('crown').value)/100||0.02;
+  const cutSl=parseFloat($('cutSlope').value)||1.5;
+  const fillSl=parseFloat($('fillSlope').value)||2;
+  const ditchW=parseFloat($('ditchW').value)||0;
+  const ditchD=parseFloat($('ditchD').value)||0;
+  const V=state.designSpeed;
+  const emax=state.emax;
+  const Rmin=getRmin(V,emax);
+
+  // --- Capture existing canvases ---
+  const planImg=$('planCanvas').toDataURL('image/png');
+  const profileImg=$('profileCanvas').toDataURL('image/png');
+
+  // --- Capture Plotly charts ---
+  let terrain3dImg='',terrainContourImg='';
+  try{
+    const t3d=document.getElementById('terrain3d');
+    if(t3d&&t3d.data)terrain3dImg=await Plotly.toImage(t3d,{format:'png',width:900,height:500});
+  }catch(e){}
+  try{
+    const tc=document.getElementById('terrainContour');
+    if(tc&&tc.data)terrainContourImg=await Plotly.toImage(tc,{format:'png',width:900,height:500});
+  }catch(e){}
+
+  // --- Render cross sections at 20m intervals ---
+  function renderXS(sta){
+    const cw=800,ch=400;
+    const oc=document.createElement('canvas');oc.width=cw;oc.height=ch;
+    const ctx=oc.getContext('2d');
+    ctx.fillStyle='#f8fafc';ctx.fillRect(0,0,cw,ch);
+    const designElev=va?va.elevAt(sta):getTerrainElevAtStation(sta);
+    const pp=pointOnAlignment(sta);
+    if(!pp)return null;
+    let eLeft=-crown,eRight=-crown;
+    if(al.curves){
+      for(let ci2=0;ci2<al.curves.length;ci2++){
+        const c=al.curves[ci2];
+        if(c.staPC!==undefined){
+          const sPC=c.staPC,sPT=sPC+c.L;
+          if(sta>=sPC&&sta<=sPT){
+            const e2=getCurveEd(ci2);
+            if(c.dir==='D'){eLeft=e2;eRight=-e2;}else{eLeft=-e2;eRight=e2;}
+          }
+        }
+      }
+    }
+    const perpAz=pp.az+Math.PI/2;
+    const roadHalfW=nLanes*laneW;
+    function tOff(off){const tx=pp.x+off*Math.sin(perpAz),ty=pp.y+off*Math.cos(perpAz);return getTerrainElev(tx,ty);}
+    const designXS=[];
+    designXS.push({offset:0,elev:designElev});
+    designXS.push({offset:roadHalfW,elev:designElev+eRight*roadHalfW});
+    designXS.push({offset:roadHalfW+shExt,elev:designElev+eRight*roadHalfW-crown*shExt});
+    designXS.unshift({offset:-roadHalfW,elev:designElev+eLeft*roadHalfW});
+    designXS.unshift({offset:-roadHalfW-shInt,elev:designElev+eLeft*roadHalfW-crown*shInt});
+    const rightEdge=designXS[designXS.length-1],leftEdge=designXS[0];
+    const rightIsCut=rightEdge.elev<tOff(rightEdge.offset),leftIsCut=leftEdge.elev<tOff(leftEdge.offset);
+    let rEnd={offset:rightEdge.offset,elev:rightEdge.elev};
+    if(rightIsCut){
+      for(let off=rightEdge.offset;off<rightEdge.offset+200;off+=0.5){
+        const se=rightEdge.elev+(off-rightEdge.offset)/cutSl;
+        if(se>=tOff(off)){rEnd={offset:off,elev:se};break;}
+      }
+      if(ditchW>0){designXS.push({offset:rightEdge.offset+ditchW,elev:rightEdge.elev-ditchD});designXS.push(rEnd);}
+      else designXS.push(rEnd);
+    }else{
+      for(let off=rightEdge.offset;off<rightEdge.offset+200;off+=0.5){
+        const se=rightEdge.elev-(off-rightEdge.offset)/fillSl;
+        if(se<=tOff(off)){rEnd={offset:off,elev:se};break;}
+      }
+      designXS.push(rEnd);
+    }
+    let lEnd={offset:leftEdge.offset,elev:leftEdge.elev};
+    if(leftIsCut){
+      for(let off=leftEdge.offset;off>leftEdge.offset-200;off-=0.5){
+        const se=leftEdge.elev+(leftEdge.offset-off)/cutSl;
+        if(se>=tOff(off)){lEnd={offset:off,elev:se};break;}
+      }
+      if(ditchW>0){designXS.unshift({offset:leftEdge.offset-ditchW,elev:leftEdge.elev-ditchD});designXS.unshift(lEnd);}
+      else designXS.unshift(lEnd);
+    }else{
+      for(let off=leftEdge.offset;off>leftEdge.offset-200;off-=0.5){
+        const se=leftEdge.elev-(leftEdge.offset-off)/fillSl;
+        if(se<=tOff(off)){lEnd={offset:off,elev:se};break;}
+      }
+      designXS.unshift(lEnd);
+    }
+    const halfWidth=Math.max(Math.abs(rEnd.offset),Math.abs(lEnd.offset),roadHalfW+shExt+20)+10;
+    const nPts=80;
+    const terrainXS=[];
+    for(let i=-nPts;i<=nPts;i++){const offset=halfWidth*i/nPts;terrainXS.push({offset,elev:tOff(offset)});}
+    let cutArea=0,fillArea=0;
+    for(let i=0;i<terrainXS.length-1;i++){
+      const off1=terrainXS[i].offset,off2=terrainXS[i+1].offset;
+      const te1=terrainXS[i].elev,te2=terrainXS[i+1].elev;
+      const de1=getDesignElevAtOffset(designXS,off1),de2=getDesignElevAtOffset(designXS,off2);
+      if(de1===null||de2===null)continue;
+      const avg=((de1-te1)+(de2-te2))/2;
+      const w=Math.abs(off2-off1);
+      if(avg<0)cutArea+=Math.abs(avg)*w;else fillArea+=avg*w;
+    }
+    const allO=[...terrainXS.map(p2=>p2.offset),...designXS.map(p2=>p2.offset)];
+    const allE=[...terrainXS.map(p2=>p2.elev),...designXS.map(p2=>p2.elev)];
+    const oMin=Math.min(...allO),oMax=Math.max(...allO);
+    const eMin2=Math.min(...allE),eMax2=Math.max(...allE);
+    const pad=2;
+    const oRange=oMax-oMin+pad*2,eRange=Math.max(eMax2-eMin2+pad*2,5);
+    const mg={l:60,r:20,t:30,b:40};
+    const pW=cw-mg.l-mg.r,pH2=ch-mg.t-mg.b;
+    const sxS=pW/oRange,syS=pH2/eRange;
+    const Xo=off=>mg.l+(off-oMin+pad)*sxS;
+    const Ye=elev=>mg.t+(eMax2+pad-elev)*syS;
+    ctx.strokeStyle='rgba(100,116,139,0.1)';ctx.lineWidth=0.5;
+    ctx.font='10px sans-serif';ctx.fillStyle='#94a3b8';
+    const oStep=getGridStep(oRange);
+    ctx.textAlign='center';ctx.textBaseline='top';
+    for(let o=Math.ceil((oMin-pad)/oStep)*oStep;o<=oMax+pad;o+=oStep){
+      const px=Xo(o);ctx.beginPath();ctx.moveTo(px,mg.t);ctx.lineTo(px,mg.t+pH2);ctx.stroke();
+      ctx.fillText(o.toFixed(0),px,mg.t+pH2+5);
+    }
+    const eStep=getGridStep(eRange);
+    ctx.textAlign='right';ctx.textBaseline='middle';
+    for(let e2=Math.floor((eMin2-pad)/eStep)*eStep;e2<=eMax2+pad;e2+=eStep){
+      const py=Ye(e2);if(py<mg.t||py>mg.t+pH2)continue;
+      ctx.beginPath();ctx.moveTo(mg.l,py);ctx.lineTo(mg.l+pW,py);ctx.stroke();
+      ctx.fillText(e2.toFixed(1),mg.l-5,py);
+    }
+    for(let i=0;i<terrainXS.length-1;i++){
+      const off1=terrainXS[i].offset,off2=terrainXS[i+1].offset;
+      const te1=terrainXS[i].elev,te2=terrainXS[i+1].elev;
+      const de1=getDesignElevAtOffset(designXS,off1),de2=getDesignElevAtOffset(designXS,off2);
+      if(de1===null||de2===null)continue;
+      ctx.fillStyle=(de1>=te1&&de2>=te2)?'rgba(59,130,246,0.2)':'rgba(239,68,68,0.2)';
+      ctx.beginPath();ctx.moveTo(Xo(off1),Ye(te1));ctx.lineTo(Xo(off2),Ye(te2));
+      ctx.lineTo(Xo(off2),Ye(de2));ctx.lineTo(Xo(off1),Ye(de1));ctx.closePath();ctx.fill();
+    }
+    ctx.strokeStyle='#64748b';ctx.lineWidth=2;ctx.beginPath();
+    terrainXS.forEach((p2,i)=>{const px=Xo(p2.offset),py=Ye(p2.elev);if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);});
+    ctx.stroke();
+    designXS.sort((a,b)=>a.offset-b.offset);
+    ctx.strokeStyle='#7c3aed';ctx.lineWidth=2.5;ctx.beginPath();
+    designXS.forEach((p2,i)=>{const px=Xo(p2.offset),py=Ye(p2.elev);if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);});
+    ctx.stroke();
+    ctx.strokeStyle='#b45309';ctx.lineWidth=1;ctx.setLineDash([4,3]);
+    ctx.beginPath();ctx.moveTo(Xo(0),Ye(eMin2-pad));ctx.lineTo(Xo(0),Ye(eMax2+pad));ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='#1e293b';ctx.font='12px sans-serif';ctx.textAlign='center';ctx.textBaseline='top';
+    ctx.fillText('Distancia desde el eje (m)',mg.l+pW/2,ch-14);
+    ctx.font='bold 12px sans-serif';
+    ctx.fillText('Est. '+formatStation(sta),mg.l+pW/2,8);
+    return{img:oc.toDataURL('image/png'),cutArea,fillArea,designElev,terrainElev:getTerrainElevAtStation(sta),eLeft,eRight};
+  }
+
+  // --- Render rotation diagram offscreen ---
+  function renderRotation(ci,absMode){
+    const curve2=al.curves[ci];
+    if(!curve2)return null;
+    const e2=getCurveEd(ci);
+    const w2=laneW*nLanes;
+    const Lr2=getRunoffLength(e2,V,laneW,nLanes);
+    const Lt2=getRunoffLength(crown,V,laneW,nLanes);
+    const axis=$('rotAxis').value;
+    const totalLen2=Lt2+Lr2+curve2.L+Lr2+Lt2;
+    const staA2=curve2.staPC-Lr2-Lt2;
+    const rp={ci,curve:curve2,V,e:e2,crown,laneW,nLanes,w:w2,Lr:Lr2,Lt:Lt2,axis,totalLen:totalLen2,staA:staA2};
+    const cw=900,ch2=400;
+    const oc=document.createElement('canvas');oc.width=cw;oc.height=ch2;
+    const ctx=oc.getContext('2d');
+    ctx.fillStyle='#f8fafc';ctx.fillRect(0,0,cw,ch2);
+    const tanExt=totalLen2*0.1;
+    const fullLen=totalLen2+2*tanExt;
+    const mg={l:70,r:30,t:40,b:50};
+    const pw2=cw-mg.l-mg.r,ph2=ch2-mg.t-mg.b;
+    const sxD=pw2/fullLen;
+    const X=d=>mg.l+(d+tanExt)*sxD;
+    const step2=fullLen/300;
+    const outerPts=[],innerPts=[],centerPts=[];
+    for(let d=-tanExt;d<=totalLen2+tanExt;d+=step2){
+      let ov,iv,cv2;
+      if(absMode){const ev=superAbsEdgeElevs(d,rp,va);ov=ev.outer;iv=ev.inner;cv2=ev.center;}
+      else{const ev=superEdgeElevs(d,rp);ov=ev.outer;iv=ev.inner;cv2=ev.center;}
+      outerPts.push({d,v:ov});innerPts.push({d,v:iv});centerPts.push({d,v:cv2});
+    }
+    const allVals=[...outerPts,...innerPts,...centerPts].map(p2=>p2.v);
+    let yMin=Math.min(...allVals),yMax=Math.max(...allVals);
+    const yPad=(yMax-yMin)*0.15||0.01;yMin-=yPad;yMax+=yPad;
+    const syD=ph2/(yMax-yMin);
+    const Ye=elev=>mg.t+ph2-(elev-yMin)*syD;
+    if(!absMode){ctx.strokeStyle='rgba(100,116,139,0.1)';ctx.lineWidth=0.5;ctx.beginPath();ctx.moveTo(mg.l,Ye(0));ctx.lineTo(mg.l+pw2,Ye(0));ctx.stroke();}
+    const yRange=yMax-yMin;const rawSt=yRange/6;const mag2=Math.pow(10,Math.floor(Math.log10(rawSt)));
+    const niceS=[1,2,5,10];let gridSt=mag2;for(const ns of niceS){if(mag2*ns>=rawSt){gridSt=mag2*ns;break;}}
+    ctx.font='9px sans-serif';ctx.textAlign='right';ctx.textBaseline='middle';
+    for(let gv=Math.ceil(yMin/gridSt)*gridSt;gv<=yMax;gv+=gridSt){
+      const gy=Ye(gv);ctx.strokeStyle='rgba(100,116,139,0.12)';ctx.lineWidth=0.5;
+      ctx.beginPath();ctx.moveTo(mg.l,gy);ctx.lineTo(mg.l+pw2,gy);ctx.stroke();
+      ctx.fillStyle='#64748b';ctx.fillText(absMode?gv.toFixed(2):gv.toFixed(3),mg.l-4,gy);
+    }
+    const zones=[
+      {start:-tanExt,end:0,label:'Tangente',color:'rgba(148,163,184,0.08)'},
+      {start:0,end:Lt2,label:'Runout (Lt)',color:'rgba(245,158,11,0.1)'},
+      {start:Lt2,end:Lt2+Lr2,label:'Runoff (Lr)',color:'rgba(239,68,68,0.1)'},
+      {start:Lt2+Lr2,end:Lt2+Lr2+curve2.L,label:'Curva (e completo)',color:'rgba(34,197,94,0.1)'},
+      {start:Lt2+Lr2+curve2.L,end:Lt2+Lr2+curve2.L+Lr2,label:'Runoff (Lr)',color:'rgba(239,68,68,0.1)'},
+      {start:Lt2+Lr2+curve2.L+Lr2,end:totalLen2,label:'Runout (Lt)',color:'rgba(245,158,11,0.1)'},
+      {start:totalLen2,end:totalLen2+tanExt,label:'Tangente',color:'rgba(148,163,184,0.08)'}
+    ];
+    zones.forEach(z=>{ctx.fillStyle=z.color;ctx.fillRect(X(z.start),mg.t,X(z.end)-X(z.start),ph2);
+      ctx.fillStyle='#94a3b8';ctx.font='9px sans-serif';ctx.textAlign='center';ctx.fillText(z.label,(X(z.start)+X(z.end))/2,mg.t+10);});
+    const markers=[{d:0,label:'A'},{d:Lt2,label:'B'},{d:Lt2+Lr2,label:'E'},
+      {d:Lt2+Lr2+curve2.L,label:"E'"},{d:totalLen2-Lt2,label:"B'"},{d:totalLen2,label:"A'"}];
+    markers.forEach(mk=>{ctx.strokeStyle='rgba(100,116,139,0.25)';ctx.lineWidth=0.5;ctx.setLineDash([3,3]);
+      ctx.beginPath();ctx.moveTo(X(mk.d),mg.t);ctx.lineTo(X(mk.d),mg.t+ph2);ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle='#1e293b';ctx.font='bold 10px sans-serif';ctx.textAlign='center';
+      ctx.fillText(absMode?mk.label+' ('+(staA2+mk.d).toFixed(0)+')':mk.label,X(mk.d),mg.t+ph2+12);});
+    ctx.lineWidth=2.5;ctx.strokeStyle='#2563eb';ctx.beginPath();
+    outerPts.forEach((pt,i)=>{if(i===0)ctx.moveTo(X(pt.d),Ye(pt.v));else ctx.lineTo(X(pt.d),Ye(pt.v));});ctx.stroke();
+    ctx.strokeStyle='#15803d';ctx.beginPath();
+    innerPts.forEach((pt,i)=>{if(i===0)ctx.moveTo(X(pt.d),Ye(pt.v));else ctx.lineTo(X(pt.d),Ye(pt.v));});ctx.stroke();
+    ctx.strokeStyle='#7c3aed';ctx.lineWidth=1.5;ctx.setLineDash([4,3]);ctx.beginPath();
+    centerPts.forEach((pt,i)=>{if(i===0)ctx.moveTo(X(pt.d),Ye(pt.v));else ctx.lineTo(X(pt.d),Ye(pt.v));});ctx.stroke();ctx.setLineDash([]);
+    if(absMode){ctx.font='8px sans-serif';ctx.textBaseline='bottom';
+      markers.forEach(mk=>{const ev=superAbsEdgeElevs(mk.d,rp,va);const px=X(mk.d);
+        ctx.fillStyle='#2563eb';ctx.textAlign='center';ctx.fillText(ev.outer.toFixed(2),px,Ye(ev.outer)-3);
+        ctx.fillStyle='#15803d';ctx.textBaseline='top';ctx.fillText(ev.inner.toFixed(2),px,Ye(ev.inner)+3);ctx.textBaseline='bottom';});}
+    ctx.font='11px sans-serif';ctx.textAlign='left';ctx.textBaseline='alphabetic';const ly=mg.t+ph2+28;
+    [{c:'#2563eb',t:'c — borde externo'},{c:'#7c3aed',t:'b — eje central'},{c:'#15803d',t:'a — borde interno'}].forEach((it,i)=>{
+      const lx=mg.l+i*180;ctx.fillStyle=it.c;ctx.fillRect(lx,ly-4,14,3);ctx.fillStyle='#64748b';ctx.fillText(it.t,lx+18,ly);});
+    ctx.fillStyle='#64748b';ctx.font='12px sans-serif';ctx.textAlign='center';ctx.textBaseline='top';
+    ctx.fillText(absMode?'Estación (m)':'Distancia a lo largo de la transición (m)',mg.l+pw2/2,ch2-14);
+    ctx.save();ctx.translate(14,mg.t+ph2/2);ctx.rotate(-Math.PI/2);
+    ctx.fillText(absMode?'Elevación (m)':'Elevación relativa del borde (m)',0,0);ctx.restore();
+    return oc.toDataURL('image/png');
+  }
+
+  // --- Compute volumes data ---
+  const interval=20;
+  const totalL=al.totalLength;
+  const halfWidth2=nLanes*laneW+Math.max(shExt,shInt)+20;
+  const stationData=[];
+  let tCut=0,tFill=0,massOrd=0;
+  for(let sta=0;sta<=totalL;sta+=interval){
+    const pp=pointOnAlignment(sta);if(!pp)continue;
+    const dElev=va?va.elevAt(sta):getTerrainElevAtStation(sta);
+    const perpAz=pp.az+Math.PI/2;
+    let cutA=0,fillA=0;const nP=40;
+    for(let i=-nP;i<nP;i++){
+      const off1=halfWidth2*i/nP,off2=halfWidth2*(i+1)/nP;
+      const tx1=pp.x+off1*Math.sin(perpAz),ty1=pp.y+off1*Math.cos(perpAz);
+      const tx2=pp.x+off2*Math.sin(perpAz),ty2=pp.y+off2*Math.cos(perpAz);
+      const te1=getTerrainElev(tx1,ty1),te2=getTerrainElev(tx2,ty2);
+      let de1=dElev,de2=dElev;const roadW=nLanes*laneW;
+      if(Math.abs(off1)<=roadW)de1=dElev-crown*off1;
+      if(Math.abs(off2)<=roadW)de2=dElev-crown*off2;
+      const avg=((de1-te1)+(de2-te2))/2;const w=Math.abs(off2-off1);
+      if(avg>0)fillA+=avg*w;else cutA+=Math.abs(avg)*w;
+    }
+    if(stationData.length>0){
+      const prev=stationData[stationData.length-1];
+      const dL=sta-prev.sta;
+      tCut+=(prev.cutArea+cutA)/2*dL;tFill+=(prev.fillArea+fillA)/2*dL;
+      massOrd+=((prev.cutArea+cutA)/2-(prev.fillArea+fillA)/2)*dL;
+    }
+    stationData.push({sta,cutArea:cutA,fillArea:fillA,totalCut:tCut,totalFill:tFill,massOrd});
+  }
+
+  // --- Generate cross section images at 20m ---
+  $('statusText').textContent='Generando secciones transversales...';
+  await new Promise(r=>setTimeout(r,50));
+  const xsImages=[];
+  for(let sta=0;sta<=totalL;sta+=interval){
+    const result=renderXS(sta);
+    if(result)xsImages.push({sta,...result});
+  }
+
+  // --- Generate rotation diagram images ---
+  $('statusText').textContent='Generando diagramas de rotación...';
+  await new Promise(r=>setTimeout(r,50));
+  const rotImages=[];
+  if(al.curves){
+    for(let ci=0;ci<al.curves.length;ci++){
+      const relImg=renderRotation(ci,false);
+      const absImg=va?renderRotation(ci,true):null;
+      const cv2=al.curves[ci];
+      const e2=getCurveEd(ci);
+      const Lr2=getRunoffLength(e2,V,laneW,nLanes);
+      const Lt2=getRunoffLength(crown,V,laneW,nLanes);
+      rotImages.push({ci,curve:cv2,e:e2,Lr:Lr2,Lt:Lt2,relImg,absImg});
+    }
+  }
+
+  // --- Build mass diagram as SVG ---
+  function buildMassDiagramSVG(){
+    if(!stationData.length)return '';
+    const w=850,h=350,mg={l:70,r:30,t:30,b:50};
+    const pw=w-mg.l-mg.r,ph=h-mg.t-mg.b;
+    const staMin=stationData[0].sta,staMax=stationData[stationData.length-1].sta;
+    const mArr=stationData.map(d=>d.massOrd);
+    let mMin=Math.min(0,...mArr),mMax=Math.max(0,...mArr);
+    const mPad=(mMax-mMin)*0.1||1;mMin-=mPad;mMax+=mPad;
+    const X=s=>mg.l+(s-staMin)/(staMax-staMin)*pw;
+    const Y=m=>mg.t+ph-(m-mMin)/(mMax-mMin)*ph;
+    let pts=stationData.map(d=>`${X(d.sta).toFixed(1)},${Y(d.massOrd).toFixed(1)}`).join(' ');
+    const fillPts=pts+` ${X(staMax).toFixed(1)},${Y(0).toFixed(1)} ${X(staMin).toFixed(1)},${Y(0).toFixed(1)}`;
+    let svg=`<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:${w}px;background:#f8fafc">`;
+    svg+=`<polygon points="${fillPts}" fill="rgba(124,58,237,0.1)"/>`;
+    svg+=`<polyline points="${pts}" fill="none" stroke="#7c3aed" stroke-width="2.5"/>`;
+    svg+=`<line x1="${mg.l}" y1="${Y(0)}" x2="${mg.l+pw}" y2="${Y(0)}" stroke="#94a3b8" stroke-width="0.5" stroke-dasharray="4,3"/>`;
+    const staStep=getGridStep(staMax-staMin);
+    for(let s=Math.ceil(staMin/staStep)*staStep;s<=staMax;s+=staStep){
+      svg+=`<line x1="${X(s)}" y1="${mg.t}" x2="${X(s)}" y2="${mg.t+ph}" stroke="#e2e8f0" stroke-width="0.5"/>`;
+      svg+=`<text x="${X(s)}" y="${h-10}" text-anchor="middle" font-size="10" fill="#64748b">${s.toFixed(0)}</text>`;
+    }
+    const mStep=getGridStep(mMax-mMin);
+    for(let m=Math.ceil(mMin/mStep)*mStep;m<=mMax;m+=mStep){
+      svg+=`<line x1="${mg.l}" y1="${Y(m)}" x2="${mg.l+pw}" y2="${Y(m)}" stroke="#e2e8f0" stroke-width="0.5"/>`;
+      svg+=`<text x="${mg.l-5}" y="${Y(m)+3}" text-anchor="end" font-size="10" fill="#64748b">${m.toFixed(0)}</text>`;
+    }
+    svg+=`<text x="${mg.l+pw/2}" y="${h-2}" text-anchor="middle" font-size="12" fill="#475569">Estación (m)</text>`;
+    svg+=`<text x="12" y="${mg.t+ph/2}" text-anchor="middle" font-size="12" fill="#475569" transform="rotate(-90,12,${mg.t+ph/2})">Ordinada de masa (m³)</text>`;
+    svg+='</svg>';
+    return svg;
+  }
+
+  // --- Build cut/fill bar chart SVG ---
+  function buildCutFillSVG(){
+    if(!stationData.length)return '';
+    const w=850,h=300,mg={l:70,r:30,t:30,b:50};
+    const pw=w-mg.l-mg.r,ph=h-mg.t-mg.b;
+    const staMin=stationData[0].sta,staMax=stationData[stationData.length-1].sta;
+    const maxA=Math.max(...stationData.map(d=>Math.max(d.cutArea,d.fillArea)),1);
+    const X=s=>mg.l+(s-staMin)/(staMax-staMin)*pw;
+    const barW=Math.max(pw/stationData.length*0.7,2);
+    const Y0=mg.t+ph/2;
+    let svg=`<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:${w}px;background:#f8fafc">`;
+    svg+=`<line x1="${mg.l}" y1="${Y0}" x2="${mg.l+pw}" y2="${Y0}" stroke="#94a3b8" stroke-width="0.5"/>`;
+    stationData.forEach(d=>{
+      const x=X(d.sta)-barW/2;
+      const cutH=d.cutArea/maxA*(ph/2);
+      const fillH=d.fillArea/maxA*(ph/2);
+      if(cutH>0.5)svg+=`<rect x="${x}" y="${Y0-cutH}" width="${barW}" height="${cutH}" fill="rgba(239,68,68,0.7)"/>`;
+      if(fillH>0.5)svg+=`<rect x="${x}" y="${Y0}" width="${barW}" height="${fillH}" fill="rgba(59,130,246,0.7)"/>`;
+    });
+    const staStep=getGridStep(staMax-staMin);
+    for(let s=Math.ceil(staMin/staStep)*staStep;s<=staMax;s+=staStep){
+      svg+=`<text x="${X(s)}" y="${h-10}" text-anchor="middle" font-size="10" fill="#64748b">${s.toFixed(0)}</text>`;
+    }
+    svg+=`<text x="${mg.l+pw/2}" y="${h-2}" text-anchor="middle" font-size="12" fill="#475569">Estación (m)</text>`;
+    svg+=`<rect x="${mg.l}" y="${mg.t}" width="12" height="12" fill="rgba(239,68,68,0.7)"/><text x="${mg.l+16}" y="${mg.t+10}" font-size="11" fill="#475569">Corte</text>`;
+    svg+=`<rect x="${mg.l+80}" y="${mg.t}" width="12" height="12" fill="rgba(59,130,246,0.7)"/><text x="${mg.l+96}" y="${mg.t+10}" font-size="11" fill="#475569">Relleno</text>`;
+    svg+='</svg>';
+    return svg;
+  }
+
+  // --- Build HTML ---
+  $('statusText').textContent='Armando reporte HTML...';
+  await new Promise(r=>setTimeout(r,50));
+  const now=new Date().toLocaleString('es-PA');
+  const fmax=aashtoLookup(AASHTO.fmax,V);
+  const ssd=aashtoLookup(AASHTO.ssd,V);
+
+  let html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+<title>Reporte de Diseño Geométrico</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:11pt;color:#1e293b;line-height:1.5;padding:20px 30px;max-width:1100px;margin:0 auto}
+h1{font-size:18pt;color:#0f172a;border-bottom:3px solid #3b82f6;padding-bottom:8px;margin-bottom:10px}
+h2{font-size:14pt;color:#1e40af;margin:24px 0 10px;border-bottom:1px solid #cbd5e1;padding-bottom:4px;page-break-after:avoid}
+h3{font-size:12pt;color:#334155;margin:16px 0 8px;page-break-after:avoid}
+table{border-collapse:collapse;width:100%;margin:8px 0 16px;font-size:10pt}
+th,td{border:1px solid #cbd5e1;padding:4px 8px;text-align:right}
+th{background:#f1f5f9;font-weight:600;text-align:center}
+td:first-child{text-align:left;font-weight:500}
+.params{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:4px 20px;margin:8px 0 16px}
+.params .kv{display:flex;justify-content:space-between;border-bottom:1px dotted #e2e8f0;padding:2px 0}
+.params .k{color:#475569;font-weight:500}.params .v{color:#0f172a;font-weight:600}
+.fail{color:#dc2626;font-weight:700}.ok{color:#16a34a;font-weight:700}
+img{max-width:100%;height:auto;border:1px solid #e2e8f0;border-radius:4px;margin:6px 0}
+.xs-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;page-break-inside:avoid}
+.xs-card{border:1px solid #e2e8f0;border-radius:6px;padding:6px;page-break-inside:avoid}
+.xs-card img{border:none;margin:0}
+.xs-card .info{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:9pt;color:#475569;margin-top:4px}
+.header-info{color:#475569;font-size:10pt;margin-bottom:16px}
+.page-break{page-break-before:always}
+@media print{
+  body{padding:10px 15px;font-size:10pt}
+  h1{font-size:16pt}h2{font-size:13pt}
+  .xs-grid{grid-template-columns:1fr 1fr}
+  .xs-card{padding:4px}
+  img{max-height:400px}
+}
+</style></head><body>
+<h1>Reporte de Diseño Geométrico de Carretera</h1>
+<div class="header-info">Generado: ${now} | Velocidad de diseño: ${V} km/h | e<sub>max</sub> = ${(emax*100).toFixed(0)}%</div>`;
+
+  // --- 1. Design Parameters ---
+  html+=`<h2>1. Parámetros de Diseño</h2>
+<div class="params">
+<div class="kv"><span class="k">Velocidad de diseño</span><span class="v">${V} km/h</span></div>
+<div class="kv"><span class="k">Peralte máximo (e<sub>max</sub>)</span><span class="v">${(emax*100).toFixed(0)}%</span></div>
+<div class="kv"><span class="k">Radio mínimo (R<sub>mín</sub>)</span><span class="v">${Rmin.toFixed(1)} m</span></div>
+<div class="kv"><span class="k">f<sub>max</sub></span><span class="v">${fmax.toFixed(3)}</span></div>
+<div class="kv"><span class="k">SSD</span><span class="v">${ssd.toFixed(0)} m</span></div>
+<div class="kv"><span class="k">Carriles por sentido</span><span class="v">${nLanes}</span></div>
+<div class="kv"><span class="k">Ancho de carril</span><span class="v">${laneW.toFixed(2)} m</span></div>
+<div class="kv"><span class="k">Hombro externo</span><span class="v">${shExt.toFixed(1)} m</span></div>
+<div class="kv"><span class="k">Hombro interno</span><span class="v">${shInt.toFixed(1)} m</span></div>
+<div class="kv"><span class="k">Bombeo</span><span class="v">${(crown*100).toFixed(1)}%</span></div>
+<div class="kv"><span class="k">Talud de corte</span><span class="v">1:${cutSl.toFixed(1)}</span></div>
+<div class="kv"><span class="k">Talud de relleno</span><span class="v">1:${fillSl.toFixed(1)}</span></div>
+${ditchW>0?`<div class="kv"><span class="k">Cuneta</span><span class="v">${ditchW.toFixed(1)} m × ${ditchD.toFixed(1)} m</span></div>`:''}
+</div>`;
+
+  // --- 2. Terrain ---
+  if(state.terrain){
+    html+=`<h2>2. Terreno</h2>
+<div class="params">
+<div class="kv"><span class="k">Dimensiones</span><span class="v">${state.terrain.width} × ${state.terrain.height} m</span></div>
+<div class="kv"><span class="k">Resolución</span><span class="v">${state.terrain.res} m</span></div>
+</div>`;
+    if(terrain3dImg)html+=`<h3>Vista 3D</h3><img src="${terrain3dImg}" alt="Terreno 3D">`;
+    if(terrainContourImg)html+=`<h3>Curvas de nivel</h3><img src="${terrainContourImg}" alt="Curvas de nivel">`;
+  }
+
+  // --- 3. Horizontal Alignment ---
+  html+=`<h2 class="page-break">3. Alineamiento Horizontal</h2>
+<img src="${planImg}" alt="Planta" style="max-height:500px">`;
+
+  // Station table
+  if(al.stations&&al.stations.length){
+    html+=`<h3>Tabla de estaciones</h3><table><thead><tr><th>Punto</th><th>Estación</th><th>X (m)</th><th>Y (m)</th></tr></thead><tbody>`;
+    al.stations.forEach(s=>{
+      const pp=pointOnAlignment(s.sta);
+      html+=`<tr><td>${s.label}</td><td>${formatStation(s.sta)}</td><td>${(pp?pp.x:s.x).toFixed(2)}</td><td>${(pp?pp.y:s.y).toFixed(2)}</td></tr>`;
+    });
+    html+=`</tbody></table>`;
+  }
+
+  // Curve details
+  if(al.curves&&al.curves.length){
+    html+=`<h3>Datos de curvas horizontales</h3>`;
+    al.curves.forEach((cv,i)=>{
+      const e2=getCurveEd(i);
+      html+=`<table><thead><tr><th colspan="2">Curva ${i+1} — ${cv.dir==='D'?'Derecha':'Izquierda'} ${cv.okR?'<span class="ok">✓ R ≥ Rmín</span>':'<span class="fail">✗ R < Rmín</span>'}</th></tr></thead><tbody>
+<tr><td>Radio (R)</td><td>${cv.R.toFixed(1)} m</td></tr>
+<tr><td>Deflexión (Δ)</td><td>${(cv.absDelta*180/Math.PI).toFixed(4)}°</td></tr>
+<tr><td>${cv.Ls>0?'Tangente externa (Te)':'Tangente (T)'}</td><td>${cv.T.toFixed(2)} m</td></tr>
+<tr><td>${cv.Ls>0?'Longitud circular (Lc)':'Longitud (L)'}</td><td>${cv.L.toFixed(2)} m</td></tr>
+<tr><td>Externa (E)</td><td>${cv.E.toFixed(2)} m</td></tr>
+<tr><td>Ordenada media (M)</td><td>${cv.M.toFixed(2)} m</td></tr>
+<tr><td>Cuerda (C)</td><td>${cv.Ch.toFixed(2)} m</td></tr>
+<tr><td>Peralte (e)</td><td>${(e2*100).toFixed(1)}%</td></tr>`;
+      if(cv.Ls>0){
+        html+=`<tr><td>Espiral (Ls)</td><td>${cv.Ls.toFixed(1)} m${cv.Ls<cv.LsMin?' <span class="fail">&lt; mín '+cv.LsMin.toFixed(0)+'</span>':''}</td></tr>
+<tr><td>Ls mínimo</td><td>${cv.LsMin.toFixed(1)} m</td></tr>
+<tr><td>θs</td><td>${(cv.thetaS*180/Math.PI).toFixed(4)}°</td></tr>
+<tr><td>p</td><td>${cv.p.toFixed(4)} m</td></tr>
+<tr><td>k</td><td>${cv.k.toFixed(4)} m</td></tr>`;
+      }
+      html+=`</tbody></table>`;
+    });
+  }
+
+  // --- 4. Vertical Alignment ---
+  html+=`<h2 class="page-break">4. Alineamiento Vertical</h2>
+<img src="${profileImg}" alt="Perfil" style="max-height:400px">`;
+  if(va&&va.vcurves.length){
+    html+=`<h3>Curvas verticales</h3>`;
+    va.vcurves.forEach((vc,i)=>{
+      html+=`<table><thead><tr><th colspan="2">Curva vertical ${i+1} — ${vc.isCrest?'Cresta':'Columpio'} ${vc.okL?'<span class="ok">✓ L ≥ Lmín</span>':'<span class="fail">✗ L < Lmín</span>'}</th></tr></thead><tbody>
+<tr><td>Estación PIV</td><td>${formatStation(vc.piv.sta)}</td></tr>
+<tr><td>Elevación PIV</td><td>${vc.piv.elev.toFixed(2)} m</td></tr>
+<tr><td>g₁</td><td>${(vc.g1*100).toFixed(2)}%</td></tr>
+<tr><td>g₂</td><td>${(vc.g2*100).toFixed(2)}%</td></tr>
+<tr><td>A</td><td>${vc.A.toFixed(2)}%</td></tr>
+<tr><td>Lvc</td><td>${vc.Lvc.toFixed(1)} m</td></tr>
+<tr><td>K</td><td>${vc.K.toFixed(2)}</td></tr>
+<tr><td>K requerido</td><td>${vc.kReq.toFixed(2)}</td></tr>
+<tr><td>L mínimo (K×A)</td><td>${vc.LminK.toFixed(1)} m</td></tr>
+<tr><td>BVC</td><td>${formatStation(vc.bvc)} — ${vc.elevBVC.toFixed(2)} m</td></tr>
+<tr><td>EVC</td><td>${formatStation(vc.evc)} — ${va.elevAt(vc.evc).toFixed(2)} m</td></tr>
+</tbody></table>`;
+    });
+  }
+
+  // --- 5. Rotation diagrams ---
+  if(rotImages.length){
+    html+=`<h2 class="page-break">5. Diagramas de Rotación del Peralte</h2>`;
+    rotImages.forEach(ri=>{
+      html+=`<h3>Curva ${ri.ci+1} (R = ${ri.curve.R} m, e = ${(ri.e*100).toFixed(1)}%)</h3>
+<div class="params">
+<div class="kv"><span class="k">Lr (runoff)</span><span class="v">${ri.Lr.toFixed(1)} m</span></div>
+<div class="kv"><span class="k">Lt (runout)</span><span class="v">${ri.Lt.toFixed(1)} m</span></div>
+</div>`;
+      if(ri.relImg)html+=`<p><strong>Elevaciones relativas:</strong></p><img src="${ri.relImg}" alt="Rotación relativa curva ${ri.ci+1}">`;
+      if(ri.absImg)html+=`<p><strong>Elevaciones absolutas:</strong></p><img src="${ri.absImg}" alt="Rotación absoluta curva ${ri.ci+1}">`;
+    });
+  }
+
+  // --- 6. Cross Sections ---
+  html+=`<h2 class="page-break">6. Secciones Transversales (cada ${interval} m)</h2>
+<div class="xs-grid">`;
+  xsImages.forEach(xs=>{
+    html+=`<div class="xs-card">
+<img src="${xs.img}" alt="Sección ${formatStation(xs.sta)}">
+<div class="info">
+<span><b>Est.</b> ${formatStation(xs.sta)}</span>
+<span><b>Corte:</b> ${xs.cutArea.toFixed(2)} m²</span>
+<span><b>Relleno:</b> ${xs.fillArea.toFixed(2)} m²</span>
+<span><b>Elev. diseño:</b> ${xs.designElev.toFixed(2)} m</span>
+<span><b>Elev. terreno:</b> ${xs.terrainElev.toFixed(2)} m</span>
+</div></div>`;
+  });
+  html+=`</div>`;
+
+  // --- 7. Volumes ---
+  html+=`<h2 class="page-break">7. Volúmenes de Movimiento de Tierras</h2>
+<div class="params">
+<div class="kv"><span class="k">Volumen de corte total</span><span class="v">${tCut.toFixed(0)} m³</span></div>
+<div class="kv"><span class="k">Volumen de relleno total</span><span class="v">${tFill.toFixed(0)} m³</span></div>
+<div class="kv"><span class="k">Balance (Corte − Relleno)</span><span class="v">${(tCut-tFill).toFixed(0)} m³</span></div>
+<div class="kv"><span class="k">Estaciones calculadas</span><span class="v">${stationData.length}</span></div>
+</div>`;
+
+  // Mass diagram
+  html+=`<h3>Diagrama de masas</h3>${buildMassDiagramSVG()}`;
+
+  // Cut/fill chart
+  html+=`<h3>Áreas de corte y relleno por estación</h3>${buildCutFillSVG()}`;
+
+  // Volume table
+  html+=`<h3>Tabla de volúmenes</h3>
+<table><thead><tr><th>Estación</th><th>A corte (m²)</th><th>A relleno (m²)</th><th>V corte acum. (m³)</th><th>V relleno acum. (m³)</th><th>Ord. masa (m³)</th></tr></thead><tbody>`;
+  stationData.forEach(d=>{
+    html+=`<tr><td>${formatStation(d.sta)}</td><td>${d.cutArea.toFixed(2)}</td><td>${d.fillArea.toFixed(2)}</td><td>${d.totalCut.toFixed(0)}</td><td>${d.totalFill.toFixed(0)}</td><td>${d.massOrd.toFixed(0)}</td></tr>`;
+  });
+  html+=`</tbody></table>`;
+
+  html+=`</body></html>`;
+
+  // --- Download ---
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='reporte_diseno_'+new Date().toISOString().slice(0,10)+'.html';
+  a.click();
+  URL.revokeObjectURL(url);
+  $('statusText').textContent='Reporte exportado: '+xsImages.length+' secciones, '+rotImages.length+' curvas';
+};
+
+// ==================== INITIALIZATION ====================
+function init(){
+  generateTerrain();
+  state.hAlign.pis=[
+    {x:0,y:0,R:300,useSpiral:false,spiralLen:0,eDesign:null,eMethod:null},
+    {x:0,y:0,R:400,useSpiral:true,spiralLen:0,eDesign:null,eMethod:null},
+    {x:0,y:0,R:250,useSpiral:false,spiralLen:0,eDesign:null,eMethod:null}
+  ];
+  fitAlignmentToTerrain();
+  fitView();
+
+  state.vAlign.pivs=[];
+  renderPIVList();
+
+  setTimeout(()=>{
+    drawProfile();
+    drawCrossSection();
+    drawSuperSection();
+  },500);
+}
+
+window.state=state;
+window.drawProfile=drawProfile;
+window.drawCrossSection=drawCrossSection;
+window.drawSuper=drawSuper;
+window.drawSuperSection=drawSuperSection;
+
+init();
+
+})();
+</script>
+</body>
+</html>

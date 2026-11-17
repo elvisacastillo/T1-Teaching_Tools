@@ -1,0 +1,2394 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Diseño de Curvas Horizontales — Distribución de e y f (AASHTO 2018) — Dr. Elvis A. Castillo-Camarena, Ph.D.</title>
+<meta name="author" content="Dr. Elvis A. Castillo-Camarena, Ph.D.">
+<script src="../assets/vendor/plotly-2.35.2.min.js" charset="utf-8"></script>
+<link rel="stylesheet" href="../assets/vendor/katex/katex.min.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<style>
+  :root{
+    --bg:#0f172a; --panel:#1e293b; --panel2:#0b1220;
+    --text:#e2e8f0; --muted:#94a3b8; --accent:#a855f7;
+    --accent2:#f59e0b; --good:#22c55e; --warn:#ef4444;
+    --m1:#ef4444; --m2:#3b82f6; --m3:#10b981; --m4:#f59e0b; --m5:#a855f7;
+    --road:#2a3142; --highlight:#facc15;
+    --border:#334155; --hdr1:#5b21b6; --hdr2:#1e293b;
+    --svg-bg:#0b1220; --svg-panel:#1e293b; --svg-grid:#334155;
+    --svg-road:#374151; --svg-text:#e2e8f0; --svg-muted:#94a3b8;
+  }
+  :root.light{
+    --bg:#f1f5f9; --panel:#ffffff; --panel2:#f8fafc;
+    --text:#1e293b; --muted:#64748b; --accent:#7c3aed;
+    --accent2:#b45309; --good:#15803d; --warn:#dc2626;
+    --road:#cbd5e1; --highlight:#ca8a04; --border:#e2e8f0;
+    --hdr1:#7c3aed; --hdr2:#ddd6fe;
+    --svg-bg:#f8fafc; --svg-panel:#ffffff; --svg-grid:#e2e8f0;
+    --svg-road:#cbd5e1; --svg-text:#1e293b; --svg-muted:#64748b;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    font-size:14px;
+    line-height:1.45;
+    transition:background .25s,color .25s;
+  }
+  header{
+    background:linear-gradient(135deg,var(--hdr1) 0%,var(--hdr2) 100%);
+    padding:14px 20px;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  header h1{
+    margin:0;
+    font-size:18px;
+    font-weight:600;
+    letter-spacing:.2px;
+    color:#fff;
+  }
+  header .sub{
+    font-size:12px;
+    color:rgba(255,255,255,0.75);
+  }
+  header .author{
+    font-size:11px;
+    color:rgba(255,255,255,0.55);
+    margin-top:2px;
+  }
+  .hdr-right{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+  .mode-btn{
+    display:flex;align-items:center;gap:5px;
+    padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;
+    cursor:pointer;border:1px solid rgba(255,255,255,.25);
+    background:rgba(255,255,255,.1);color:#fff;transition:background .2s;
+  }
+  :root.light .mode-btn{color:var(--text);border-color:var(--border);background:var(--panel2);}
+  .mode-btn:hover{background:rgba(255,255,255,.25);}
+  :root.light .mode-btn:hover{background:var(--border);}
+  .mode-btn.on{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .container{
+    display:grid;
+    grid-template-columns:320px 1fr;
+    gap:16px;
+    padding:16px;
+  }
+  @media (max-width: 1100px){
+    .container{grid-template-columns:1fr;}
+  }
+  .panel{
+    background:var(--panel);
+    border:1px solid #334155;
+    border-radius:10px;
+    padding:14px;
+  }
+  .panel h2{
+    margin:0 0 10px 0;
+    font-size:14px;
+    font-weight:600;
+    color:var(--accent);
+    text-transform:uppercase;
+    letter-spacing:.5px;
+  }
+  .panel h3{
+    margin:14px 0 6px 0;
+    font-size:13px;
+    font-weight:600;
+    color:var(--accent2);
+  }
+  .ctrl{
+    margin-bottom:12px;
+  }
+  .ctrl label{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:12px;
+    margin-bottom:4px;
+    color:var(--muted);
+  }
+  .ctrl label .v{
+    color:var(--text);
+    font-weight:600;
+    font-variant-numeric:tabular-nums;
+  }
+  .ctrl input[type=range]{
+    width:100%;
+    accent-color:var(--accent);
+  }
+  .vreal-marks{
+    position:relative;
+    height:28px;
+    margin-top:1px;
+    font-size:9px;
+  }
+  .vreal-marks .vmark{
+    position:absolute;
+    top:0;
+    transform:translateX(-50%);
+    text-align:center;
+    line-height:1;
+    white-space:nowrap;
+    pointer-events:none;
+  }
+  .vreal-marks .vmark .tri{
+    width:0;height:0;margin:0 auto 1px;
+    border-left:5px solid transparent;
+    border-right:5px solid transparent;
+  }
+  .vreal-marks .vmark.vr .tri{ border-bottom:7px solid #94a3b8; }
+  .vreal-marks .vmark.vd .tri{ border-bottom:7px solid #facc15; }
+  .vreal-marks .vmark.vr .lbl{ color:#64748b; }
+  .vreal-marks .vmark.vd .lbl{ color:#b45309; font-weight:600; }
+  :root.light .vreal-marks .vmark.vr .lbl{ color:#475569; }
+  .btn-mini{
+    background:var(--panel2);
+    color:var(--text);
+    border:1px solid #475569;
+    padding:3px 8px;
+    border-radius:5px;
+    font-size:11px;
+    cursor:pointer;
+    line-height:1.2;
+  }
+  .btn-mini:hover{ background:var(--accent2); color:#fff; border-color:var(--accent2); }
+  .vreal-hint{
+    font-size:10px;
+    color:var(--muted);
+    margin-top:6px;
+    line-height:1.35;
+    padding:4px 6px;
+    background:var(--panel2);
+    border-radius:5px;
+    border-left:3px solid var(--accent);
+  }
+  .vis-toggle{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:12px;
+    cursor:pointer;
+    color:var(--text);
+  }
+  .vis-toggle input{ accent-color:var(--accent); }
+  .ctrl select{
+    width:100%;
+    background:var(--panel2);
+    color:var(--text);
+    border:1px solid #475569;
+    padding:6px 8px;
+    border-radius:6px;
+    font-size:13px;
+  }
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .badge{
+    display:inline-block;
+    padding:2px 8px;
+    border-radius:10px;
+    font-size:11px;
+    background:rgba(255,255,255,.15);
+    color:var(--text);
+  }
+  :root.light .badge{background:rgba(0,0,0,.08);}
+  .results{
+    background:var(--panel2);
+    padding:10px;
+    border-radius:8px;
+    margin-top:8px;
+  }
+  .results .kv{
+    display:flex;
+    justify-content:space-between;
+    padding:3px 0;
+    font-variant-numeric:tabular-nums;
+    border-bottom:1px dashed #334155;
+  }
+  .results .kv:last-child{border-bottom:none}
+  .results .kv .k{color:var(--muted);font-size:12px}
+  .results .kv .v{font-weight:600}
+  .methods-list{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:6px;
+    margin-top:6px;
+  }
+  .method-item{
+    background:var(--panel2);
+    border:1px solid #334155;
+    border-radius:6px;
+    padding:8px;
+    display:flex;
+    align-items:flex-start;
+    gap:8px;
+  }
+  .method-item input{margin-top:3px;accent-color:var(--accent)}
+  .method-item .label{font-size:12px}
+  .method-item .label b{display:block}
+  .swatch{
+    display:inline-block;
+    width:10px;height:10px;border-radius:50%;
+    margin-right:4px;vertical-align:middle;
+  }
+  .grid-vis{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+  }
+  @media (max-width:1300px){
+    .grid-vis{grid-template-columns:1fr}
+  }
+  .vis-card{
+    background:var(--panel);
+    border:1px solid #334155;
+    border-radius:10px;
+    padding:12px;
+  }
+  .vis-card h3{
+    margin:0 0 8px 0;
+    font-size:13px;
+    color:var(--accent);
+    text-transform:uppercase;
+    letter-spacing:.5px;
+  }
+  .vis-card .desc{
+    font-size:11px;
+    color:var(--muted);
+    margin-bottom:8px;
+  }
+  .plot{height:340px;width:100%}
+  .plot-tall{height:380px}
+  .plot-short{height:260px}
+  svg.dwg{display:block;width:100%;height:auto;background:var(--panel2);border-radius:6px}
+  .table-wrap{
+    overflow:auto;
+    max-height:520px;
+    background:var(--panel2);
+    border-radius:6px;
+  }
+  table.aashto{
+    border-collapse:collapse;
+    width:100%;
+    font-size:11px;
+    font-variant-numeric:tabular-nums;
+  }
+  table.aashto th, table.aashto td{
+    border:1px solid #334155;
+    padding:3px 6px;
+    text-align:right;
+    white-space:nowrap;
+  }
+  table.aashto th{
+    background:#1e293b;
+    color:var(--muted);
+    position:sticky;
+    top:0;
+    font-weight:600;
+  }
+  table.aashto td.estr{font-weight:600;background:var(--panel2);color:var(--accent2)}
+  table.aashto td.col-hl{background:var(--panel2)}
+  table.aashto td.row-hl{background:#1e3a5f}
+  table.aashto td.cell-hl{background:var(--highlight);color:#0f172a;font-weight:700}
+  table.aashto th.col-hl{background:#3b82f6;color:white}
+  .formula{
+    background:var(--panel2);
+    padding:8px 10px;
+    border-radius:6px;
+    border-left:3px solid var(--accent);
+    font-family:"Cambria Math","Times New Roman",serif;
+    font-size:13px;
+    margin:6px 0;
+  }
+  .legend-bar{
+    display:flex;flex-wrap:wrap;gap:10px;
+    font-size:11px;color:var(--muted);
+    margin-top:8px;
+  }
+  .legend-bar span{display:inline-flex;align-items:center;gap:4px}
+  .tabbar{
+    display:flex;gap:4px;margin-bottom:10px;
+    border-bottom:1px solid #334155;
+  }
+  .tabbar button{
+    background:transparent;color:var(--muted);
+    border:none;padding:8px 12px;cursor:pointer;
+    font-size:12px;border-bottom:2px solid transparent;
+  }
+  .tabbar button.active{
+    color:var(--accent);border-bottom-color:var(--accent);
+  }
+  .help{
+    background:#0b1220;border-radius:6px;padding:8px 10px;
+    font-size:11px;color:var(--muted);
+    border-left:3px solid var(--accent2);
+    margin-top:8px;
+  }
+  .pill-method{
+    display:inline-block;
+    padding:1px 6px;border-radius:4px;
+    font-size:10px;font-weight:700;color:white;
+    margin-right:4px;
+  }
+  .small{font-size:11px;color:var(--muted)}
+  .num{font-variant-numeric:tabular-nums}
+  /* Plot drag overlay */
+  .plot-wrap{position:relative;}
+  .plot-overlay{position:absolute;top:0;left:0;width:100%;height:100%;z-index:12;pointer-events:none;cursor:default;}
+  /* Buttons */
+  .btn{padding:8px 18px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:opacity .2s;}
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-primary:hover{opacity:.85;}
+  /* Student mode */
+  #studentPanel{background:var(--panel);border-top:2px solid var(--accent);padding:20px;display:none;}
+  #studentPanel.visible{display:block;}
+  #studentPanel>h2{margin:0 0 4px;font-size:16px;font-weight:700;color:var(--accent);}
+  #studentPanel>.sub{font-size:12px;color:var(--muted);margin-bottom:14px;}
+  .export-bar{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;align-items:center;}
+  .student-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:18px;}
+  .student-card{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:16px;}
+  .student-card h3{margin:0 0 12px;font-size:14px;font-weight:700;color:var(--accent2);}
+  .step{background:var(--panel);border-radius:6px;padding:10px 12px;margin:8px 0;border-left:3px solid var(--border);}
+  .step-label{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;}
+  .step-formula{overflow-x:auto;padding:4px 0;}
+  .step-val{font-size:12px;font-weight:700;color:var(--good);font-variant-numeric:tabular-nums;margin-top:5px;padding-top:5px;border-top:1px dashed var(--border);}
+  .step-cond{font-size:11px;color:var(--accent2);margin-top:4px;}
+  .step.highlight-step{border-left-color:var(--accent);}
+  .katex-display{margin:.15em 0!important;overflow-x:auto;}
+  .katex{font-size:1.05em!important;}
+  /* Light mode overrides for hardcoded colors */
+  :root.light .panel{border-color:var(--border);}
+  :root.light .results{background:var(--panel2);}
+  :root.light .results .kv{border-bottom-color:var(--border);}
+  :root.light .method-item{background:var(--panel2);border-color:var(--border);}
+  :root.light .vis-card{border-color:var(--border);}
+  :root.light svg.dwg{background:var(--svg-bg);}
+  :root.light .table-wrap{background:var(--panel2);}
+  :root.light table.aashto th{background:var(--panel);}
+  :root.light table.aashto th,:root.light table.aashto td{border-color:var(--border);}
+  :root.light table.aashto td.col-hl{background:#dbeafe;}
+  :root.light table.aashto td.row-hl{background:#ede9fe;}
+  :root.light table.aashto th.col-hl{background:#2563eb;color:#fff;}
+  .tbl-toggle-btn{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:4px 12px;border-radius:6px;font-size:12px;font-weight:600;
+    cursor:pointer;border:1px solid var(--border);
+    background:var(--panel2);color:var(--text);transition:background .15s;
+  }
+  .tbl-toggle-btn:hover{background:var(--border);}
+  .tbl-toggle-btn.open{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .tbl-collapsible{overflow:hidden;transition:max-height .3s ease;}
+  .tbl-collapsible.closed{max-height:0!important;}
+  :root.light .tabbar{border-bottom-color:var(--border);}
+  :root.light .help{background:var(--panel2);}
+  :root.light .footer{border-top-color:var(--border);}
+  :root.light .ctrl select{background:var(--panel2);border-color:var(--border);}
+  .footer{
+    color:var(--muted);font-size:11px;text-align:center;
+    padding:8px;border-top:1px solid #334155;margin-top:8px;
+  }
+</style>
+<link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="app-shell.css">
+</head>
+<body>
+<header class="ec-topbar">
+  <a class="ec-back" href="../index.html" title="Volver al índice de herramientas" aria-label="Volver al índice de herramientas">‹</a>
+  <div class="ec-id">
+    <h1>Diseño de Curvas Horizontales — Distribución de e y f</h1>
+    <div class="ec-sub">Radio mínimo y los cinco métodos AASHTO 2018 · Sistema métrico</div>
+    <div class="ec-author">Autor: <b>Dr. Elvis A. Castillo-Camarena, Ph.D.</b></div>
+  </div>
+  <div class="ec-tools">
+    <span class="badge" id="contextBadge">Rural · e<sub>max</sub>=8%</span>
+    <button class="mode-btn" id="lightBtn" onclick="toggleLight()">☀ Modo claro</button>
+    <button class="mode-btn" id="studentBtn" onclick="toggleStudent()">📐 Modo Estudiante</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ========================== CONTROLS ========================== -->
+  <div class="panel" id="controlPanel">
+    <h2>Parámetros de diseño</h2>
+
+    <div class="ctrl">
+      <label>Contexto vía
+        <span class="v" id="ctxLbl">Rural</span>
+      </label>
+      <select id="contextSel">
+        <option value="rural">Rural (alta velocidad)</option>
+        <option value="urban">Urbano (baja velocidad)</option>
+      </select>
+    </div>
+
+    <div class="ctrl">
+      <label>e<sub>max</sub>
+        <span class="v"><span id="emaxLbl">8</span>%</span>
+      </label>
+      <select id="emaxSel">
+        <option value="4">4 % (urbano)</option>
+        <option value="6">6 %</option>
+        <option value="8" selected>8 % (rural)</option>
+        <option value="10">10 %</option>
+        <option value="12">12 % (absoluta)</option>
+      </select>
+    </div>
+
+    <div class="ctrl">
+      <label>Velocidad de diseño V<sub>D</sub>
+        <span class="v"><span id="vLbl">100</span> km/h</span>
+      </label>
+      <input type="range" id="vSlider" min="20" max="130" step="10" value="100" />
+    </div>
+
+    <div class="ctrl">
+      <label>Velocidad real V<sub>real</sub> (tráfico)
+        <span class="v"><span id="vRealLbl">100</span> km/h</span>
+      </label>
+      <input type="range" id="vRealSlider" min="20" max="150" step="1" value="100" />
+      <div id="vRealMarks" class="vreal-marks"></div>
+      <div class="row" style="gap:6px;margin-top:4px">
+        <button type="button" id="setVRealR" class="btn-mini">Ir a V<sub>R</sub></button>
+        <button type="button" id="setVRealD" class="btn-mini">Ir a V<sub>D</sub></button>
+      </div>
+      <div class="vreal-hint">
+        V<sub>real</sub> &gt; V<sub>D</sub>: <b>overdriving</b> (f puede superar f<sub>max</sub>).<br>
+        V<sub>real</sub> &lt; V<sub>D</sub>: <b>fricción negativa</b> (peralte excesivo).
+      </div>
+    </div>
+
+    <div class="ctrl">
+      <label>Radio R
+        <span class="v"><span id="rLbl">600</span> m</span>
+      </label>
+      <input type="range" id="rSlider" min="50" max="3000" step="10" value="600" />
+    </div>
+
+    <div class="results" id="resultsBox">
+      <div class="kv"><span class="k">f<sub>max</sub> (V<sub>D</sub>)</span><span class="v" id="fmaxOut">0.12</span></div>
+      <div class="kv"><span class="k">V<sub>R</sub> running</span><span class="v"><span id="vrOut">85</span> km/h</span></div>
+      <div class="kv"><span class="k">R<sub>min</sub></span><span class="v"><span id="rminOut">394</span> m</span></div>
+      <div class="kv"><span class="k">e + f requerido</span><span class="v" id="efReqOut">0.131</span></div>
+      <div class="kv"><span class="k">R/R<sub>min</sub></span><span class="v" id="rRatioOut">1.52×</span></div>
+    </div>
+
+    <h3>Métodos a comparar</h3>
+    <div class="help">
+      Selecciona uno o varios métodos para superponer en las gráficas y comparar e<sub>des</sub>+f<sub>des</sub>.
+    </div>
+    <div class="methods-list" id="methodsList"></div>
+
+    <h3>Resultados (e %, f) por método</h3>
+    <div id="methodResults"></div>
+
+    <div class="footer small">
+      Ref. AASHTO 2018, Tablas 3-6 a 3-12 (cap. 3).
+    </div>
+  </div>
+
+  <!-- ========================== MAIN VISUALIZATIONS ========================== -->
+  <div>
+    <div class="grid-vis">
+
+      <div class="vis-card">
+        <h3>Distribución de e vs 1/R</h3>
+        <div class="desc">Arrastra la línea amarilla ⟷ para cambiar R. Tasa de superelevación vs curvatura.</div>
+        <div class="row" style="margin-bottom:6px;gap:14px">
+          <label class="vis-toggle">
+            <input type="checkbox" id="ghostEToggle" />
+            Mostrar fantasma con V<sub>real</sub> (líneas tenues)
+          </label>
+        </div>
+        <div class="plot-wrap">
+          <div id="plotE" class="plot plot-tall"></div>
+          <div class="plot-overlay" id="overlayE"></div>
+        </div>
+      </div>
+
+      <div class="vis-card">
+        <h3>Distribución de f vs 1/R</h3>
+        <div class="desc">Arrastra la línea amarilla ⟷ para cambiar R. Demanda de fricción vs curvatura.</div>
+        <div class="row" style="margin-bottom:6px;gap:14px">
+          <label class="vis-toggle">
+            <input type="checkbox" id="fVrealToggle" />
+            Calcular con V<sub>real</sub> (demanda real · reemplaza AASHTO)
+          </label>
+        </div>
+        <div class="plot-wrap">
+          <div id="plotF" class="plot plot-tall"></div>
+          <div class="plot-overlay" id="overlayF"></div>
+        </div>
+      </div>
+
+      <div class="vis-card">
+        <h3>Curva en planta (R vs R<sub>min</sub>)</h3>
+        <div class="desc">Compara visualmente el radio de diseño con el radio mínimo permitido.</div>
+        <div class="row" style="margin-bottom:6px;gap:14px">
+          <label style="display:flex;gap:5px;align-items:center;font-size:12px;cursor:pointer">
+            <input type="checkbox" id="fixedRminToggle" checked />
+            Mantener R<sub>min</sub> fijo en el dibujo
+          </label>
+        </div>
+        <svg class="dwg" id="planSvg" viewBox="0 0 720 420"></svg>
+      </div>
+
+      <div class="vis-card">
+        <h3>Sección transversal de pavimento</h3>
+        <div class="desc">e<sub>des</sub> = peralte aplicado. <b>f<sub>des</sub></b> = grosor de línea de superficie + barra lateral derecha.</div>
+        <div class="row" style="margin-bottom:6px;gap:14px;flex-wrap:wrap;align-items:center">
+          <label style="font-size:12px;display:flex;gap:5px;align-items:center">
+            Exageración vertical:
+            <select id="crossExag" style="background:var(--panel2);color:var(--text);border:1px solid #475569;padding:3px 6px;border-radius:4px">
+              <option value="1">1× (real)</option>
+              <option value="2">2×</option>
+              <option value="5" selected>5×</option>
+              <option value="10">10×</option>
+              <option value="20">20×</option>
+              <option value="50">50×</option>
+            </select>
+          </label>
+          <span style="font-size:12px;color:var(--muted)">Método en sección:</span>
+          <div id="sectionMethodPills" style="display:flex;gap:5px;flex-wrap:wrap"></div>
+        </div>
+        <svg class="dwg" id="sectSvg" viewBox="0 0 620 340"></svg>
+      </div>
+
+      <div class="vis-card" style="grid-column: 1 / -1">
+
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+          <h3 style="margin:0">Tablas AASHTO</h3>
+          <button class="tbl-toggle-btn open" id="toggleRmin" onclick="toggleTable('rmin')">▼ Tabla 3-7 — R<sub>min</sub> por e<sub>max</sub> y V</button>
+          <button class="tbl-toggle-btn open" id="toggleAashto" onclick="toggleTable('aashto')">▼ Tabla AASHTO — Radios mínimos</button>
+        </div>
+
+        <!-- Tabla 3-7 primero -->
+        <div id="rminSection" class="tbl-collapsible" style="max-height:2000px">
+          <h3 style="margin-top:0">Tabla 3-7 — R<sub>min</sub> usando e<sub>max</sub> y f<sub>max</sub></h3>
+          <div class="desc">Fila resaltada en azul: V actual. Fila resaltada en amarillo: e<sub>max</sub> seleccionado.</div>
+          <div class="table-wrap"><table class="aashto" id="rminTable"></table></div>
+        </div>
+
+        <!-- Tabla AASHTO después -->
+        <div id="aashtoSection" class="tbl-collapsible" style="max-height:2000px;margin-top:14px">
+          <h3>Tabla AASHTO — Radios mínimos por e y V<sub>d</sub></h3>
+          <div class="desc">
+            Tabla 3-<span id="tblNumLbl">10</span> · e<sub>max</sub> = <span id="tblEmaxLbl">8</span>%.
+            Columna resaltada: V actual. Celdas amarillas: e correspondiente al método seleccionado para el R actual.
+          </div>
+          <div class="legend-bar">
+            <span><span class="swatch" style="background:#3b82f6"></span>Columna V<sub>d</sub></span>
+            <span><span class="swatch" style="background:#1e3a5f"></span>Fila e (interpolada)</span>
+            <span><span class="swatch" style="background:#facc15"></span>Celda destacada del método</span>
+          </div>
+          <div class="tabbar" id="tableTabs"></div>
+          <div class="table-wrap" id="aashtoTable"></div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- STUDENT PANEL -->
+<div id="studentPanel">
+  <h2>📐 Modo Estudiante — Solución Paso a Paso</h2>
+  <div class="sub">Fórmulas AASHTO 2018 resueltas con los valores actuales. Se actualiza al cambiar parámetros.</div>
+  <div class="export-bar">
+    <button class="btn btn-primary" onclick="exportReport()">⬇ Exportar reporte (PDF / HTML)</button>
+    <span class="small">Genera un reporte imprimible con las fórmulas resueltas para los métodos activos.</span>
+  </div>
+  <div id="studentContent" class="student-grid"></div>
+</div>
+
+<script>
+"use strict";
+
+/* ============================================================
+ *  Datos AASHTO 2018 (sistema métrico)
+ * ============================================================ */
+
+// Tabla 3-7 (extraída de PDF) — fmax(V) por escalón de emax
+const FMAX_BY_V = {
+  15:0.40, 20:0.35, 30:0.28, 40:0.23, 50:0.19, 60:0.17,
+  70:0.15, 80:0.14, 90:0.13, 100:0.12, 110:0.11, 120:0.09, 130:0.08
+};
+
+// Tabla 3-6 — Average Running Speed
+const VRUN_BY_V = {
+  20:20, 30:30, 40:40, 50:47, 60:55, 70:63, 80:70, 90:77,
+  100:85, 110:91, 120:98, 130:102
+};
+
+// Tabla 3-7 — fila completa para mostrar
+const TABLE_3_7 = [
+  // [V, emax%, fmax, total, R_calc, R_round]
+  [15, 4.0, 0.40, 0.44,  4.0,  4 ],
+  [20, 4.0, 0.35, 0.39,  8.1,  8 ],
+  [30, 4.0, 0.28, 0.32, 22.1, 22 ],
+  [40, 4.0, 0.23, 0.27, 46.7, 47 ],
+  [50, 4.0, 0.19, 0.23, 85.6, 86 ],
+  [60, 4.0, 0.17, 0.21,135.0,135 ],
+  [70, 4.0, 0.15, 0.19,203.1,203 ],
+  [80, 4.0, 0.14, 0.18,280.0,280 ],
+  [90, 4.0, 0.13, 0.17,375.2,375 ],
+  [100,4.0, 0.12, 0.16,492.1,492 ],
+  [15, 6.0, 0.40, 0.46,  3.9,  4 ],
+  [20, 6.0, 0.35, 0.41,  7.7,  8 ],
+  [30, 6.0, 0.28, 0.34, 20.8, 21 ],
+  [40, 6.0, 0.23, 0.29, 43.4, 43 ],
+  [50, 6.0, 0.19, 0.25, 78.7, 79 ],
+  [60, 6.0, 0.17, 0.23,123.2,123 ],
+  [70, 6.0, 0.15, 0.21,183.7,184 ],
+  [80, 6.0, 0.14, 0.20,252.0,252 ],
+  [90, 6.0, 0.13, 0.19,335.7,336 ],
+  [100,6.0, 0.12, 0.18,437.4,437 ],
+  [110,6.0, 0.11, 0.17,560.4,560 ],
+  [120,6.0, 0.09, 0.15,755.9,756 ],
+  [130,6.0, 0.08, 0.14,950.5,951 ],
+  [15, 8.0, 0.40, 0.48,  3.7,  4 ],
+  [20, 8.0, 0.35, 0.43,  7.3,  7 ],
+  [30, 8.0, 0.28, 0.36, 19.7, 20 ],
+  [40, 8.0, 0.23, 0.31, 40.6, 41 ],
+  [50, 8.0, 0.19, 0.27, 72.9, 73 ],
+  [60, 8.0, 0.17, 0.25,113.4,113 ],
+  [70, 8.0, 0.15, 0.23,167.8,168 ],
+  [80, 8.0, 0.14, 0.22,229.1,229 ],
+  [90, 8.0, 0.13, 0.21,303.7,304 ],
+  [100,8.0, 0.12, 0.20,393.7,394 ],
+  [110,8.0, 0.11, 0.19,501.5,501 ],
+  [120,8.0, 0.09, 0.17,667.0,667 ],
+  [130,8.0, 0.08, 0.16,831.7,832 ],
+  [15, 10.0,0.40, 0.50,  3.5,  4 ],
+  [20, 10.0,0.35, 0.45,  7.0,  7 ],
+  [30, 10.0,0.28, 0.38, 18.6, 19 ],
+  [40, 10.0,0.23, 0.33, 38.2, 38 ],
+  [50, 10.0,0.19, 0.29, 67.9, 68 ],
+  [60, 10.0,0.17, 0.27,105.0,105 ],
+  [70, 10.0,0.15, 0.25,154.3,154 ],
+  [80, 10.0,0.14, 0.24,210.0,210 ],
+  [90, 10.0,0.13, 0.23,277.3,277 ],
+  [100,10.0,0.12, 0.22,357.9,358 ],
+  [110,10.0,0.11, 0.21,453.7,454 ],
+  [120,10.0,0.09, 0.19,596.8,597 ],
+  [130,10.0,0.08, 0.18,739.3,739 ],
+  [15, 12.0,0.40, 0.52,  3.4,  3 ],
+  [20, 12.0,0.35, 0.47,  6.7,  7 ],
+  [30, 12.0,0.28, 0.40, 17.7, 18 ],
+  [40, 12.0,0.23, 0.35, 36.0, 36 ],
+  [50, 12.0,0.19, 0.31, 63.5, 64 ],
+  [60, 12.0,0.17, 0.29, 97.7, 98 ],
+  [70, 12.0,0.15, 0.27,142.9,143 ],
+  [80, 12.0,0.14, 0.26,193.8,194 ],
+  [90, 12.0,0.13, 0.25,255.1,255 ],
+  [100,12.0,0.12, 0.24,328.1,328 ],
+  [110,12.0,0.11, 0.23,414.2,414 ],
+  [120,12.0,0.09, 0.21,539.9,540 ],
+  [130,12.0,0.08, 0.20,665.4,665 ],
+];
+
+/* Tablas 3-8 a 3-12 — Radios mínimos para tasas de superelevación
+   Estructura: { emax: { speeds:[...], rows:[ {e: number_or_string, R:[...] } ] } }
+   "NC"=normal crown (sin peralte), "RC"=remove crown (peralte plano).
+   Los valores -1 o null indican "no aplica".
+*/
+
+const SPEEDS = [20,30,40,50,60,70,80,90,100,110,120,130];
+
+const AASHTO_TABLES = {
+  4: {
+    label:"3-8",
+    speeds:[20,30,40,50,60,70,80,90,100],
+    rows:[
+      ["NC",[163,371,679,951,1310,1740,2170,2640,3250]],
+      ["RC",[102,237,441,632,877,1180,1490,1830,2260]],
+      [2.2,[75,187,363,534,749,1020,1290,1590,1980]],
+      [2.4,[51,132,273,435,626,865,1110,1390,1730]],
+      [2.6,[38,99,209,345,508,720,944,1200,1510]],
+      [2.8,[30,79,167,283,422,605,802,1030,1320]],
+      [3.0,[24,64,137,236,356,516,690,893,1150]],
+      [3.2,[20,54,114,199,303,443,597,779,1010]],
+      [3.4,[17,45,96,170,260,382,518,680,879]],
+      [3.6,[14,38,81,144,222,329,448,591,767]],
+      [3.8,[12,31,67,121,187,278,381,505,658]],
+      [4.0,[8,22,47,86,135,203,280,375,492]],
+    ]
+  },
+  6: {
+    label:"3-9",
+    speeds:[20,30,40,50,60,70,80,90,100,110,120,130],
+    rows:[
+      ["NC",[194,421,738,1050,1440,1910,2360,2880,3510,4060,4770,5240]],
+      ["RC",[138,299,525,750,1030,1380,1710,2090,2560,2970,3510,3880]],
+      [2.2,[122,265,465,668,919,1230,1530,1880,2300,2670,3160,3500]],
+      [2.4,[109,236,415,599,825,1110,1380,1700,2080,2420,2870,3190]],
+      [2.6,[97,212,372,540,746,1000,1260,1540,1890,2210,2630,2930]],
+      [2.8,[87,190,334,488,676,910,1150,1410,1730,2020,2420,2700]],
+      [3.0,[78,170,300,443,615,831,1050,1290,1590,1870,2240,2510]],
+      [3.2,[70,152,269,402,561,761,959,1190,1470,1730,2080,2330]],
+      [3.4,[61,133,239,364,511,697,882,1100,1360,1600,1940,2180]],
+      [3.6,[51,113,206,329,465,640,813,1020,1260,1490,1810,2050]],
+      [3.8,[42,96,177,294,422,586,749,939,1170,1390,1700,1930]],
+      [4.0,[36,82,155,261,380,535,690,870,1090,1300,1590,1820]],
+      [4.2,[31,72,136,234,343,488,635,806,1010,1220,1500,1720]],
+      [4.4,[27,63,121,210,311,446,584,746,938,1140,1410,1630]],
+      [4.6,[24,56,108,190,283,408,538,692,873,1070,1330,1540]],
+      [4.8,[21,50,97,172,258,374,496,641,812,997,1260,1470]],
+      [5.0,[19,45,88,156,235,343,457,594,755,933,1190,1400]],
+      [5.2,[17,40,79,142,214,315,421,549,701,871,1120,1330]],
+      [5.4,[15,36,71,128,195,287,386,506,648,810,1060,1260]],
+      [5.6,[13,32,63,115,176,260,351,463,594,747,980,1190]],
+      [5.8,[11,28,56,102,156,232,315,416,537,679,900,1110]],
+      [6.0,[8,21,43,79,123,184,252,336,437,560,756,951]],
+    ]
+  },
+  8: {
+    label:"3-10",
+    speeds:[20,30,40,50,60,70,80,90,100,110,120,130],
+    rows:[
+      ["NC",[184,443,784,1090,1490,1970,2440,2970,3630,4180,4900,5360]],
+      ["RC",[133,322,571,791,1090,1450,1790,2190,2680,3090,3640,4000]],
+      [2.2,[119,288,512,711,976,1300,1620,1980,2420,2790,3290,3620]],
+      [2.4,[107,261,463,644,885,1190,1470,1800,2200,2550,3010,3310]],
+      [2.6,[97,237,421,587,808,1080,1350,1650,2020,2340,2760,3050]],
+      [2.8,[88,216,385,539,742,992,1240,1520,1860,2160,2550,2830]],
+      [3.0,[81,199,354,496,684,916,1150,1410,1730,2000,2370,2630]],
+      [3.2,[74,183,326,458,633,849,1060,1310,1610,1870,2220,2460]],
+      [3.4,[68,169,302,425,588,790,988,1220,1500,1740,2080,2310]],
+      [3.6,[62,156,279,395,548,738,924,1140,1410,1640,1950,2180]],
+      [3.8,[57,144,259,368,512,690,866,1070,1320,1540,1840,2060]],
+      [4.0,[52,134,241,344,479,648,813,1010,1240,1450,1740,1950]],
+      [4.2,[48,124,224,321,449,608,766,948,1180,1380,1650,1850]],
+      [4.4,[43,115,208,301,421,573,722,895,1110,1300,1570,1760]],
+      [4.6,[38,106,192,281,395,540,682,847,1050,1240,1490,1680]],
+      [4.8,[33,96,178,263,371,509,645,803,996,1180,1420,1610]],
+      [5.0,[30,87,163,246,349,480,611,762,947,1120,1360,1540]],
+      [5.2,[27,78,148,229,328,454,579,724,901,1070,1300,1480]],
+      [5.4,[24,71,136,213,307,429,549,689,859,1020,1250,1420]],
+      [5.6,[22,65,125,198,288,405,521,656,819,975,1200,1360]],
+      [5.8,[20,59,115,185,270,382,494,625,781,933,1150,1310]],
+      [6.0,[19,55,106,172,253,360,469,595,746,894,1100,1260]],
+      [6.2,[17,50,98,161,238,340,445,567,713,857,1060,1220]],
+      [6.4,[16,46,91,151,224,322,422,540,681,823,1020,1180]],
+      [6.6,[15,43,85,141,210,304,400,514,651,789,982,1140]],
+      [6.8,[14,40,79,132,198,287,379,489,620,757,948,1100]],
+      [7.0,[13,37,73,123,185,270,358,464,591,724,914,1070]],
+      [7.2,[12,34,68,115,174,254,338,440,561,691,879,1040]],
+      [7.4,[11,31,62,107,162,237,318,415,531,657,842,998]],
+      [7.6,[10,29,57,99,150,221,296,389,499,621,803,962]],
+      [7.8,[9,26,52,90,137,202,273,359,462,579,757,919]],
+      [8.0,[7,20,41,73,113,168,229,304,394,501,667,832]],
+    ]
+  },
+  10: {
+    label:"3-11",
+    speeds:[20,30,40,50,60,70,80,90,100,110,120,130],
+    rows:[
+      ["NC",[197,454,790,1110,1520,2000,2480,3010,3690,4250,4960,5410]],
+      ["RC",[145,333,580,815,1120,1480,1840,2230,2740,3160,3700,4050]],
+      [2.2,[130,300,522,735,1020,1340,1660,2020,2480,2860,3360,3680]],
+      [2.4,[118,272,474,669,920,1220,1520,1840,2260,2620,3070,3370]],
+      [2.6,[108,249,434,612,844,1120,1390,1700,2080,2410,2830,3110]],
+      [2.8,[99,229,399,564,778,1030,1290,1570,1920,2230,2620,2880]],
+      [3.0,[91,211,368,522,720,952,1190,1460,1790,2070,2440,2690]],
+      [3.2,[85,196,342,485,670,887,1110,1360,1670,1940,2280,2520]],
+      [3.4,[79,182,318,453,626,829,1040,1270,1560,1820,2140,2370]],
+      [3.6,[73,170,297,424,586,777,974,1200,1470,1710,2020,2230]],
+      [3.8,[68,159,278,398,551,731,917,1130,1390,1610,1910,2120]],
+      [4.0,[64,149,261,374,519,690,866,1060,1310,1530,1810,2010]],
+      [4.2,[60,140,245,353,490,652,820,1010,1240,1450,1720,1910]],
+      [4.4,[56,132,231,333,464,617,777,953,1180,1380,1640,1820]],
+      [4.6,[53,124,218,315,439,586,738,907,1120,1310,1560,1740]],
+      [4.8,[50,117,206,299,417,557,703,864,1070,1250,1490,1670]],
+      [5.0,[47,111,194,283,396,530,670,824,1020,1200,1430,1600]],
+      [5.2,[44,104,184,269,377,505,640,788,975,1150,1370,1540]],
+      [5.4,[41,98,174,256,359,482,611,754,934,1100,1320,1480]],
+      [5.6,[39,93,164,243,343,461,585,723,896,1060,1270,1420]],
+      [5.8,[36,88,155,232,327,441,561,693,860,1020,1220,1370]],
+      [6.0,[33,82,146,221,312,422,538,666,827,976,1180,1330]],
+      [6.2,[31,77,138,210,298,404,516,640,795,941,1140,1280]],
+      [6.4,[28,72,130,200,285,387,496,616,766,907,1100,1240]],
+      [6.6,[26,67,121,191,273,372,476,593,738,876,1060,1200]],
+      [6.8,[24,62,114,181,261,357,458,571,712,846,1030,1170]],
+      [7.0,[22,58,107,172,249,342,441,551,688,819,993,1130]],
+      [7.2,[21,55,101,164,238,329,425,532,664,792,963,1100]],
+      [7.4,[20,51,95,156,228,315,409,513,642,767,934,1070]],
+      [7.6,[18,48,90,148,218,303,394,496,621,743,907,1040]],
+      [7.8,[17,45,85,141,208,291,380,479,601,721,882,1010]],
+      [8.0,[16,43,80,135,199,279,366,463,582,699,857,981]],
+      [8.2,[15,40,76,128,190,268,353,448,564,679,834,956]],
+      [8.4,[14,38,72,122,182,257,339,432,546,660,812,932]],
+      [8.6,[14,36,68,116,174,246,326,417,528,641,790,910]],
+      [8.8,[13,34,64,110,166,236,313,402,509,621,770,888]],
+      [9.0,[12,32,61,105,158,225,300,386,491,602,751,867]],
+      [9.2,[11,30,57,99,150,215,287,371,472,582,731,847]],
+      [9.4,[11,28,54,94,142,204,274,354,453,560,709,828]],
+      [9.6,[10,26,50,88,133,192,259,337,432,537,685,809]],
+      [9.8,[9,24,46,81,124,179,242,316,407,509,656,786]],
+      [10.0,[7,19,38,68,105,154,210,277,358,454,597,739]],
+    ]
+  },
+  12: {
+    label:"3-12",
+    speeds:[20,30,40,50,60,70,80,90,100,110,120,130],
+    rows:[
+      ["NC",[210,459,804,1130,1540,2030,2510,3040,3720,4280,4990,5440]],
+      ["RC",[155,338,594,835,1150,1510,1870,2270,2770,3190,3740,4080]],
+      [2.2,[139,306,536,755,1040,1360,1690,2050,2510,2900,3390,3710]],
+      [2.4,[127,278,488,688,942,1250,1550,1880,2300,2650,3110,3400]],
+      [2.6,[116,255,448,631,865,1140,1420,1730,2110,2440,2860,3140]],
+      [2.8,[107,235,413,583,799,1060,1320,1600,1960,2260,2660,2910]],
+      [3.0,[99,218,382,541,742,980,1220,1490,1820,2110,2480,2720]],
+      [3.2,[92,202,356,504,692,914,1140,1390,1700,1970,2320,2550]],
+      [3.4,[86,189,332,472,648,856,1070,1300,1600,1850,2180,2400]],
+      [3.6,[81,177,312,443,609,805,1010,1230,1510,1750,2060,2270]],
+      [3.8,[76,166,293,417,573,759,947,1160,1420,1650,1950,2150]],
+      [4.0,[71,157,276,393,542,718,896,1100,1350,1560,1850,2040]],
+      [4.2,[67,148,261,372,513,680,850,1040,1280,1490,1760,1940]],
+      [4.4,[64,140,247,353,487,646,808,988,1220,1420,1680,1850]],
+      [4.6,[60,132,234,335,463,615,770,941,1160,1350,1600,1770]],
+      [4.8,[57,126,222,319,441,586,734,899,1110,1290,1530,1700]],
+      [5.0,[54,119,211,304,421,560,702,860,1060,1240,1470,1630]],
+      [5.2,[52,114,201,290,402,535,672,824,1020,1190,1410,1570]],
+      [5.4,[49,108,192,277,384,513,644,790,973,1140,1360,1510]],
+      [5.6,[47,103,183,265,368,492,618,759,936,1100,1310,1460]],
+      [5.8,[45,98,175,254,353,472,594,730,900,1060,1260,1410]],
+      [6.0,[43,94,167,244,339,454,572,703,867,1020,1220,1360]],
+      [6.2,[41,90,159,234,326,436,551,678,837,981,1180,1310]],
+      [6.4,[39,86,153,225,313,420,531,654,808,947,1140,1270]],
+      [6.6,[37,82,146,216,302,405,512,632,781,917,1100,1230]],
+      [6.8,[35,78,140,208,290,391,494,611,755,888,1070,1200]],
+      [7.0,[34,75,134,200,280,377,478,591,731,860,1040,1160]],
+      [7.2,[32,71,128,192,270,364,462,572,708,834,1010,1130]],
+      [7.4,[30,68,122,185,260,352,447,554,686,810,974,1100]],
+      [7.6,[29,65,117,178,251,340,433,537,666,786,947,1070]],
+      [7.8,[27,61,112,172,243,329,420,521,646,764,921,1040]],
+      [8.0,[26,58,107,165,235,319,407,506,628,743,897,1020]],
+      [8.2,[24,55,102,159,227,309,395,491,610,723,874,989]],
+      [8.4,[23,52,97,154,219,299,383,477,593,704,852,965]],
+      [8.6,[22,50,93,148,212,290,372,464,577,686,831,942]],
+      [8.8,[20,47,88,142,205,281,361,451,562,668,811,921]],
+      [9.0,[19,45,85,137,198,273,351,439,547,652,792,900]],
+      [9.2,[18,43,81,132,191,264,341,428,533,636,774,880]],
+      [9.4,[18,41,77,127,185,256,332,416,520,621,756,861]],
+      [9.6,[17,39,74,123,179,249,323,406,507,606,739,843]],
+      [9.8,[16,37,71,118,173,241,314,395,494,592,723,826]],
+      [10.0,[15,36,68,114,167,234,305,385,482,578,708,809]],
+      [10.2,[14,34,65,110,161,226,296,375,471,566,693,793]],
+      [10.4,[14,33,62,105,155,219,288,365,459,553,679,778]],
+      [10.6,[13,31,59,101,150,212,279,355,448,541,665,763]],
+      [10.8,[12,30,57,97,144,204,270,345,436,529,652,749]],
+      [11.0,[12,28,54,93,139,197,261,335,423,516,639,735]],
+      [11.2,[11,27,51,89,133,189,252,324,411,503,626,722]],
+      [11.4,[11,25,49,85,127,182,242,312,397,490,613,709]],
+      [11.6,[10,24,46,80,120,173,232,300,382,472,598,697]],
+      [11.8,[9,22,43,75,113,163,219,285,364,453,579,685]],
+      [12.0,[7,18,36,64,98,143,194,255,328,414,540,665]],
+    ]
+  }
+};
+
+/* ============================================================
+ *  Estado y elementos
+ * ============================================================ */
+
+const state = {
+  V: 100,
+  R: 600,
+  emax: 8,
+  context: "rural",
+  methods: new Set([1,5]),
+  fixedRmin: true,
+  crossExag: 5,
+  lightMode: true,
+  studentMode: false,
+  sectionMethod: 5,
+  vReal: 100,        // velocidad real de tráfico (km/h)
+  ghostE: false,     // fantasma de e calculado con V_real en plotE
+  fUseVreal: false,  // reemplazar f por f-demanda con V_real en plotF
+};
+
+const COLORS = {1:"#ef4444",2:"#3b82f6",3:"#10b981",4:"#f59e0b",5:"#a855f7"};
+const NAMES = {
+  1:"M1: Proporcional (e ∝ 1/R, f ∝ 1/R)",
+  2:"M2: f primero, luego e",
+  3:"M3: e primero, luego f",
+  4:"M4: e con V running, luego f",
+  5:"M5: AASHTO recomendado (parabólico)"
+};
+const SHORT = {1:"M1",2:"M2",3:"M3",4:"M4",5:"M5"};
+
+/* ============================================================
+ *  KaTeX helper
+ * ============================================================ */
+function tex(formula, display=false){
+  try{
+    return katex.renderToString(formula,{throwOnError:false,displayMode:display});
+  }catch(e){ return `<code>${formula}</code>`; }
+}
+
+/* ============================================================
+ *  Theme helpers
+ * ============================================================ */
+function plotTheme(){
+  return state.lightMode ? {
+    paper_bg:'#ffffff', plot_bg:'#f8fafc',
+    font_color:'#1e293b', grid:'#e2e8f0', zero:'#cbd5e1', muted:'#64748b'
+  } : {
+    paper_bg:'#1e293b', plot_bg:'#0b1220',
+    font_color:'#e2e8f0', grid:'#334155', zero:'#475569', muted:'#94a3b8'
+  };
+}
+function svgC(){
+  return state.lightMode ? {
+    bg:'#f8fafc', panel:'#ffffff', grid:'#e2e8f0',
+    road:'#cbd5e1', text:'#1e293b', muted:'#64748b', border:'#e2e8f0'
+  } : {
+    bg:'#0b1220', panel:'#1e293b', grid:'#334155',
+    road:'#374151', text:'#e2e8f0', muted:'#94a3b8', border:'#334155'
+  };
+}
+
+/* ============================================================
+ *  Utilidades
+ * ============================================================ */
+
+function fmaxOf(V){
+  // fmax depende solo de V (Tabla 3-7). Interpolación lineal entre puntos.
+  const keys = Object.keys(FMAX_BY_V).map(Number).sort((a,b)=>a-b);
+  if(V<=keys[0]) return FMAX_BY_V[keys[0]];
+  if(V>=keys[keys.length-1]) return FMAX_BY_V[keys[keys.length-1]];
+  for(let i=0;i<keys.length-1;i++){
+    if(V>=keys[i] && V<=keys[i+1]){
+      const t = (V - keys[i])/(keys[i+1]-keys[i]);
+      return FMAX_BY_V[keys[i]]*(1-t)+FMAX_BY_V[keys[i+1]]*t;
+    }
+  }
+  return 0.12;
+}
+function vrunOf(V){
+  const keys = Object.keys(VRUN_BY_V).map(Number).sort((a,b)=>a-b);
+  if(V<=keys[0]) return VRUN_BY_V[keys[0]];
+  if(V>=keys[keys.length-1]) return VRUN_BY_V[keys[keys.length-1]];
+  for(let i=0;i<keys.length-1;i++){
+    if(V>=keys[i] && V<=keys[i+1]){
+      const t = (V - keys[i])/(keys[i+1]-keys[i]);
+      return VRUN_BY_V[keys[i]]*(1-t)+VRUN_BY_V[keys[i+1]]*t;
+    }
+  }
+  return 0.85*V;
+}
+function rminOf(V, emax){
+  return V*V / (127*(emax/100 + fmaxOf(V)));
+}
+
+/* ============================================================
+ *  Distribución por método
+ *  Cada método devuelve {e, f} en decimal (e = 0.06 = 6%)
+ *  para una curva con radio R, velocidad de diseño V y emax(%).
+ * ============================================================ */
+
+function methodDist(method, V, R, emax){
+  const fmax = fmaxOf(V);
+  const VR   = vrunOf(V);
+  const Rmin = rminOf(V, emax);
+  const emax_d = emax/100;
+  let e=0, f=0;
+
+  if(R < Rmin){
+    // No es posible — devolvemos null e indicamos.
+    return {e:NaN, f:NaN, invalid:true};
+  }
+
+  const eDemand = V*V/(127*R); // e + f requerido a V_diseño
+
+  if(method===1){
+    e = emax_d * Rmin/R;
+    f = fmax   * Rmin/R;
+  }
+  else if(method===2){
+    const R2 = V*V/(127*fmax);
+    if(R >= R2){ e=0; f=eDemand; }
+    else       { f=fmax; e=eDemand-fmax; }
+  }
+  else if(method===3){
+    const R3 = V*V/(127*emax_d);
+    if(R >= R3){ e=eDemand; f=0; }
+    else       { e=emax_d; f=eDemand-emax_d; }
+  }
+  else if(method===4){
+    const RPI = VR*VR/(127*emax_d);
+    if(R >= RPI){
+      e = VR*VR/(127*R);          // línea de origen a (1/RPI, emax)
+      f = eDemand - e;             // f a velocidad de diseño
+    } else {
+      e = emax_d;
+      f = eDemand - emax_d;
+    }
+  }
+  else if(method===5){
+    const RPI = VR*VR/(127*emax_d);
+    const hPI = V*V/(127*RPI) - emax_d;
+    const L1  = 1/RPI;
+    const L2  = 1/Rmin - 1/RPI;
+    const S1  = hPI/L1;
+    const S2  = (fmax - hPI)/L2;
+    const M0  = L1*L2*(S2-S1)/(2*(L1+L2));
+    let f5;
+    if(1/R <= 1/RPI){
+      const y1 = M0 * Math.pow(RPI/R, 2);
+      f5 = S1*(1/R) + y1;
+    } else {
+      const num = (1/Rmin - 1/R);
+      const den = (1/Rmin - 1/RPI);
+      const y2 = M0 * (num*num)/(den*den);
+      f5 = hPI + S2*(1/R - 1/RPI) + y2;
+    }
+    f = f5;
+    e = eDemand - f;
+  }
+  // Cap e a [0, emax_d]
+  if(e<0) e=0;
+  if(e>emax_d) e=emax_d;
+  if(f<0) f=0;
+  return {e, f};
+}
+
+/* Curvas continuas para graficar — devuelven arrays en función de 1/R */
+function methodCurves(method, V, emax, NPTS){
+  NPTS = NPTS || 200;
+  const Rmin = rminOf(V, emax);
+  const arrInvR=[], arrE=[], arrF=[], arrR=[];
+  // Rango: R desde Rmin hasta un radio grande (5*Rmin o más)
+  const Rmax = Math.max(5000, 8*Rmin);
+  const invRmin = 1/Rmin;
+  // Distribuir uniformemente en 1/R desde 1/Rmax (≈ 0) hasta 1/Rmin
+  for(let i=0;i<=NPTS;i++){
+    const t = i/NPTS;
+    const invR = (1/Rmax)*(1-t) + invRmin*t;
+    const R = 1/invR;
+    const {e, f} = methodDist(method, V, R, emax);
+    if(!Number.isFinite(e) || !Number.isFinite(f)) continue;
+    arrInvR.push(invR);
+    arrE.push(e*100);  // en %
+    arrF.push(f);
+    arrR.push(R);
+  }
+  return {invR:arrInvR, e:arrE, f:arrF, R:arrR};
+}
+
+/* Curvas de demanda real: el peralte aplicado proviene del diseño a V_D
+ * (método AASHTO), pero la fricción demandada se calcula con V_real:
+ *     f_real(R) = V_real² / (127·R)  −  e_design(R)
+ * Permite ver overdriving (f > f_max) y fricción negativa (f < 0).
+ */
+function fDemandCurves(method, V_design, V_real, emax, NPTS){
+  NPTS = NPTS || 200;
+  const Rmin = rminOf(V_design, emax);
+  const Rmax = Math.max(5000, 8*Rmin);
+  const invRmin = 1/Rmin;
+  const arrInvR=[], arrF=[], arrR=[];
+  for(let i=0;i<=NPTS;i++){
+    const t = i/NPTS;
+    const invR = (1/Rmax)*(1-t) + invRmin*t;
+    const R = 1/invR;
+    const r = methodDist(method, V_design, R, emax);
+    if(!Number.isFinite(r.e)) continue;
+    const fDem = V_real*V_real*invR/127 - r.e;
+    arrInvR.push(invR);
+    arrF.push(fDem);
+    arrR.push(R);
+  }
+  return {invR:arrInvR, f:arrF, R:arrR};
+}
+
+/* ============================================================
+ *  Render: panel de métodos y resultados
+ * ============================================================ */
+
+function buildMethodsList(){
+  const div = document.getElementById("methodsList");
+  div.innerHTML="";
+  for(let m=1;m<=5;m++){
+    const id = "m_"+m;
+    const checked = state.methods.has(m)?"checked":"";
+    div.insertAdjacentHTML("beforeend",`
+      <label class="method-item">
+        <input type="checkbox" id="${id}" ${checked} data-m="${m}" />
+        <span class="label">
+          <b><span class="swatch" style="background:${COLORS[m]}"></span>${NAMES[m]}</b>
+          ${m===5?"<span class='small'>(transición parabólica entre M1 y M4)</span>":""}
+        </span>
+      </label>
+    `);
+  }
+  div.querySelectorAll("input[type=checkbox]").forEach(cb=>{
+    cb.addEventListener("change",()=>{
+      const m = +cb.dataset.m;
+      if(cb.checked) state.methods.add(m);
+      else state.methods.delete(m);
+      refreshSectionMethodPills();
+      updateAll();
+    });
+  });
+}
+
+function refreshSectionMethodPills(){
+  const container = document.getElementById("sectionMethodPills");
+  if(!container) return;
+  container.innerHTML = "";
+  const ms = [...state.methods].sort();
+  // Ensure sectionMethod is valid
+  if(!state.methods.has(state.sectionMethod)) state.sectionMethod = ms[0] || 5;
+  for(const m of ms){
+    const active = state.sectionMethod === m;
+    const pill = document.createElement("button");
+    pill.textContent = SHORT[m];
+    pill.style.cssText = `padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;cursor:pointer;border:2px solid ${COLORS[m]};background:${active?COLORS[m]:"transparent"};color:${active?"#fff":COLORS[m]};transition:all .15s`;
+    pill.addEventListener("click",()=>{
+      state.sectionMethod = m;
+      refreshSectionMethodPills();
+      updateSection();
+    });
+    container.appendChild(pill);
+  }
+}
+
+function renderMethodResults(){
+  const box = document.getElementById("methodResults");
+  box.innerHTML="";
+  const Rmin = rminOf(state.V, state.emax);
+  const valid = state.R>=Rmin;
+  if(!valid){
+    box.innerHTML=`<div class="results" style="border-left:3px solid var(--warn)">
+      <b style="color:var(--warn)">⚠ R &lt; R<sub>min</sub></b><br/>
+      <span class="small">El radio actual no cumple el mínimo permitido.
+      Aumenta R o reduce V/aumenta e<sub>max</sub>.</span>
+    </div>`;
+    return;
+  }
+  const methods = [...state.methods].sort();
+  for(const m of methods){
+    const {e, f} = methodDist(m, state.V, state.R, state.emax);
+    const ePct = (e*100).toFixed(2);
+    const fStr = f.toFixed(3);
+    const sum  = (e+f).toFixed(3);
+    box.insertAdjacentHTML("beforeend",`
+      <div class="results" style="border-left:3px solid ${COLORS[m]};margin-bottom:6px">
+        <div class="kv"><span class="k"><span class="pill-method" style="background:${COLORS[m]}">${SHORT[m]}</span>${NAMES[m].split(":")[1]||""}</span><span></span></div>
+        <div class="kv"><span class="k">e</span><span class="v">${ePct} %</span></div>
+        <div class="kv"><span class="k">f</span><span class="v">${fStr}</span></div>
+        <div class="kv"><span class="k">e + f</span><span class="v">${sum}</span></div>
+      </div>
+    `);
+  }
+}
+
+/* ============================================================
+ *  Plotly: distribución e y f vs 1/R
+ * ============================================================ */
+
+function plotlyLayout(yTitle, isE){
+  const Rmin = rminOf(state.V, state.emax);
+  const invRmin = 1/Rmin;
+  const th = plotTheme();
+  // Para el plot f con V_real, permitir y negativo (fricción negativa)
+  const yAxis = {
+    title:yTitle,
+    gridcolor:th.grid,
+    zerolinecolor:th.zero,
+    rangemode:"tozero",
+  };
+  if(!isE && state.fUseVreal){
+    delete yAxis.rangemode;
+    yAxis.zeroline = true;
+    yAxis.zerolinewidth = 2;
+    yAxis.zerolinecolor = th.muted;
+  }
+  return {
+    paper_bgcolor: th.paper_bg,
+    plot_bgcolor:  th.plot_bg,
+    font:{color:th.font_color, size:11},
+    margin:{l:60,r:20,t:10,b:48},
+    xaxis:{
+      title:"1/R (1/m)",
+      gridcolor:th.grid,
+      zerolinecolor:th.zero,
+      tickformat:".4f",
+      range:[0, invRmin*1.05],
+    },
+    yaxis: yAxis,
+    showlegend:true,
+    legend:{x:0.02, y:0.98, bgcolor: state.lightMode ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.3)", font:{color:th.font_color}},
+    shapes:[
+      {
+        type:"line", xref:"paper", yref:"y",
+        x0:0, x1:1, y0:isE?state.emax:fmaxOf(state.V), y1:isE?state.emax:fmaxOf(state.V),
+        line:{color:th.muted, dash:"dash", width:1}
+      },
+      {
+        type:"line", xref:"x", yref:"paper",
+        x0:invRmin, x1:invRmin, y0:0, y1:1,
+        line:{color:th.muted, dash:"dot", width:1}
+      },
+      ...(state.R>=Rmin ? [{
+        type:"line", xref:"x", yref:"paper",
+        x0:1/state.R, x1:1/state.R, y0:0, y1:1,
+        line:{color:"#facc15", dash:"solid", width:2.5}
+      }] : [])
+    ],
+    annotations:[
+      {x:0, y:isE?state.emax:fmaxOf(state.V), xref:"x", yref:"y",
+        text:isE?`e<sub>max</sub>=${state.emax}%`:`f<sub>max</sub>=${fmaxOf(state.V).toFixed(2)}`,
+        showarrow:false, xanchor:"left", yanchor:"bottom", font:{color:th.muted, size:10}, bgcolor:"rgba(0,0,0,0)"},
+      {x:invRmin, y:1, xref:"x", yref:"paper",
+        text:`1/R<sub>min</sub>`,
+        showarrow:false, xanchor:"right", yanchor:"top", font:{color:th.muted, size:10}, bgcolor:"rgba(0,0,0,0)"},
+      ...(state.R>=Rmin ? [{
+        x:1/state.R, y:1, xref:"x", yref:"paper",
+        text:`R=${state.R}`,
+        showarrow:false, xanchor:"left", yanchor:"top", font:{color:"#facc15", size:10}, bgcolor:"rgba(0,0,0,0)"
+      }] : [])
+    ]
+  };
+}
+
+function updateDistribPlots(){
+  const tracesE=[], tracesF=[];
+  const useFvr = state.fUseVreal && Math.abs(state.vReal-state.V)>1e-6;
+  const useGhostE = state.ghostE && Math.abs(state.vReal-state.V)>1e-6;
+  for(const m of [...state.methods].sort()){
+    // ---- e plot: fantasma con V_real (líneas tenues, detrás del original) ----
+    if(useGhostE){
+      const cg = methodCurves(m, state.vReal, state.emax);
+      tracesE.push({
+        x:cg.invR, y:cg.e,
+        type:"scatter", mode:"lines",
+        name:SHORT[m]+" — e (V_real)",
+        line:{color:COLORS[m], width:1.6, dash:"dot"},
+        opacity:0.45,
+        hovertemplate:"R=%{customdata:.0f} m<br>1/R=%{x:.5f}<br>e_real=%{y:.2f}%<extra>"+SHORT[m]+" · V_real</extra>",
+        customdata:cg.R,
+        legendgroup:"ghost",
+      });
+    }
+    const c = methodCurves(m, state.V, state.emax);
+    tracesE.push({
+      x:c.invR, y:c.e,
+      type:"scatter", mode:"lines",
+      name:SHORT[m]+" — e",
+      line:{color:COLORS[m], width:2.5},
+      hovertemplate:"R=%{customdata:.0f} m<br>1/R=%{x:.5f}<br>e=%{y:.2f}%<extra>"+SHORT[m]+"</extra>",
+      customdata:c.R,
+    });
+
+    // ---- f plot: AASHTO o demanda real con V_real (reemplaza) ----
+    if(useFvr){
+      const cf = fDemandCurves(m, state.V, state.vReal, state.emax);
+      tracesF.push({
+        x:cf.invR, y:cf.f,
+        type:"scatter", mode:"lines",
+        name:SHORT[m]+" — f (V_real)",
+        line:{color:COLORS[m], width:2.5, dash:"solid"},
+        hovertemplate:"R=%{customdata:.0f} m<br>1/R=%{x:.5f}<br>f_real=%{y:.3f}<extra>"+SHORT[m]+" · V_real</extra>",
+        customdata:cf.R,
+      });
+    } else {
+      tracesF.push({
+        x:c.invR, y:c.f,
+        type:"scatter", mode:"lines",
+        name:SHORT[m]+" — f",
+        line:{color:COLORS[m], width:2.5, dash:"solid"},
+        hovertemplate:"R=%{customdata:.0f} m<br>1/R=%{x:.5f}<br>f=%{y:.3f}<extra>"+SHORT[m]+"</extra>",
+        customdata:c.R,
+      });
+    }
+
+    // Punto del R actual sobre cada curva
+    const Rmin = rminOf(state.V, state.emax);
+    if(state.R >= Rmin){
+      const {e:ePt, f:fPt} = methodDist(m, state.V, state.R, state.emax);
+      tracesE.push({
+        x:[1/state.R], y:[ePt*100],
+        mode:"markers",
+        marker:{color:COLORS[m], size:11, line:{color:"#facc15", width:2}},
+        showlegend:false,
+        hovertemplate:`${SHORT[m]} en R=%{customdata}<br>e=${(ePt*100).toFixed(2)}%<extra></extra>`,
+        customdata:[state.R],
+      });
+      const fPtPlot = useFvr ? (state.vReal*state.vReal/(127*state.R) - ePt) : fPt;
+      tracesF.push({
+        x:[1/state.R], y:[fPtPlot],
+        mode:"markers",
+        marker:{color:COLORS[m], size:11, line:{color:"#facc15", width:2}},
+        showlegend:false,
+        hovertemplate:`${SHORT[m]} en R=%{customdata}<br>f${useFvr?"_real":""}=${fPtPlot.toFixed(3)}<extra></extra>`,
+        customdata:[state.R],
+      });
+    }
+  }
+  // Curva e+f = V²/(127R) (la "demanda total") — útil para visualizar
+  // Generamos una línea fina común
+  const Rmin = rminOf(state.V, state.emax);
+  const invRmin = 1/Rmin;
+  const NPTS=80;
+  const xref=[], yEref=[], yFref=[];
+  // Sin método: línea recta e+f = V²/(127R), pendiente V²/127
+  for(let i=0;i<=NPTS;i++){
+    const invR = (invRmin*1.02)*i/NPTS;
+    xref.push(invR);
+    const total = state.V*state.V*invR/127;
+    yEref.push(total*100); // en %
+    yFref.push(total);
+  }
+  // Plot
+  Plotly.react("plotE", tracesE, plotlyLayout("e (%)", true), {responsive:true, displaylogo:false});
+  Plotly.react("plotF", tracesF, plotlyLayout("f (—)", false), {responsive:true, displaylogo:false});
+}
+
+/* ============================================================
+ *  Plan view (curva en planta) — SVG
+ * ============================================================ */
+function updatePlan(){
+  const svg = document.getElementById("planSvg");
+  const W=720, H=420;
+  const cx = W/2;
+  const Rmin = rminOf(state.V, state.emax);
+  const ratio = state.R / Rmin;
+  const colorR = ratio<1 ? "#ef4444" : ratio<1.2 ? "#f59e0b" : "#22c55e";
+  const sc = svgC();
+
+  // ==== Carril y vehículo (vista en planta, desde arriba) ====
+  const laneHalf = 22;   // semiancho del carril en px
+  const carL = 46, carW = 18;  // largo × ancho del vehículo (top-down)
+
+  // Genera un vehículo visto desde arriba, centrado en (x,y), rotado rotDeg.
+  // El eje largo del vehículo está sobre la dirección tangente del arco.
+  function vehicleSVG(x, y, rotDeg, color){
+    const L = carL, Wd = carW;
+    const wL = 8, wW = 5; // dim. neumáticos
+    return `<g transform="translate(${x.toFixed(2)},${y.toFixed(2)}) rotate(${rotDeg.toFixed(2)})">
+      <!-- neumáticos (debajo del cuerpo) -->
+      <rect x="${(-L/2+5).toFixed(1)}" y="${(-Wd/2-2).toFixed(1)}" width="${wL}" height="${wW}" rx="1" fill="#0f172a"/>
+      <rect x="${(-L/2+5).toFixed(1)}" y="${(Wd/2-3).toFixed(1)}" width="${wL}" height="${wW}" rx="1" fill="#0f172a"/>
+      <rect x="${(L/2-13).toFixed(1)}" y="${(-Wd/2-2).toFixed(1)}" width="${wL}" height="${wW}" rx="1" fill="#0f172a"/>
+      <rect x="${(L/2-13).toFixed(1)}" y="${(Wd/2-3).toFixed(1)}" width="${wL}" height="${wW}" rx="1" fill="#0f172a"/>
+      <!-- carrocería -->
+      <rect x="${(-L/2).toFixed(1)}" y="${(-Wd/2).toFixed(1)}" width="${L}" height="${Wd}" rx="5" fill="${color}" stroke="#0f172a" stroke-width="1.1"/>
+      <!-- parabrisas (frente) -->
+      <rect x="${(L/2-14).toFixed(1)}" y="${(-Wd/2+2.5).toFixed(1)}" width="6" height="${Wd-5}" rx="1.5" fill="#1e293b" opacity="0.75"/>
+      <!-- luneta trasera -->
+      <rect x="${(-L/2+6).toFixed(1)}" y="${(-Wd/2+2.5).toFixed(1)}" width="5" height="${Wd-5}" rx="1.5" fill="#1e293b" opacity="0.55"/>
+      <!-- líneas de techo / capó -->
+      <line x1="${(-L/2+11).toFixed(1)}" y1="0" x2="${(L/2-14).toFixed(1)}" y2="0" stroke="#0f172a" stroke-width="0.6" opacity="0.35"/>
+      <!-- faros delanteros -->
+      <circle cx="${(L/2-1).toFixed(1)}" cy="${(-Wd/2+3).toFixed(1)}" r="1.6" fill="#fde047"/>
+      <circle cx="${(L/2-1).toFixed(1)}" cy="${(Wd/2-3).toFixed(1)}" r="1.6" fill="#fde047"/>
+      <!-- luces traseras -->
+      <circle cx="${(-L/2+1).toFixed(1)}" cy="${(-Wd/2+3).toFixed(1)}" r="1.2" fill="#ef4444"/>
+      <circle cx="${(-L/2+1).toFixed(1)}" cy="${(Wd/2-3).toFixed(1)}" r="1.2" fill="#ef4444"/>
+    </g>`;
+  }
+
+  // Color del asfalto adaptado al tema
+  const asphalt = (typeof document!=="undefined" && document.documentElement.classList.contains("light")) ? "#94a3b8" : "#334155";
+  const edgeColor = "#f8fafc";
+  const dashColor = "#facc15"; // amarillo: línea de centro de carril
+
+  // ================================================================
+  //  MODO 1: Rmin FIJO  →  arcos con cuerda fija a (cx-hc, chord_y)–
+  //  (cx+hc, chord_y).  El radio en píxeles cambia al cambiar R.
+  //  La sagita disminuye al crecer R, así "el arco se aplana".
+  // ================================================================
+  if(state.fixedRmin){
+    const chord_y = 320;        // y de la cuerda compartida
+    const hc      = 170;        // semicuerda (px)
+    const rmin_px_target = 200; // radio en píxeles para el arco Rmin (fijo)
+    const r_px = rmin_px_target * (state.R / Rmin);
+
+    // Geometría de un arco con cuerda horizontal en chord_y, centro abajo.
+    function arcGeom(rPx){
+      const halfChord = Math.min(hc, rPx*0.99);
+      const h = Math.sqrt(Math.max(0, rPx*rPx - halfChord*halfChord));
+      const cy_arc = chord_y + h; // centro del círculo (debajo de la cuerda)
+      const theta = Math.asin(halfChord / rPx); // medio-ángulo desde la vertical
+      const apexY = cy_arc - rPx;
+      const sag = rPx - h;
+      return {halfChord, h, cy_arc, theta, apexY, sag};
+    }
+
+    // Path SVG de un arco concéntrico al arco principal (mismo centro y mismo medio-ángulo)
+    function arcPathAt(R, geom){
+      const t = geom.theta;
+      const x1 = cx - R*Math.sin(t);
+      const y1 = geom.cy_arc - R*Math.cos(t);
+      const x2 = cx + R*Math.sin(t);
+      const y2 = geom.cy_arc - R*Math.cos(t);
+      return `M ${x1.toFixed(2)} ${y1.toFixed(2)} A ${R.toFixed(2)} ${R.toFixed(2)} 0 0 1 ${x2.toFixed(2)} ${y2.toFixed(2)}`;
+    }
+
+    // Polígono cerrado del carril (anular) entre rPx ± laneHalf, mismo centro y theta.
+    function lanePolygon(rPx, geom){
+      const rOut = rPx + laneHalf;
+      const rIn  = Math.max(2, rPx - laneHalf);
+      const t = geom.theta;
+      const x1o = cx - rOut*Math.sin(t), y1o = geom.cy_arc - rOut*Math.cos(t);
+      const x2o = cx + rOut*Math.sin(t), y2o = geom.cy_arc - rOut*Math.cos(t);
+      const x1i = cx - rIn *Math.sin(t), y1i = geom.cy_arc - rIn *Math.cos(t);
+      const x2i = cx + rIn *Math.sin(t), y2i = geom.cy_arc - rIn *Math.cos(t);
+      return `M ${x1o.toFixed(2)} ${y1o.toFixed(2)} `+
+             `A ${rOut.toFixed(2)} ${rOut.toFixed(2)} 0 0 1 ${x2o.toFixed(2)} ${y2o.toFixed(2)} `+
+             `L ${x2i.toFixed(2)} ${y2i.toFixed(2)} `+
+             `A ${rIn.toFixed(2)} ${rIn.toFixed(2)} 0 0 0 ${x1i.toFixed(2)} ${y1i.toFixed(2)} Z`;
+    }
+
+    const geomMin = arcGeom(rmin_px_target);
+    const geomR   = arcGeom(r_px);
+
+    const arcMinPath = arcPathAt(rmin_px_target, geomMin);
+    const arcRCenter = arcPathAt(r_px, geomR);
+    const roadFill   = lanePolygon(r_px, geomR);
+    const edgeOuter  = arcPathAt(r_px + laneHalf, geomR);
+    const edgeInner  = arcPathAt(Math.max(2, r_px - laneHalf), geomR);
+
+    // Vehículo en el ápice del arco R (allí la tangente es horizontal)
+    const vehicle = vehicleSVG(cx, geomR.apexY, 0, "#60a5fa");
+
+    svg.innerHTML = `
+      <defs>
+        <marker id="arrowP" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="${sc.muted}"/>
+        </marker>
+      </defs>
+      <rect x="0" y="0" width="${W}" height="${H}" fill="${sc.bg}"/>
+
+      <!-- cuerda referencia -->
+      <line x1="${cx-hc-40}" y1="${chord_y}" x2="${cx+hc+40}" y2="${chord_y}" stroke="${sc.grid}" stroke-width="1" stroke-dasharray="3 3"/>
+      <text x="${cx+hc+44}" y="${chord_y+3}" fill="${sc.muted}" font-size="10">cuerda</text>
+
+      <!-- arco Rmin (referencia, sin asfalto) -->
+      <path d="${arcMinPath}" fill="none" stroke="${sc.muted}" stroke-width="2" stroke-dasharray="6 4"/>
+      <text x="${cx-22}" y="${geomMin.apexY-8}" fill="${sc.muted}" font-size="11" text-anchor="middle">R_min = ${Rmin.toFixed(0)} m</text>
+
+      <!-- CARRIL (vista en planta) -->
+      <path d="${roadFill}" fill="${asphalt}" stroke="none" opacity="0.95"/>
+      <!-- bordes del carril -->
+      <path d="${edgeOuter}" fill="none" stroke="${edgeColor}" stroke-width="1.8"/>
+      <path d="${edgeInner}" fill="none" stroke="${edgeColor}" stroke-width="1.8"/>
+      <!-- línea central del carril (a lo largo de R) -->
+      <path d="${arcRCenter}" fill="none" stroke="${dashColor}" stroke-width="1.5" stroke-dasharray="9 7"/>
+      <!-- etiqueta R -->
+      <text x="${cx+22}" y="${Math.max(geomR.apexY-laneHalf-8, 16)}" fill="${colorR}" font-size="13" font-weight="bold">R = ${state.R} m</text>
+
+      <!-- VEHÍCULO (vista en planta) -->
+      ${vehicle}
+
+      <!-- info -->
+      <g transform="translate(18,18)">
+        <rect x="0" y="0" width="230" height="92" rx="6" fill="${sc.panel}" stroke="${sc.border}"/>
+        <text x="12" y="22" fill="${sc.muted}" font-size="11">Vista en planta · R<tspan font-size="9">min</tspan> fijo</text>
+        <text x="12" y="50" fill="${colorR}" font-size="22" font-weight="bold">${ratio.toFixed(2)}×</text>
+        <text x="12" y="68" fill="${sc.muted}" font-size="10">R / R_min · ${ratio<1?"⚠ inferior al mínimo":ratio<1.2?"al límite":"holgado"}</text>
+        <text x="12" y="84" fill="${sc.muted}" font-size="9">sagita: R<tspan font-size="8">min</tspan>=${geomMin.sag.toFixed(0)} px · R=${geomR.sag.toFixed(0)} px</text>
+      </g>
+    `;
+    return;
+  }
+
+  // ================================================================
+  //  MODO 2 (default):  ambos arcos se escalan juntos con un radio
+  //  máximo de referencia.  Concéntricos en (cx, cy).
+  // ================================================================
+  const cy = 380;
+  const Rmax_display = Math.max(state.R, Rmin)*1.15;
+  const scale = (Math.min(W,H)*0.78) / Rmax_display;
+  const rmin_px = Math.max(40, Rmin*scale);
+  const r_px    = Math.max(40, state.R*scale);
+  const sweep = 100;
+
+  function arcPath(R, sweepDeg){
+    const a1 = (180+sweepDeg/2) * Math.PI/180;
+    const a2 = (-sweepDeg/2) * Math.PI/180;
+    const x1 = cx + R*Math.cos(a1);
+    const y1 = cy + R*Math.sin(a1);
+    const x2 = cx + R*Math.cos(a2);
+    const y2 = cy + R*Math.sin(a2);
+    return `M ${x1.toFixed(2)} ${y1.toFixed(2)} A ${R.toFixed(2)} ${R.toFixed(2)} 0 0 1 ${x2.toFixed(2)} ${y2.toFixed(2)}`;
+  }
+
+  function lanePolygonConc(rPx, sweepDeg){
+    const rOut = rPx + laneHalf;
+    const rIn  = Math.max(4, rPx - laneHalf);
+    const a1 = (180+sweepDeg/2) * Math.PI/180;
+    const a2 = (-sweepDeg/2) * Math.PI/180;
+    const x1o = cx + rOut*Math.cos(a1), y1o = cy + rOut*Math.sin(a1);
+    const x2o = cx + rOut*Math.cos(a2), y2o = cy + rOut*Math.sin(a2);
+    const x1i = cx + rIn *Math.cos(a1), y1i = cy + rIn *Math.sin(a1);
+    const x2i = cx + rIn *Math.cos(a2), y2i = cy + rIn *Math.sin(a2);
+    return `M ${x1o.toFixed(2)} ${y1o.toFixed(2)} `+
+           `A ${rOut.toFixed(2)} ${rOut.toFixed(2)} 0 0 1 ${x2o.toFixed(2)} ${y2o.toFixed(2)} `+
+           `L ${x2i.toFixed(2)} ${y2i.toFixed(2)} `+
+           `A ${rIn.toFixed(2)} ${rIn.toFixed(2)} 0 0 0 ${x1i.toFixed(2)} ${y1i.toFixed(2)} Z`;
+  }
+
+  const roadFillC  = lanePolygonConc(r_px, sweep);
+  const edgeOuterC = arcPath(r_px + laneHalf, sweep);
+  const edgeInnerC = arcPath(Math.max(4, r_px - laneHalf), sweep);
+
+  // Vehículo en el ápice (ángulo -π/2 desde el centro). Tangente horizontal allí.
+  const carX = cx;
+  const carY = cy - r_px;
+  const vehicle2 = vehicleSVG(carX, carY, 0, "#60a5fa");
+
+  svg.innerHTML = `
+    <defs>
+      <marker id="arrowP" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="${sc.muted}"/>
+      </marker>
+    </defs>
+    <rect x="0" y="0" width="${W}" height="${H}" fill="${sc.bg}"/>
+
+    <!-- centro de la curva -->
+    <circle cx="${cx}" cy="${cy}" r="3" fill="${sc.muted}"/>
+    <text x="${cx+8}" y="${cy+16}" fill="${sc.muted}" font-size="11">centro</text>
+
+    <!-- arco Rmin (referencia, sin asfalto) -->
+    <path d="${arcPath(rmin_px, sweep)}" fill="none" stroke="${sc.muted}" stroke-width="2" stroke-dasharray="6 4"/>
+    <text x="${cx + rmin_px*Math.cos(-Math.PI/4) + 6}" y="${cy + rmin_px*Math.sin(-Math.PI/4)}" fill="${sc.muted}" font-size="11">R_min = ${Rmin.toFixed(0)} m</text>
+
+    <!-- CARRIL (vista en planta) -->
+    <path d="${roadFillC}" fill="${asphalt}" stroke="none" opacity="0.95"/>
+    <!-- bordes del carril -->
+    <path d="${edgeOuterC}" fill="none" stroke="${edgeColor}" stroke-width="1.8"/>
+    <path d="${edgeInnerC}" fill="none" stroke="${edgeColor}" stroke-width="1.8"/>
+    <!-- línea central del carril (a lo largo de R) -->
+    <path d="${arcPath(r_px, sweep)}" fill="none" stroke="${dashColor}" stroke-width="1.5" stroke-dasharray="9 7"/>
+    <text x="${cx + r_px*Math.cos(-Math.PI/3) + 6}" y="${cy + r_px*Math.sin(-Math.PI/3) - 6}" fill="${colorR}" font-size="13" font-weight="bold">R = ${state.R} m</text>
+
+    <!-- línea desde el centro al borde (radio) -->
+    <line x1="${cx}" y1="${cy}" x2="${cx + r_px*Math.cos(Math.PI*5/4)}" y2="${cy + r_px*Math.sin(Math.PI*5/4)}" stroke="${colorR}" stroke-width="1" stroke-dasharray="2 3" marker-end="url(#arrowP)"/>
+
+    <!-- VEHÍCULO (vista en planta) -->
+    ${vehicle2}
+
+    <!-- estado -->
+    <g transform="translate(20,20)">
+      <rect x="0" y="0" width="210" height="78" rx="6" fill="${sc.panel}" stroke="${sc.border}"/>
+      <text x="12" y="22" fill="${sc.muted}" font-size="11">Vista en planta · R / R_min:</text>
+      <text x="12" y="50" fill="${colorR}" font-size="22" font-weight="bold">${ratio.toFixed(2)}×</text>
+      <text x="12" y="68" fill="${sc.muted}" font-size="10">${ratio<1?"⚠ inferior al mínimo":ratio<1.2?"al límite":"holgado"}</text>
+    </g>
+  `;
+}
+
+/* ============================================================
+ *  Pavement cross-section — SVG
+ *  Shows e_des as superelevation and f_des as surface line thickness
+ *  plus a vertical bar indicator on the right side.
+ * ============================================================ */
+function updateSection(){
+  const svg = document.getElementById("sectSvg");
+  const W=620, H=340;
+  const baseY = 230;
+  const lanes = 2, laneW = 100;
+  const totalW = lanes*laneW*2;
+  const startX = (W - totalW)/2 - 30;
+  const sc = svgC();
+
+  const Rmin = rminOf(state.V, state.emax);
+  const valid = state.R>=Rmin;
+  const fmax = fmaxOf(state.V);
+
+  const ms = [...state.methods].sort();
+  const m = (state.methods.has(state.sectionMethod) ? state.sectionMethod : ms[0]) || 5;
+  let e=0, f=0;
+  if(valid){
+    const res = methodDist(m, state.V, state.R, state.emax);
+    e = res.e; f = res.f;
+  }
+  const emax_d = state.emax/100;
+  const exag = state.crossExag || 1;
+
+  const dy_e    = totalW * e * exag;
+  const dy_emax = totalW * emax_d * exag;
+
+  const pavLeft = startX, pavRight = startX + totalW;
+  const yLeftE  = baseY, yRightE = baseY - dy_e;
+  const yRightMax = baseY - dy_emax;
+
+  // ===== Fricción demandada a V_real ============================
+  //   f_real = V_real²/(127·R) − e_design
+  //   La carretera tiene la geometría de diseño (e fija); el tráfico
+  //   real demanda una fricción distinta. Esto produce overdriving
+  //   (f_real > f_max) o fricción negativa (f_real < 0).
+  // ==============================================================
+  const f_real = valid ? (state.vReal*state.vReal/(127*state.R) - e) : 0;
+  let frStatus, frColor;
+  if(!valid){
+    frStatus = "—"; frColor = "#94a3b8";
+  } else if(f_real < -1e-4){
+    frStatus = "fricción negativa"; frColor = "#f59e0b";
+  } else if(f_real > fmax + 1e-4){
+    frStatus = "overdriving · f > f_max"; frColor = "#ef4444";
+  } else {
+    frStatus = "fricción positiva (normal)"; frColor = "#22c55e";
+  }
+
+  // f_des indicator — right side vertical bar (usa el f de demanda real)
+  const barX = W - 58;
+  const barMaxH = 120;
+  const fForBar = valid ? f_real : 0;
+  const fPct = (fmax>0) ? Math.min(1, Math.abs(fForBar)/fmax) : 0;
+  const barFillH = fPct * barMaxH;
+  const barTop = baseY - barMaxH;
+
+  // Surface line thickness proportional to |f_real| (2px → 14px)
+  const surfWidth = (2 + fPct * 12).toFixed(1);
+  const surfColor = frColor;
+  const barColor  = frColor;
+
+  // Lane dividers
+  let laneLines = "";
+  for(let i=1;i<lanes*2;i++){
+    const x = startX + i*laneW;
+    const t = i/(lanes*2);
+    const yi = yLeftE + (yRightE - yLeftE)*t;
+    const dash = i===lanes ? "" : "6 4";
+    laneLines += `<line x1="${x}" y1="${yi}" x2="${x}" y2="${yi+2}" stroke="#fbbf24" stroke-width="${i===lanes?2:1}" stroke-dasharray="${dash}"/>`;
+  }
+
+  // ===== Flechas de fricción sobre la superficie del pavimento =====
+  // La flecha completa (cuerpo + cabeza) es paralela a la pendiente del pavimento.
+  // La cabeza se dibuja como un <polygon> explícito (NO como marker SVG), para
+  // garantizar que sea siempre visible y nítida en cualquier ángulo, incluido
+  // el caso horizontal donde un marker tendría sus "alas" alineadas con el
+  // trazo y se confundirían con la línea.
+  //   f > 0  → apunta hacia el INTERIOR de la curva (lado bajo, diagonal hacia abajo)
+  //   f < 0  → apunta hacia el EXTERIOR de la curva (lado alto, diagonal hacia arriba)
+  //   f ≈ 0  → no se dibuja ninguna flecha
+  const dx_s = totalW;
+  const dy_s = yRightE - yLeftE;
+  const slen = Math.sqrt(dx_s*dx_s + dy_s*dy_s);
+  const ux = dx_s/slen, uy = dy_s/slen;     // vector unitario a lo largo de la pendiente (L→R)
+  const px = dy_s/slen, py = -dx_s/slen;    // perpendicular a la pendiente, hacia arriba
+  const FR_EPS  = 1e-3;
+  const sgn = (f_real > 0) ? -1 : 1;        // -1: hacia adentro;  +1: hacia afuera
+  const fAbsCap = Math.min(0.22, Math.abs(f_real));
+  const arrLen  = 30 + fAbsCap * 240;       // longitud total (~30..82 px según |f_real|)
+  const surfOff = 14;                       // separación perpendicular sobre la superficie
+  const hLen    = 12;                       // largo de la cabeza (a lo largo de la pendiente)
+  const hWidth  = 7;                        // semi-ancho de la cabeza (perpendicular a la pendiente)
+
+  let frArrows = "";
+  if(valid && Math.abs(f_real) > FR_EPS){
+    // perpendicular a la dirección de la línea (la línea va paralela a la pendiente)
+    const perpX = -uy;
+    const perpY =  ux;
+    for(const t of [0.18, 0.5, 0.82]){
+      const sx = pavLeft + t*dx_s;
+      const sy = yLeftE  + t*dy_s;
+      const cx_a = sx + px*surfOff;
+      const cy_a = sy + py*surfOff;
+      // punta y cola de la flecha (alineadas con la pendiente)
+      const tipX  = cx_a + sgn*ux*(arrLen/2);
+      const tipY  = cy_a + sgn*uy*(arrLen/2);
+      const tailX = cx_a - sgn*ux*(arrLen/2);
+      const tailY = cy_a - sgn*uy*(arrLen/2);
+      // base de la cabeza: a hLen detrás de la punta (a lo largo de la línea)
+      const baseX = tipX - sgn*ux*hLen;
+      const baseY = tipY - sgn*uy*hLen;
+      // cuerpo: desde la cola hasta el inicio de la cabeza (no atraviesa la cabeza)
+      frArrows += `<line x1="${tailX.toFixed(1)}" y1="${tailY.toFixed(1)}" x2="${baseX.toFixed(1)}" y2="${baseY.toFixed(1)}" stroke="${frColor}" stroke-width="3" stroke-linecap="round" opacity="0.95"/>`;
+      // cabeza: triángulo lleno paralelo a la pendiente, con contorno fino
+      const b1x = baseX + perpX*hWidth;
+      const b1y = baseY + perpY*hWidth;
+      const b2x = baseX - perpX*hWidth;
+      const b2y = baseY - perpY*hWidth;
+      const tri = `${tipX.toFixed(1)},${tipY.toFixed(1)} ${b1x.toFixed(1)},${b1y.toFixed(1)} ${b2x.toFixed(1)},${b2y.toFixed(1)}`;
+      frArrows += `<polygon points="${tri}" fill="${frColor}" stroke="${frColor}" stroke-width="0.8" stroke-linejoin="round" opacity="0.95"/>`;
+    }
+  }
+
+  svg.innerHTML = `
+    <rect x="0" y="0" width="${W}" height="${H}" fill="${sc.bg}"/>
+
+    <!-- ground -->
+    <line x1="0" y1="${baseY+32}" x2="${W}" y2="${baseY+32}" stroke="${sc.grid}" stroke-width="1" stroke-dasharray="3 4"/>
+
+    <!-- emax reference -->
+    <line x1="${pavLeft}" y1="${baseY}" x2="${pavRight}" y2="${yRightMax}" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4 4"/>
+    <text x="${pavRight+6}" y="${yRightMax+4}" fill="#ef4444" font-size="11">e_max=${state.emax}%</text>
+
+    <!-- pavement body -->
+    <polygon points="${pavLeft},${yLeftE} ${pavRight},${yRightE} ${pavRight},${yRightE+20} ${pavLeft},${yLeftE+20}"
+      fill="${sc.road}" stroke="${sc.border}" stroke-width="1"/>
+
+    <!-- pavement surface — thickness proportional to |f_real| -->
+    <line x1="${pavLeft}" y1="${yLeftE}" x2="${pavRight}" y2="${yRightE}"
+      stroke="${surfColor}" stroke-width="${surfWidth}" stroke-linecap="round"/>
+
+    <!-- lane dividers -->
+    ${laneLines}
+
+    <!-- friction direction arrows (parallel to surface) -->
+    ${frArrows}
+
+    <!-- vehicle (front view, coming out of screen) — paleta del auto en planta -->
+    <g transform="translate(${(pavLeft+pavRight)/2 - 40}, ${(yLeftE+yRightE)/2 - 54}) rotate(${Math.atan2(yRightE-yLeftE, totalW)*180/Math.PI})">
+      <!-- ruedas delanteras (dibujadas primero, sobresalen tras el cuerpo) -->
+      <rect x="0"  y="40" width="13" height="22" rx="3" fill="#0f172a" stroke="#0f172a" stroke-width="1"/>
+      <rect x="67" y="40" width="13" height="22" rx="3" fill="#0f172a" stroke="#0f172a" stroke-width="1"/>
+      <!-- llantas (detalle interior de la rueda) -->
+      <rect x="3"  y="44" width="7" height="14" rx="1.5" fill="#334155"/>
+      <rect x="70" y="44" width="7" height="14" rx="1.5" fill="#334155"/>
+      <!-- carrocería -->
+      <rect x="8" y="16" width="64" height="40" rx="7" fill="#60a5fa" stroke="#0f172a" stroke-width="1.2"/>
+      <!-- cabina / techo -->
+      <rect x="16" y="4" width="48" height="20" rx="6" fill="#3b82f6" stroke="#0f172a" stroke-width="1.2"/>
+      <!-- parabrisas -->
+      <rect x="20" y="7" width="40" height="14" rx="3" fill="#1e293b" opacity="0.75"/>
+      <!-- faros delanteros -->
+      <rect x="10" y="20" width="12" height="8" rx="2" fill="#fde047" stroke="#0f172a" stroke-width="0.6"/>
+      <rect x="58" y="20" width="12" height="8" rx="2" fill="#fde047" stroke="#0f172a" stroke-width="0.6"/>
+      <!-- parrilla -->
+      <rect x="28" y="44" width="24" height="7" rx="2" fill="#0f172a" opacity="0.45"/>
+    </g>
+
+    <!-- e cota -->
+    <line x1="${pavRight+28}" y1="${baseY}" x2="${pavRight+28}" y2="${yRightE}"
+      stroke="#a855f7" stroke-width="1.5" marker-start="url(#arrS)" marker-end="url(#arrS)"/>
+    <text x="${pavRight+38}" y="${(baseY+yRightE)/2+4}" fill="#a855f7" font-size="13" font-weight="bold">e=${(e*100).toFixed(2)}%</text>
+
+    <!-- f indicator bar (right side) — usa |f_real| -->
+    <rect x="${barX}" y="${barTop}" width="22" height="${barMaxH}" rx="4" fill="${sc.grid}" opacity="0.6"/>
+    <rect x="${barX}" y="${barTop+barMaxH-barFillH}" width="22" height="${barFillH}" rx="4" fill="${barColor}"/>
+    <text x="${barX+11}" y="${barTop-10}" text-anchor="middle" fill="${barColor}" font-size="11" font-weight="bold">|f_real|</text>
+    <text x="${barX+11}" y="${barTop+barMaxH+14}" text-anchor="middle" fill="${barColor}" font-size="10" font-weight="700">${(fPct*100).toFixed(0)}%</text>
+    <text x="${barX+11}" y="${barTop+barMaxH+26}" text-anchor="middle" fill="${sc.muted}" font-size="9">de f_max</text>
+    <text x="${barX+11}" y="${barTop+barMaxH-barFillH-(barFillH>8?8:barMaxH*0.1+8)}" text-anchor="middle" fill="${barColor}" font-size="10">${f_real.toFixed(3)}</text>
+
+    <!-- surface thickness legend -->
+    <text x="${pavLeft}" y="${H-26}" fill="${sc.muted}" font-size="10">Grosor superficie \u221d |f_real|  \u00b7  flechas = direcci\u00f3n de fricci\u00f3n</text>
+    <line x1="${pavLeft}" y1="${H-14}" x2="${pavLeft+60}" y2="${H-14}" stroke="${surfColor}" stroke-width="${surfWidth}" stroke-linecap="round"/>
+    <text x="${pavLeft+66}" y="${H-10}" fill="${sc.muted}" font-size="10">f_real=${f_real.toFixed(3)} \u00b7 f_des=${f.toFixed(3)} \u00b7 V_real=${state.vReal}, V_D=${state.V} km/h</text>
+
+    <!-- info box -->
+    <g transform="translate(20,12)">
+      <rect x="0" y="0" width="252" height="108" rx="6" fill="${sc.panel}" stroke="${sc.border}"/>
+      <text x="10" y="18" fill="${sc.muted}" font-size="11">M\u00e9todo: <tspan fill="${COLORS[m]}" font-weight="bold">${SHORT[m]}</tspan>  \u00b7  V_D=${state.V} \u00b7 V_real=${state.vReal} km/h</text>
+      <text x="10" y="36" fill="${sc.text}" font-size="12" font-weight="bold">e = ${(e*100).toFixed(2)}%  ·  f_des = ${f.toFixed(3)}</text>
+      <text x="10" y="54" fill="${frColor}" font-size="12" font-weight="bold">f_real = ${f_real.toFixed(3)}  ·  ${frStatus}</text>
+      <text x="10" y="70" fill="${sc.muted}" font-size="10">e/e_max = ${emax_d>0?(e/emax_d*100).toFixed(0):0}%  ·  |f_real|/f_max = ${fmax>0?(Math.abs(f_real)/fmax*100).toFixed(0):0}%</text>
+      <text x="10" y="84" fill="${sc.muted}" font-size="10">f_max(V_D) = ${fmax.toFixed(3)}  ·  V_real²/(127R) − e = f_real</text>
+      <text x="10" y="100" fill="${exag>1?'#facc15':sc.muted}" font-size="10">Exageración vertical: ${exag}×${exag>1?' (no a escala)':''}</text>
+    </g>
+
+    <defs>
+      <marker id="arrS" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#a855f7"/>
+      </marker>
+    </defs>
+  `;
+}
+
+/* ============================================================
+ *  Tabla AASHTO (3-8/9/10/11/12 según emax)
+ * ============================================================ */
+
+function buildTableTabs(){
+  const div = document.getElementById("tableTabs");
+  div.innerHTML="";
+  for(const emx of [4,6,8,10,12]){
+    const cls = (state.emax===emx)?"active":"";
+    div.insertAdjacentHTML("beforeend",
+      `<button class="${cls}" data-em="${emx}">e_max ${emx}% (Tabla ${AASHTO_TABLES[emx].label})</button>`);
+  }
+  div.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
+    state.emax = +b.dataset.em;
+    document.getElementById("emaxSel").value = state.emax;
+    updateAll();
+  }));
+}
+
+function renderAashtoTable(){
+  const tbl = AASHTO_TABLES[state.emax];
+  document.getElementById("tblNumLbl").textContent = tbl.label.replace("3-","");
+  document.getElementById("tblEmaxLbl").textContent = state.emax;
+  // Columna de V actual: encontrar la más cercana
+  let cIdx = -1;
+  for(let i=0;i<tbl.speeds.length;i++){
+    if(tbl.speeds[i]===state.V){cIdx=i;break;}
+  }
+  if(cIdx<0){
+    // tomar la más cercana
+    let best=Infinity;
+    for(let i=0;i<tbl.speeds.length;i++){
+      const d=Math.abs(tbl.speeds[i]-state.V);
+      if(d<best){best=d;cIdx=i;}
+    }
+  }
+
+  // Determinar la fila e correspondiente al método principal seleccionado
+  const Rmin = rminOf(state.V, state.emax);
+  const ms = [...state.methods].sort();
+  const m = ms[0] || 5;
+  let eRowIdx = -1;
+  if(state.R>=Rmin){
+    const {e} = methodDist(m, state.V, state.R, state.emax);
+    const ePct = e*100;
+    // Buscar la fila numérica más cercana al e calculado
+    let best=Infinity;
+    for(let i=0;i<tbl.rows.length;i++){
+      const erow = tbl.rows[i][0];
+      if(typeof erow === "number"){
+        const d = Math.abs(erow - ePct);
+        if(d<best){best=d;eRowIdx=i;}
+      }
+    }
+  }
+
+  let h = `<table class="aashto"><thead><tr>
+    <th>e (%)</th>${
+      tbl.speeds.map((v,i)=>`<th class="${i===cIdx?'col-hl':''}">V<sub>d</sub>=${v}</th>`).join("")
+    }</tr></thead><tbody>`;
+
+  for(let r=0;r<tbl.rows.length;r++){
+    const [eVal, RR] = tbl.rows[r];
+    const isRowHl = r===eRowIdx;
+    h += `<tr><td class="estr ${isRowHl?'row-hl':''}">${typeof eVal==="number"?eVal.toFixed(1):eVal}</td>`;
+    for(let c=0;c<RR.length;c++){
+      const cls = [];
+      if(c===cIdx) cls.push("col-hl");
+      if(isRowHl) cls.push("row-hl");
+      if(c===cIdx && isRowHl) cls.push("cell-hl");
+      h += `<td class="${cls.join(" ")}">${RR[c]}</td>`;
+    }
+    h += `</tr>`;
+  }
+  h += "</tbody></table>";
+  document.getElementById("aashtoTable").innerHTML = h;
+
+  // (re-)render tabs to reflect active emax
+  buildTableTabs();
+}
+
+function renderRminTable(){
+  const tbl = document.getElementById("rminTable");
+  let h = `<thead><tr>
+    <th>V (km/h)</th><th>e<sub>max</sub> (%)</th><th>f<sub>max</sub></th>
+    <th>e+f total</th><th>R calculado (m)</th><th>R redondeado (m)</th>
+  </tr></thead><tbody>`;
+  for(const r of TABLE_3_7){
+    const [V, em, fm, tot, rc, rr] = r;
+    const isV    = (V === state.V);
+    const isEm   = Math.abs(em - state.emax) < 0.01;
+    const isBoth = isV && isEm;
+    // Clase aplicada a CADA celda (porque CSS apunta a td.cell-hl etc.)
+    const cls = isBoth ? "cell-hl" : isV ? "col-hl" : isEm ? "row-hl" : "";
+    h += `<tr>
+      <td class="${cls}">${V}</td>
+      <td class="${cls}">${em.toFixed(1)}</td>
+      <td class="${cls}">${fm.toFixed(2)}</td>
+      <td class="${cls}">${tot.toFixed(2)}</td>
+      <td class="${cls}">${rc.toFixed(1)}</td>
+      <td class="${cls}">${rr}</td>
+    </tr>`;
+  }
+  h += "</tbody>";
+  tbl.innerHTML = h;
+}
+
+/* ============================================================
+ *  Plot drag — R by dragging the yellow vertical line
+ * ============================================================ */
+let _dragState = {active: false, plotId: null};
+
+function setupPlotDrag(plotId, overlayId){
+  const gd      = document.getElementById(plotId);
+  const overlay = document.getElementById(overlayId);
+
+  function toInvR(clientX){
+    try{
+      const rect = gd.getBoundingClientRect();
+      const fl   = gd._fullLayout;
+      if(!fl) return null;
+      const ml = fl.margin.l, mr = fl.margin.r;
+      const pw = rect.width - ml - mr;
+      const px = clientX - rect.left - ml;
+      if(px<0||px>pw) return null;
+      const [a,b] = fl.xaxis.range;
+      return a + (px/pw)*(b-a);
+    }catch(e){ return null; }
+  }
+
+  function nearR(clientX){
+    const invR = toInvR(clientX);
+    if(!invR||invR<=0) return false;
+    const Rmin = rminOf(state.V, state.emax);
+    if(state.R < Rmin) return false;
+    try{
+      const [a,b] = gd._fullLayout.xaxis.range;
+      return Math.abs(invR - 1/state.R) < (b-a)*0.04;
+    }catch(e){ return false; }
+  }
+
+  document.addEventListener("mousemove",(e)=>{
+    if(_dragState.active) return;
+    const rect = gd.getBoundingClientRect();
+    const inPlot = (e.clientX>=rect.left && e.clientX<=rect.right
+                 && e.clientY>=rect.top  && e.clientY<=rect.bottom);
+    if(inPlot && nearR(e.clientX)){
+      overlay.style.pointerEvents = "auto";
+      overlay.style.cursor = "ew-resize";
+    } else if(inPlot){
+      overlay.style.pointerEvents = "none";
+      overlay.style.cursor = "default";
+    } else {
+      overlay.style.pointerEvents = "none";
+    }
+  });
+
+  overlay.addEventListener("mousemove",(e)=>{
+    if(_dragState.active && _dragState.plotId===plotId) applyDrag(toInvR(e.clientX));
+  });
+
+  overlay.addEventListener("mousedown",(e)=>{
+    if(nearR(e.clientX)){
+      _dragState = {active:true, plotId};
+      overlay.style.cursor = "ew-resize";
+      e.preventDefault(); e.stopPropagation();
+    } else {
+      overlay.style.pointerEvents = "none";
+    }
+  });
+}
+
+function applyDrag(invR){
+  if(!invR||invR<=0) return;
+  const newR = Math.round(1/invR/10)*10;
+  const Rmin = rminOf(state.V, state.emax);
+  state.R = Math.max(Math.max(50, Math.ceil(Rmin)), Math.min(3000, newR));
+  document.getElementById("rSlider").value = state.R;
+  updateAll();
+}
+
+document.addEventListener("mousemove",(e)=>{
+  if(!_dragState.active) return;
+  const gd = document.getElementById(_dragState.plotId);
+  if(!gd||!gd._fullLayout) return;
+  const rect = gd.getBoundingClientRect();
+  const fl   = gd._fullLayout;
+  const pw   = rect.width - fl.margin.l - fl.margin.r;
+  const px   = e.clientX - rect.left - fl.margin.l;
+  const [a,b] = fl.xaxis.range;
+  applyDrag(a + (px/pw)*(b-a));
+});
+
+document.addEventListener("mouseup",()=>{
+  if(_dragState.active){
+    _dragState = {active:false, plotId:null};
+    document.querySelectorAll(".plot-overlay").forEach(o=>{
+      o.style.pointerEvents = "none"; o.style.cursor = "default";
+    });
+  }
+});
+
+/* ============================================================
+ *  Light / Dark mode toggle
+ * ============================================================ */
+function toggleLight(){
+  state.lightMode = !state.lightMode;
+  document.documentElement.classList.toggle("light", state.lightMode);
+  const btn = document.getElementById("lightBtn");
+  btn.textContent = state.lightMode ? "\uD83C\uDF19 Modo oscuro" : "\u2600 Modo claro";
+  btn.classList.toggle("on", state.lightMode);
+  updateAll();
+}
+
+/* ============================================================
+ *  Student mode toggle
+ * ============================================================ */
+function toggleStudent(){
+  state.studentMode = !state.studentMode;
+  const panel = document.getElementById("studentPanel");
+  panel.classList.toggle("visible", state.studentMode);
+  const btn = document.getElementById("studentBtn");
+  btn.classList.toggle("on", state.studentMode);
+  if(state.studentMode) renderStudentPanel();
+}
+
+function renderStudentPanel(){
+  const V=state.V, R=state.R, emax=state.emax;
+  const fmax=fmaxOf(V), VR=vrunOf(V), Rmin=rminOf(V,emax);
+  const emax_d=emax/100;
+  const eDemand=V*V/(127*R);
+  const valid=R>=Rmin;
+  let html="";
+
+  // Card 0: Base parameters
+  html+=`<div class="student-card"><h3>\u2699\uFE0F Par\u00e1metros Base</h3>`;
+  html+=step("Paso 1 \u2014 f_max (Tabla 3-7 AASHTO)",
+    `f_{max} = ${fmax.toFixed(2)} \\quad (V_D = ${V}\\text{ km/h})`, `f_max = ${fmax.toFixed(2)}`);
+  html+=step("Paso 2 \u2014 V_R running (Tabla 3-6)",
+    `V_R = ${VR.toFixed(0)} \\text{ km/h}`, `VR = ${VR.toFixed(0)} km/h`);
+  html+=step("Paso 3 \u2014 Radio m\u00ednimo",
+    `R_{min} = \\frac{V_D^2}{127\\,(e_{max} + f_{max})} = \\frac{${V}^2}{127\\,(${emax_d}+${fmax.toFixed(2)})} = ${Rmin.toFixed(1)}\\text{ m}`,
+    `Rmin = ${Rmin.toFixed(1)} m`);
+  html+=step("Paso 4 \u2014 Demanda e + f",
+    `e_{des}+f_{des} = \\frac{V_D^2}{127 R} = \\frac{${V}^2}{127 \\times ${R}} = ${eDemand.toFixed(4)}`,
+    `e + f = ${eDemand.toFixed(4)}`);
+  if(!valid) html+=`<div class="step" style="border-left-color:#ef4444"><div class="step-label">\u26A0 R &lt; R_min</div><div class="step-val" style="color:#ef4444">Sin soluci\u00f3n v\u00e1lida</div></div>`;
+  html+=`</div>`;
+
+  for(const m of [...state.methods].sort()){
+    html+=renderMethodCard(m,V,R,emax,fmax,VR,Rmin,emax_d,eDemand,valid);
+  }
+  document.getElementById("studentContent").innerHTML=html;
+}
+
+function step(label, formula, result, cond=""){
+  return `<div class="step highlight-step">
+    <div class="step-label">${label}</div>
+    <div class="step-formula">${tex(formula, true)}</div>
+    ${cond ? `<div class="step-cond">${tex(cond, false)}</div>` : ""}
+    <div class="step-val">= ${result}</div>
+  </div>`;
+}
+
+function renderMethodCard(m,V,R,emax,fmax,VR,Rmin,emax_d,eDemand,valid){
+  let html=`<div class="student-card">
+    <h3><span style="display:inline-block;background:${COLORS[m]};color:#fff;padding:2px 8px;border-radius:4px;font-size:13px">${SHORT[m]}</span> &nbsp;${NAMES[m].split(":")[1].trim()}</h3>`;
+  if(!valid){
+    html+=`<div class="step"><div class="step-val" style="color:#ef4444">R &lt; R_min \u2014 sin soluci\u00f3n</div></div></div>`;
+    return html;
+  }
+  const {e,f}=methodDist(m,V,R,emax);
+  if(m===1){
+    html+=step("Principio: e y f proporcionales a R_min/R",
+      "e_{des}=e_{max}\\cdot\\frac{R_{min}}{R},\\quad f_{des}=f_{max}\\cdot\\frac{R_{min}}{R}","");
+    html+=step("e_des",`e_{des}=${emax_d}\\times\\frac{${Rmin.toFixed(1)}}{${R}}`,`${(e*100).toFixed(2)} %`);
+    html+=step("f_des",`f_{des}=${fmax.toFixed(2)}\\times\\frac{${Rmin.toFixed(1)}}{${R}}`,`${f.toFixed(4)}`);
+  } else if(m===2){
+    const R2=V*V/(127*fmax);
+    html+=step("R\u2082 \u2014 radio de transici\u00f3n (f satura)",
+      `R_2=\\frac{V_D^2}{127 f_{max}}=\\frac{${V}^2}{127\\times${fmax.toFixed(2)}}=${R2.toFixed(1)}\\text{ m}`,
+      `R\u2082=${R2.toFixed(1)} m`);
+    if(R>=R2)
+      html+=step("Caso R\u2265R\u2082: e=0, f=demanda",
+        `f_{des}=\\frac{V_D^2}{127R}=${eDemand.toFixed(4)},\\;e_{des}=0`,
+        `e=0% | f=${f.toFixed(4)}`);
+    else
+      html+=step("Caso R<R\u2082: f=f_max, e=resto",
+        `f_{des}=f_{max}=${fmax.toFixed(2)},\\;e_{des}=${eDemand.toFixed(4)}-${fmax.toFixed(2)}`,
+        `e=${(e*100).toFixed(2)}% | f=${f.toFixed(4)}`);
+  } else if(m===3){
+    const R3=V*V/(127*emax_d);
+    html+=step("R\u2083 \u2014 radio de transici\u00f3n (e satura)",
+      `R_3=\\frac{V_D^2}{127 e_{max}}=\\frac{${V}^2}{127\\times${emax_d}}=${R3.toFixed(1)}\\text{ m}`,
+      `R\u2083=${R3.toFixed(1)} m`);
+    if(R>=R3)
+      html+=step("Caso R\u2265R\u2083: e=demanda, f=0",
+        `e_{des}=\\frac{V_D^2}{127R}=${eDemand.toFixed(4)},\\;f_{des}=0`,
+        `e=${(e*100).toFixed(2)}% | f=0`);
+    else
+      html+=step("Caso R<R\u2083: e=e_max, f=resto",
+        `e_{des}=e_{max}=${emax_d},\\;f_{des}=${eDemand.toFixed(4)}-${emax_d}`,
+        `e=${(e*100).toFixed(2)}% | f=${f.toFixed(4)}`);
+  } else if(m===4){
+    const RPI=VR*VR/(127*emax_d);
+    html+=step("R_PI (punto inflexi\u00f3n con V_R)",
+      `R_{PI}=\\frac{V_R^2}{127 e_{max}}=\\frac{${VR.toFixed(0)}^2}{127\\times${emax_d}}=${RPI.toFixed(1)}\\text{ m}`,
+      `RPI=${RPI.toFixed(1)} m`);
+    if(R>=RPI){
+      const ec=VR*VR/(127*R);
+      html+=step("Caso R\u2265R_PI: e seg\u00fan V_R",
+        `e_{des}=\\frac{V_R^2}{127R}=${ec.toFixed(4)},\\;f_{des}=${eDemand.toFixed(4)}-${ec.toFixed(4)}`,
+        `e=${(e*100).toFixed(2)}% | f=${f.toFixed(4)}`);
+    } else {
+      html+=step("Caso R<R_PI: e=e_max, f=resto",
+        `e_{des}=e_{max}=${emax_d},\\;f_{des}=${eDemand.toFixed(4)}-${emax_d}`,
+        `e=${(e*100).toFixed(2)}% | f=${f.toFixed(4)}`);
+    }
+  } else if(m===5){
+    const RPI=VR*VR/(127*emax_d);
+    const hPI=V*V/(127*RPI)-emax_d;
+    const L1=1/RPI, L2=1/Rmin-1/RPI;
+    const S1=hPI/L1, S2=(fmax-hPI)/L2;
+    const M0=L1*L2*(S2-S1)/(2*(L1+L2));
+    html+=step("R_PI",`R_{PI}=\\frac{V_R^2}{127 e_{max}}=${RPI.toFixed(1)}\\text{ m}`,`RPI=${RPI.toFixed(1)} m`);
+    html+=step("h_PI",`h_{PI}=\\frac{V_D^2}{127 R_{PI}}-e_{max}=${hPI.toFixed(4)}`,`hPI=${hPI.toFixed(4)}`);
+    html+=step("L\u2081, L\u2082",
+      `L_1=\\tfrac{1}{R_{PI}}=${L1.toFixed(5)},\\;L_2=\\tfrac{1}{R_{min}}-\\tfrac{1}{R_{PI}}=${L2.toFixed(5)}`,
+      `L1=${L1.toFixed(5)} | L2=${L2.toFixed(5)}`);
+    html+=step("S\u2081, S\u2082",
+      `S_1=\\tfrac{h_{PI}}{L_1}=${S1.toFixed(3)},\\;S_2=\\tfrac{f_{max}-h_{PI}}{L_2}=${S2.toFixed(3)}`,
+      `S1=${S1.toFixed(3)} | S2=${S2.toFixed(3)}`);
+    html+=step("M\u2080",
+      `M_0=\\frac{L_1 L_2(S_2-S_1)}{2(L_1+L_2)}=${M0.toFixed(5)}`,
+      `M0=${M0.toFixed(5)}`);
+    if(1/R<=1/RPI)
+      html+=step("f_des (segmento 1)",
+        `f_{des}=S_1\\cdot\\tfrac{1}{R}+M_0\\left(\\tfrac{1/R}{1/R_{PI}}\\right)^2`,
+        `f_des=${f.toFixed(4)}`, "\\tfrac{1}{R}\\leq\\tfrac{1}{R_{PI}}");
+    else
+      html+=step("f_des (segmento 2)",
+        `f_{des}=h_{PI}+S_2\\!\\left(\\tfrac{1}{R}-\\tfrac{1}{R_{PI}}\\right)+M_0\\!\\left(\\tfrac{1/R_{min}-1/R}{1/R_{min}-1/R_{PI}}\\right)^2`,
+        `f_des=${f.toFixed(4)}`, "\\tfrac{1}{R}>\\tfrac{1}{R_{PI}}");
+    html+=step("e_des",
+      `e_{des}=\\frac{V_D^2}{127R}-f_{des}=${eDemand.toFixed(4)}-${f.toFixed(4)}`,
+      `e_des=${(e*100).toFixed(2)}%`);
+  }
+  html+=`<div class="step" style="border-left-color:${COLORS[m]}">
+    <div class="step-label">Resultado \u2014 ${SHORT[m]}</div>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:6px">
+      <span style="color:#a855f7;font-weight:700">e<sub>des</sub> = ${(e*100).toFixed(2)} %</span>
+      <span style="color:#3b82f6;font-weight:700">f<sub>des</sub> = ${f.toFixed(4)}</span>
+      <span style="color:var(--muted);font-size:12px">e+f = ${(e+f).toFixed(4)} (req: ${eDemand.toFixed(4)})</span>
+    </div>
+  </div>`;
+  html+=`</div>`;
+  return html;
+}
+
+/* ============================================================
+ *  Export report
+ * ============================================================ */
+function exportReport(){
+  const V=state.V, R=state.R, emax=state.emax;
+  const fmax=fmaxOf(V), VR=vrunOf(V), Rmin=rminOf(V,emax);
+  const valid=R>=Rmin;
+  renderStudentPanel();
+  const content=document.getElementById("studentContent").innerHTML;
+  /* La ventana del reporte se crea con window.open("") y su URL base es about:blank,
+     donde una ruta relativa no resuelve de forma fiable: se calcula absoluta aqu\u00ed. */
+  const katexHref=new URL("../assets/vendor/katex/katex.min.css",location.href).href;
+  const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/>
+<title>Reporte \u2014 Curvas Horizontales AASHTO 2018</title>
+<link rel="stylesheet" href="${katexHref}">
+<style>
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:13px;margin:24px 32px;color:#1e293b;background:#fff;}
+  h1{font-size:20px;color:#5b21b6;margin:0 0 4px;}
+  .sub{color:#64748b;font-size:12px;margin-bottom:16px;}
+  .params{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 16px;margin-bottom:20px;display:flex;gap:24px;flex-wrap:wrap;}
+  .param{font-size:12px;color:#64748b;} .param b{color:#1e293b;font-size:14px;display:block;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:16px;}
+  .student-card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px;break-inside:avoid;}
+  .student-card h3{margin:0 0 10px;font-size:13px;font-weight:700;color:#b45309;}
+  .step{background:#fff;border-radius:6px;padding:8px 12px;margin:6px 0;border-left:3px solid #e2e8f0;}
+  .step-label{font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+  .step-formula{overflow-x:auto;padding:4px 0;}
+  .step-val{font-size:12px;font-weight:700;color:#15803d;margin-top:4px;padding-top:4px;border-top:1px dashed #e2e8f0;}
+  .step-cond{font-size:11px;color:#b45309;margin-top:3px;}
+  .step.highlight-step{border-left-color:#7c3aed;}
+  .katex-display{margin:.2em 0!important;overflow-x:auto;}
+  .no-print{display:flex;gap:10px;margin-bottom:20px;}
+  .btn{padding:8px 16px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:600;}
+  .btn-primary{background:#7c3aed;color:#fff;}
+  @media print{.no-print{display:none!important;} body{margin:12px;}}
+</style>
+</head><body>
+<div class="no-print">
+  <button class="btn btn-primary" onclick="window.print()">\uD83D\uDDB6 Imprimir / Guardar PDF</button>
+  <button class="btn" style="background:#f1f5f9;border:1px solid #e2e8f0" onclick="window.close()">\u2715 Cerrar</button>
+</div>
+<h1>Reporte \u2014 Dise\u00f1o de Curvas Horizontales</h1>
+<div class="sub">AASHTO 2018, Sistema m\u00e9trico \u00b7 ${new Date().toLocaleDateString("es",{year:"numeric",month:"long",day:"numeric"})}</div>
+<div class="params">
+  <div class="param"><b>V = ${V} km/h</b> Velocidad de dise\u00f1o</div>
+  <div class="param"><b>R = ${R} m</b> Radio de dise\u00f1o</div>
+  <div class="param"><b>e_max = ${emax}%</b> Peralte m\u00e1ximo</div>
+  <div class="param"><b>f_max = ${fmax.toFixed(2)}</b> Fricci\u00f3n m\u00e1xima</div>
+  <div class="param"><b>V_R = ${VR.toFixed(0)} km/h</b> Velocidad running</div>
+  <div class="param"><b>R_min = ${Rmin.toFixed(1)} m</b> Radio m\u00ednimo</div>
+  <div class="param"><b style="color:${valid?"#15803d":"#dc2626"}">${valid?`R/R_min = ${(R/Rmin).toFixed(2)}\u00d7 \u2713`:"⚠ R < R_min"}</b></div>
+</div>
+<div class="grid">${content}</div>
+</body></html>`;
+  const w=window.open("","_blank","width=1000,height=800");
+  if(w){ w.document.write(html); w.document.close(); }
+  else alert("Permite ventanas emergentes para exportar el reporte.");
+}
+
+/* ============================================================
+ *  Table section toggles
+ * ============================================================ */
+function toggleTable(which){
+  const sectionId = which === "rmin" ? "rminSection" : "aashtoSection";
+  const btnId     = which === "rmin" ? "toggleRmin"  : "toggleAashto";
+  const section   = document.getElementById(sectionId);
+  const btn       = document.getElementById(btnId);
+  const isOpen    = !section.classList.contains("closed");
+  if(isOpen){
+    section.classList.add("closed");
+    btn.classList.remove("open");
+    btn.innerHTML = btn.innerHTML.replace("\u25bc", "\u25b6");
+  } else {
+    section.classList.remove("closed");
+    btn.classList.add("open");
+    btn.innerHTML = btn.innerHTML.replace("\u25b6", "\u25bc");
+  }
+}
+
+/* ============================================================
+ *  Inputs y actualización general
+ * ============================================================ */
+
+function bindInputs(){
+  const v  = document.getElementById("vSlider");
+  const vr = document.getElementById("vRealSlider");
+  const r  = document.getElementById("rSlider");
+  const em = document.getElementById("emaxSel");
+  const ctx = document.getElementById("contextSel");
+  const fxr = document.getElementById("fixedRminToggle");
+  const exag = document.getElementById("crossExag");
+  const ghostE = document.getElementById("ghostEToggle");
+  const fVR = document.getElementById("fVrealToggle");
+  const btnVR = document.getElementById("setVRealR");
+  const btnVD = document.getElementById("setVRealD");
+
+  v.addEventListener("input",()=>{
+    state.V = +v.value;
+    // Sincroniza V_real con V_D al cambiar V_D (estado por defecto: sin overdriving).
+    state.vReal = state.V;
+    vr.value = String(state.V);
+    updateAll();
+  });
+  vr.addEventListener("input",()=>{
+    state.vReal = +vr.value;
+    updateAll();
+  });
+  r.addEventListener("input",()=>{state.R=+r.value; updateAll();});
+  em.addEventListener("change",()=>{state.emax=+em.value; updateAll();});
+  ctx.addEventListener("change",()=>{
+    state.context = ctx.value;
+    if(ctx.value==="urban"){
+      em.value="4"; state.emax=4;
+    } else {
+      em.value="8"; state.emax=8;
+    }
+    updateAll();
+  });
+  fxr.addEventListener("change",()=>{
+    state.fixedRmin = fxr.checked;
+    updatePlan();
+  });
+  exag.value = String(state.crossExag);
+  exag.addEventListener("change",()=>{
+    state.crossExag = +exag.value;
+    updateSection();
+  });
+  // Toggles de gráficas
+  ghostE.checked = !!state.ghostE;
+  ghostE.addEventListener("change",()=>{
+    state.ghostE = ghostE.checked;
+    updateDistribPlots();
+  });
+  fVR.checked = !!state.fUseVreal;
+  fVR.addEventListener("change",()=>{
+    state.fUseVreal = fVR.checked;
+    updateDistribPlots();
+  });
+  // Botones de acceso rápido V_R / V_D para V_real
+  btnVR.addEventListener("click",()=>{
+    const VR = Math.round(vrunOf(state.V));
+    state.vReal = Math.max(+vr.min, Math.min(+vr.max, VR));
+    vr.value = String(state.vReal);
+    updateAll();
+  });
+  btnVD.addEventListener("click",()=>{
+    state.vReal = state.V;
+    vr.value = String(state.vReal);
+    updateAll();
+  });
+}
+
+/* Renderiza los triángulos/etiquetas V_R y V_D bajo el slider V_real. */
+function renderVRealMarks(){
+  const marks = document.getElementById("vRealMarks");
+  if(!marks) return;
+  const sl = document.getElementById("vRealSlider");
+  const min = +sl.min, max = +sl.max;
+  const VR = vrunOf(state.V);
+  const VD = state.V;
+  const posVR = Math.max(0, Math.min(100, (VR-min)/(max-min)*100));
+  const posVD = Math.max(0, Math.min(100, (VD-min)/(max-min)*100));
+  // Si V_R y V_D se solapan visualmente, desplazamos las etiquetas verticalmente.
+  const close = Math.abs(posVR - posVD) < 7;
+  marks.innerHTML = `
+    <div class="vmark vr" style="left:${posVR.toFixed(2)}%;top:0">
+      <div class="tri"></div><div class="lbl">V<sub>R</sub>=${VR.toFixed(0)}</div>
+    </div>
+    <div class="vmark vd" style="left:${posVD.toFixed(2)}%;top:${close?14:0}px">
+      <div class="tri"></div><div class="lbl">V<sub>D</sub>=${VD}</div>
+    </div>
+  `;
+}
+
+function updateLabels(){
+  document.getElementById("vLbl").textContent = state.V;
+  document.getElementById("vRealLbl").textContent = state.vReal;
+  document.getElementById("rLbl").textContent = state.R;
+  document.getElementById("emaxLbl").textContent = state.emax;
+  document.getElementById("ctxLbl").textContent = state.context==="urban"?"Urbano":"Rural";
+  document.getElementById("contextBadge").innerHTML =
+    `${state.context==="urban"?"Urbano":"Rural"} · e<sub>max</sub>=${state.emax}%`;
+
+  const fmax = fmaxOf(state.V);
+  const Rmin = rminOf(state.V, state.emax);
+  const VR = vrunOf(state.V);
+  document.getElementById("fmaxOut").textContent = fmax.toFixed(2);
+  document.getElementById("vrOut").textContent = VR.toFixed(0);
+  document.getElementById("rminOut").textContent = Rmin.toFixed(0);
+  document.getElementById("efReqOut").textContent = (state.V*state.V/(127*state.R)).toFixed(3);
+  document.getElementById("rRatioOut").textContent = (state.R/Rmin).toFixed(2)+"×";
+
+  // Ajustar rangos de R según emax/V (asegurar que Rmin esté en rango)
+  const rSlider = document.getElementById("rSlider");
+  const newMin = Math.max(20, Math.floor(Rmin*0.8));
+  rSlider.min = newMin;
+  if(+rSlider.value < newMin) rSlider.value = newMin;
+
+  // Refresca marcas V_R/V_D bajo el slider de V_real
+  renderVRealMarks();
+}
+
+function updateAll(){
+  updateLabels();
+  renderMethodResults();
+  updateDistribPlots();
+  updatePlan();
+  updateSection();
+  renderAashtoTable();
+  renderRminTable();
+  if(state.studentMode) renderStudentPanel();
+}
+
+/* ============================================================
+ *  Init
+ * ============================================================ */
+
+window.addEventListener("DOMContentLoaded",()=>{
+  buildMethodsList();
+  refreshSectionMethodPills();
+  buildTableTabs();
+  bindInputs();
+  document.documentElement.classList.add("light");
+  document.getElementById("lightBtn").textContent = "🌙 Modo oscuro";
+  document.getElementById("lightBtn").classList.add("on");
+  updateAll();
+  requestAnimationFrame(()=>{
+    setupPlotDrag("plotE","overlayE");
+    setupPlotDrag("plotF","overlayF");
+  });
+});
+</script>
+</body>
+</html>

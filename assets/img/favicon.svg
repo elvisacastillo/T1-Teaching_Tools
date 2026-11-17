@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7c3aed"/>
+      <stop offset="1" stop-color="#4c1d95"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#g)"/>
+  <!-- calzada en perspectiva -->
+  <path d="M18 56 C 22 34, 28 20, 32 8 C 36 20, 42 34, 46 56 Z" fill="rgba(255,255,255,.20)"/>
+  <path d="M18 56 C 22 34, 28 20, 32 8" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
+  <path d="M46 56 C 42 34, 36 20, 32 8" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
+  <!-- línea central discontinua -->
+  <path d="M32 14 L32 22 M32 30 L32 38 M32 46 L32 55" fill="none"
+        stroke="#fbbf24" stroke-width="3.2" stroke-linecap="round"/>
+</svg>

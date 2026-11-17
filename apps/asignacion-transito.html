@@ -1,0 +1,2839 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Asignación de Tránsito — Capacity Restraint (BPR) — Dr. Elvis A. Castillo-Camarena, Ph.D.</title>
+<meta name="author" content="Dr. Elvis A. Castillo-Camarena, Ph.D.">
+<style>
+  :root {
+    --bg: #f5f7fa;
+    --panel: #ffffff;
+    --border: #d8dde4;
+    --text: #1f2d3d;
+    --muted: #6b7684;
+    --accent: #6d28d9;
+    --accent-dark: #5b21b6;
+    --danger: #dc2626;
+    --success: #059669;
+    --warning: #d97706;
+    --origin: #f59e0b;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--text); background: var(--bg); overflow: hidden;
+  }
+  header {
+    height: 54px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center;
+    padding: 0 20px; gap: 16px;
+    box-shadow: var(--shadow);
+    z-index: 10; position: relative;
+  }
+  header h1 { margin: 0; font-size: 17px; font-weight: 600; }
+  header .subtitle { font-size: 12px; color: var(--muted); margin-left: -8px; }
+
+  .app { display: flex; height: calc(100vh - 54px); }
+  .sidebar {
+    width: 280px;
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    overflow-y: auto;
+  }
+  .sidebar-right {
+    width: 440px;
+    background: var(--panel);
+    border-left: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    overflow-y: auto;
+  }
+  .canvas-container {
+    flex: 1; position: relative; background: #fafbfc; overflow: hidden;
+  }
+  #canvas {
+    width: 100%; height: 100%; display: block; cursor: crosshair;
+    background-image:
+      linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+  #canvas.mode-select { cursor: default; }
+  #canvas.mode-zone   { cursor: crosshair; }
+  #canvas.mode-link   { cursor: pointer; }
+  #canvas.mode-delete { cursor: not-allowed; }
+
+  .section { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .section h3 {
+    margin: 0 0 10px 0; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted);
+  }
+  .tool-btn {
+    display: flex; align-items: center; gap: 10px;
+    width: 100%; padding: 9px 12px;
+    border: 1px solid var(--border); background: #fff;
+    border-radius: 6px; font-size: 13px;
+    color: var(--text); cursor: pointer; margin-bottom: 6px;
+    transition: all 0.15s; text-align: left;
+  }
+  .tool-btn:hover { background: #f0f4f9; }
+  .tool-btn.active {
+    background: var(--accent); color: white; border-color: var(--accent);
+  }
+  .tool-btn .icon {
+    width: 18px; height: 18px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: bold; font-size: 14px;
+  }
+  .tool-btn .hint { font-size: 11px; color: var(--muted); margin-left: auto; }
+  .tool-btn.active .hint { color: rgba(255,255,255,0.8); }
+
+  .action-btn {
+    display: block; width: 100%; padding: 10px 12px;
+    border: none; background: var(--accent); color: white;
+    font-size: 13px; font-weight: 600; border-radius: 6px;
+    cursor: pointer; transition: background 0.15s; margin-bottom: 6px;
+  }
+  .action-btn:hover { background: var(--accent-dark); }
+  .action-btn.secondary {
+    background: #fff; color: var(--text); border: 1px solid var(--border);
+  }
+  .action-btn.secondary:hover { background: #f0f4f9; }
+  .action-btn.danger { background: var(--danger); }
+  .action-btn.danger:hover { background: #b91c1c; }
+  .action-btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+
+  .info {
+    font-size: 12px; color: var(--muted); line-height: 1.5;
+    padding: 8px 10px; background: #f8fafc;
+    border-radius: 5px; border-left: 3px solid var(--accent);
+  }
+  .info.warning { border-left-color: var(--warning); background: #fffbeb; color: #78350f; }
+  .info.success { border-left-color: var(--success); background: #ecfdf5; color: #065f46; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td {
+    padding: 6px 8px; border-bottom: 1px solid #eef1f5; text-align: left;
+  }
+  th {
+    font-weight: 600; color: var(--muted); font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.3px; background: #f8fafc;
+  }
+  td input {
+    width: 56px; padding: 4px 6px;
+    border: 1px solid var(--border); border-radius: 4px;
+    font-size: 12px; font-family: inherit;
+  }
+  td input:focus { outline: none; border-color: var(--accent); }
+  td input.narrow { width: 44px; }
+
+  .origin-badge {
+    display: inline-block; padding: 2px 8px;
+    background: var(--origin); color: white;
+    font-size: 10px; font-weight: 700;
+    border-radius: 10px; text-transform: uppercase; letter-spacing: 0.4px;
+  }
+
+  /* Zones */
+  .zone-group { cursor: move; }
+  .zone-group .zone-circle {
+    fill: #ffffff; stroke: #475569; stroke-width: 2;
+    transition: all 0.15s;
+  }
+  .zone-group:hover .zone-circle { stroke: var(--accent); stroke-width: 3; }
+  .zone-group.selected .zone-circle { stroke: var(--accent); stroke-width: 3; fill: #dbeafe; }
+  .zone-group.origin-focus .zone-circle { fill: var(--origin); stroke: #b45309; stroke-width: 3; }
+  .zone-group.link-source .zone-circle { stroke: var(--success); stroke-width: 3; fill: #d1fae5; }
+  .zone-label {
+    font-size: 14px; font-weight: 700; fill: var(--text);
+    text-anchor: middle; dominant-baseline: central;
+    pointer-events: none; user-select: none;
+  }
+  .zone-group.origin-focus .zone-label { fill: white; }
+  .cumtime-label {
+    font-size: 10px; font-weight: 600; fill: var(--accent);
+    text-anchor: middle; pointer-events: none; user-select: none;
+  }
+
+  /* Links */
+  .link-group { cursor: pointer; }
+  .link-line {
+    stroke: #94a3b8; stroke-width: 2; fill: none;
+    transition: stroke 0.15s, stroke-width 0.15s;
+  }
+  .link-group:hover .link-line { stroke: var(--accent); stroke-width: 3; }
+  .link-group.selected .link-line { stroke: var(--accent); stroke-width: 4; }
+  .link-group.on-skim-tree .link-line { stroke: #7c3aed; stroke-width: 3; }
+  .link-time-bg {
+    fill: #ffffff; stroke: var(--border); stroke-width: 1; rx: 3;
+  }
+  .link-time-label {
+    font-size: 10px; font-weight: 600; fill: var(--text);
+    text-anchor: middle; dominant-baseline: central;
+    pointer-events: none; user-select: none;
+  }
+  .link-volume-label {
+    font-size: 10px; font-weight: 700; fill: var(--danger);
+    text-anchor: middle; pointer-events: none; user-select: none;
+  }
+  .link-hit {
+    stroke: transparent; stroke-width: 14; fill: none;
+  }
+  .link-congestion-line {
+    stroke-width: 4; fill: none; opacity: 0.35;
+  }
+
+  .empty-state {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%); text-align: center;
+    color: var(--muted); pointer-events: none; max-width: 400px;
+  }
+  .empty-state h2 { margin: 0 0 10px 0; font-size: 22px; color: var(--text); font-weight: 600; }
+  .empty-state p { margin: 6px 0; font-size: 13px; line-height: 1.5; }
+
+  .status-bar {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 6px 16px;
+    background: rgba(255, 255, 255, 0.92);
+    border-top: 1px solid var(--border);
+    font-size: 11px; color: var(--muted);
+    display: flex; justify-content: space-between; gap: 16px;
+    backdrop-filter: blur(6px);
+  }
+
+  .legend {
+    position: absolute; top: 14px; right: 14px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid var(--border);
+    border-radius: 6px; padding: 8px 12px;
+    font-size: 11px; color: var(--muted);
+    line-height: 1.8; box-shadow: var(--shadow);
+  }
+  .legend .dot {
+    display: inline-block; width: 10px; height: 10px;
+    border-radius: 50%; margin-right: 6px; vertical-align: middle;
+  }
+  .legend .line {
+    display: inline-block; width: 16px; height: 2px;
+    margin-right: 6px; vertical-align: middle;
+  }
+  .legend h4 { margin: 4px 0 4px 0; font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.5px; color: var(--muted); font-weight: 700; border-top: 1px solid #eef1f5; padding-top: 6px; }
+  .legend h4:first-child { border-top: none; padding-top: 0; }
+
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(15, 23, 42, 0.5); z-index: 100;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: white; border-radius: 8px; padding: 24px;
+    min-width: 420px; box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  }
+  .modal h3 { margin: 0 0 14px 0; font-size: 16px; }
+  .modal .form-row { margin-bottom: 12px; }
+  .modal label {
+    display: block; font-size: 12px; color: var(--muted);
+    margin-bottom: 4px; font-weight: 600;
+  }
+  .modal input {
+    width: 100%; padding: 8px 10px;
+    border: 1px solid var(--border); border-radius: 5px;
+    font-size: 14px; font-family: inherit;
+  }
+  .modal input:focus { outline: none; border-color: var(--accent); }
+  .modal .actions {
+    display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px;
+  }
+  .modal .actions button {
+    padding: 8px 16px; border: 1px solid var(--border);
+    background: white; border-radius: 5px;
+    font-size: 13px; cursor: pointer; font-family: inherit;
+  }
+  .modal .actions button.primary {
+    background: var(--accent); color: white; border-color: var(--accent); font-weight: 600;
+  }
+  .modal .actions button.danger {
+    background: var(--danger); color: white; border-color: var(--danger);
+  }
+
+  .results-summary {
+    background: #f0f9ff; border: 1px solid #bae6fd;
+    border-radius: 6px; padding: 10px 12px;
+    font-size: 12px; color: #0369a1; margin-bottom: 10px;
+  }
+  .results-summary b { display: block; margin-bottom: 4px; color: #075985; }
+
+  select {
+    padding: 6px 8px; border: 1px solid var(--border); border-radius: 5px;
+    font-size: 13px; font-family: inherit; background: white;
+  }
+  select:focus { outline: none; border-color: var(--accent); }
+
+  .small-muted { font-size: 11px; color: var(--muted); }
+
+  .tabs { display: flex; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .tab {
+    flex: 1; min-width: 80px;
+    padding: 10px 6px; text-align: center;
+    font-size: 11px; font-weight: 600;
+    color: var(--muted); cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-content { display: none; flex: 1; overflow-y: auto; }
+  .tab-content.active { display: block; }
+
+  /* OD Matrix */
+  .od-wrapper {
+    overflow: auto;
+    max-height: 320px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+  table.od-matrix {
+    border-collapse: collapse;
+    font-size: 11px;
+    min-width: 100%;
+  }
+  table.od-matrix th, table.od-matrix td {
+    padding: 0; border: 1px solid #e2e8f0; text-align: center;
+    background: #fff;
+  }
+  table.od-matrix thead th, table.od-matrix tbody th {
+    background: #f1f5f9; font-weight: 700; font-size: 10px;
+    padding: 5px 7px; color: var(--text); letter-spacing: 0;
+    text-transform: none; position: sticky;
+  }
+  table.od-matrix thead th { top: 0; z-index: 3; }
+  table.od-matrix tbody th { left: 0; z-index: 2; }
+  table.od-matrix thead th.corner {
+    z-index: 4; left: 0;
+    background: #e2e8f0; color: var(--muted); font-size: 10px;
+  }
+  table.od-matrix td input {
+    width: 52px; padding: 5px 4px;
+    border: none; background: transparent;
+    font-size: 11px; font-family: inherit;
+    text-align: center;
+  }
+  table.od-matrix td input:focus {
+    background: #dbeafe; outline: none;
+  }
+  table.od-matrix td.diagonal { background: #f8fafc; color: var(--muted); }
+  table.od-matrix tfoot th, table.od-matrix tfoot td {
+    background: #f1f5f9; font-weight: 700; padding: 5px 7px;
+  }
+
+  .link-props-row {
+    display: grid; grid-template-columns: 1fr auto 1fr; gap: 6px;
+    align-items: center; margin-bottom: 6px;
+  }
+  .link-props-row label { font-size: 11px; color: var(--muted); font-weight: 600; }
+  .link-props-row input {
+    width: 100%; padding: 5px 7px;
+    border: 1px solid var(--border); border-radius: 4px;
+    font-size: 12px; font-family: inherit;
+  }
+  .link-props-row-2 {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 6px;
+  }
+  .link-props-row-2 input {
+    width: 100%; padding: 5px 7px;
+    border: 1px solid var(--border); border-radius: 4px;
+    font-size: 12px; font-family: inherit;
+  }
+  .sync-btn {
+    border: 1px solid var(--border); background: #fff;
+    width: 28px; height: 28px; border-radius: 4px;
+    cursor: pointer; font-size: 14px; padding: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .sync-btn.active {
+    background: var(--accent); color: white; border-color: var(--accent);
+  }
+
+  .path-detail {
+    font-size: 11px; color: var(--text); padding: 6px 8px;
+    background: #fafbfc; border-radius: 4px;
+    margin-bottom: 4px; border-left: 3px solid #7c3aed;
+  }
+  .path-detail b { color: var(--accent); }
+  .path-detail .dim { color: var(--muted); }
+
+  .origin-chip {
+    display: inline-block; padding: 3px 10px;
+    margin: 2px; border-radius: 14px;
+    font-size: 11px; font-weight: 600;
+    background: #fff; border: 1px solid var(--border);
+    cursor: pointer; transition: all 0.15s;
+  }
+  .origin-chip:hover { background: #f0f4f9; }
+  .origin-chip.active {
+    background: var(--origin); border-color: #b45309; color: #fff;
+  }
+
+  .method-params {
+    padding: 10px 12px;
+    background: #f8fafc;
+    border-radius: 5px;
+    margin-top: 8px;
+  }
+  .method-params label {
+    display: block; font-size: 11px; color: var(--muted);
+    margin-bottom: 3px; font-weight: 600;
+  }
+  .method-params input, .method-params select {
+    width: 100%; padding: 6px 8px;
+    border: 1px solid var(--border); border-radius: 4px;
+    font-size: 12px; font-family: inherit; margin-bottom: 8px;
+  }
+
+  .iter-bar-wrap {
+    margin-top: 8px;
+  }
+  .iter-bar {
+    display: flex; align-items: center; font-size: 11px;
+    gap: 6px; margin-bottom: 3px;
+  }
+  .iter-bar .label { width: 62px; color: var(--muted); }
+  .iter-bar .bar {
+    flex: 1; height: 14px; background: #e2e8f0; border-radius: 3px; overflow: hidden;
+    position: relative;
+  }
+  .iter-bar .fill {
+    height: 100%; background: linear-gradient(90deg, var(--accent), #60a5fa); border-radius: 3px;
+  }
+  .iter-bar .value { width: 72px; text-align: right; font-weight: 600; color: var(--text); }
+
+  .voc-badge {
+    display: inline-block; padding: 1px 6px;
+    border-radius: 8px; font-size: 10px; font-weight: 700;
+    color: #fff;
+  }
+
+  details { border: 1px solid var(--border); border-radius: 5px; padding: 6px 10px; margin-bottom: 8px; }
+  details summary { font-size: 12px; font-weight: 600; cursor: pointer; color: var(--text); padding: 2px 0; }
+  details[open] summary { margin-bottom: 8px; }
+
+  /* BPR chart styles */
+  .bpr-chart-wrap {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 14px;
+    background: #fff;
+    overflow: hidden;
+  }
+  .bpr-chart-header {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    background: #f8fafc;
+    font-size: 12px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .bpr-chart-header b { color: var(--text); }
+  .bpr-chart-header .remove-btn {
+    margin-left: auto;
+    border: 1px solid var(--border); background: #fff;
+    width: 24px; height: 24px; border-radius: 4px;
+    font-size: 11px; cursor: pointer; color: var(--muted);
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .bpr-chart-header .remove-btn:hover { background: #fee2e2; color: var(--danger); border-color: var(--danger); }
+  .bpr-chart-info {
+    padding: 6px 10px;
+    font-size: 11px;
+    color: var(--text);
+    background: #f8fafc;
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap;
+  }
+  .bpr-chart-info b { color: var(--accent); }
+  .bpr-chart-wrap svg { display: block; background: #fff; }
+
+  .chart-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px; margin: 2px;
+    border-radius: 12px;
+    font-size: 11px; font-weight: 600;
+    background: #dbeafe; color: var(--accent-dark);
+    border: 1px solid #bfdbfe;
+  }
+  .chart-chip .chart-chip-x {
+    cursor: pointer;
+    width: 14px; height: 14px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    font-size: 10px;
+    background: rgba(255,255,255,0.5);
+  }
+  .chart-chip .chart-chip-x:hover { background: var(--danger); color: #fff; }
+
+  .chart-toggle-btn {
+    border: 1px solid var(--border); background: #fff;
+    padding: 2px 6px; border-radius: 4px;
+    font-size: 11px; cursor: pointer;
+    font-family: inherit;
+  }
+  .chart-toggle-btn:hover { background: #f0f4f9; }
+  .chart-toggle-btn.active {
+    background: var(--accent); color: #fff; border-color: var(--accent);
+  }
+
+  .open-toggle-btn {
+    border: 1px solid var(--border); background: #fff;
+    padding: 2px 6px; border-radius: 4px;
+    font-size: 11px; cursor: pointer;
+    font-family: inherit; font-weight: 600;
+    margin-right: 2px;
+    min-width: 38px;
+  }
+  .open-toggle-btn.open {
+    background: #d1fae5; color: var(--success); border-color: #a7f3d0;
+  }
+  .open-toggle-btn.open:hover { background: #a7f3d0; }
+  .open-toggle-btn.closed {
+    background: #fee2e2; color: var(--danger); border-color: #fecaca;
+    text-decoration: line-through;
+  }
+  .open-toggle-btn.closed:hover { background: #fecaca; }
+
+  .link-closed-marker {
+    font-size: 9px; font-weight: 700; fill: var(--danger);
+    text-anchor: middle; pointer-events: none; user-select: none;
+  }
+</style>
+<link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="app-shell.css">
+<style>
+  body { display: flex; flex-direction: column; }
+  header.ec-topbar { flex: none; }
+  .app { flex: 1 1 auto; min-height: 0; height: auto !important; }
+</style>
+</head>
+<body>
+
+<header class="ec-topbar">
+  <a class="ec-back" href="../index.html" title="Volver al índice de herramientas" aria-label="Volver al índice de herramientas">‹</a>
+  <div class="ec-id">
+    <h1>Asignación de Tránsito — Capacity Restraint (BPR)</h1>
+    <div class="ec-sub">Matriz OD · Asignación incremental · Función BPR</div>
+    <div class="ec-author">Autor: <b>Dr. Elvis A. Castillo-Camarena, Ph.D.</b></div>
+  </div>
+  <div class="ec-tools">
+    <button class="action-btn secondary" id="btn-example" style="width:auto; padding: 7px 12px; margin: 0;">Cargar Ejemplo 12.18</button>
+    <button class="action-btn secondary" id="btn-example-cr" style="width:auto; padding: 7px 12px; margin: 0;">Ejemplo 12.21</button>
+    <button class="action-btn secondary" id="btn-save" style="width:auto; padding: 7px 12px; margin: 0;">Guardar</button>
+    <button class="action-btn secondary" id="btn-load" style="width:auto; padding: 7px 12px; margin: 0;">Cargar</button>
+    <button class="action-btn secondary" id="btn-clear" style="width:auto; padding: 7px 12px; margin: 0;">Limpiar</button>
+    <input type="file" id="file-input" accept=".json" style="display:none" />
+  </div>
+</header>
+
+<div class="app">
+
+  <!-- Left: tools + method -->
+  <aside class="sidebar">
+    <div class="section">
+      <h3>Herramientas</h3>
+      <button class="tool-btn active" data-mode="select"><span class="icon">◎</span> Seleccionar / Mover <span class="hint">V</span></button>
+      <button class="tool-btn" data-mode="zone"><span class="icon">●</span> Añadir Zona <span class="hint">Z</span></button>
+      <button class="tool-btn" data-mode="link"><span class="icon">⟷</span> Conectar Zonas <span class="hint">L</span></button>
+      <button class="tool-btn" data-mode="delete"><span class="icon">✕</span> Eliminar <span class="hint">D</span></button>
+    </div>
+
+    <div class="section">
+      <h3>Valores por defecto para links nuevos</h3>
+      <div class="link-props-row-2">
+        <div><label style="font-size:11px; color:var(--muted);">Capacidad C</label>
+          <input type="number" id="def-cap" min="1" step="1" value="500" /></div>
+        <div><label style="font-size:11px; color:var(--muted);">Tiempo libre t₀</label>
+          <input type="number" id="def-time" min="0" step="0.1" value="1" /></div>
+      </div>
+      <div class="link-props-row-2">
+        <div><label style="font-size:11px; color:var(--muted);">α</label>
+          <input type="number" id="def-alpha" min="0" step="0.01" value="0.15" /></div>
+        <div><label style="font-size:11px; color:var(--muted);">β</label>
+          <input type="number" id="def-beta" min="0" step="0.1" value="4" /></div>
+      </div>
+      <div class="small-muted">Se aplican a links creados a partir de ahora.</div>
+    </div>
+
+    <div class="section">
+      <h3>Método de asignación</h3>
+      <select id="method-select" style="width:100%;">
+        <option value="aon">All-or-Nothing (sin congestión)</option>
+        <option value="incremental" selected>Incremental (capacity restraint)</option>
+        <option value="msa">Method of Successive Averages (MSA)</option>
+      </select>
+      <div class="method-params" id="params-incremental">
+        <label>Número de incrementos N</label>
+        <input type="number" id="num-increments" min="1" max="50" step="1" value="4" />
+        <label>Patrón de fracciones</label>
+        <select id="increment-pattern">
+          <option value="equal" selected>Iguales (1/N cada uno)</option>
+          <option value="decreasing">Decrecientes (40/30/20/10)</option>
+          <option value="front">Cargado al inicio (50/30/15/5)</option>
+        </select>
+      </div>
+      <div class="method-params" id="params-msa" style="display:none;">
+        <label>Máximo de iteraciones</label>
+        <input type="number" id="max-iter" min="1" max="100" step="1" value="15" />
+        <label>Tolerancia de convergencia</label>
+        <input type="number" id="convergence-tol" min="0" step="0.0001" value="0.005" />
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Ejecución</h3>
+      <button class="action-btn" id="btn-compute">▶ Calcular Asignación</button>
+      <button class="action-btn secondary" id="btn-step" style="display:none;">→ Ejecutar un incremento</button>
+      <button class="action-btn secondary" id="btn-reset-results">Limpiar Resultados</button>
+      <div class="info" style="margin-top: 10px; font-size: 11px;">
+        BPR: <b>t = t₀·[1 + α(V/C)^β]</b><br>
+        Con AON se usa el tiempo libre; con incremental / MSA se recalculan los tiempos según el volumen acumulado.
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Visualización en canvas</h3>
+      <div style="font-size: 11px; color: var(--muted); margin-bottom:6px;">Etiqueta sobre los links:</div>
+      <select id="display-mode" style="width:100%; margin-bottom:8px;">
+        <option value="time">Tiempos libres (t₀)</option>
+        <option value="time-congested">Tiempos congestionados (t)</option>
+        <option value="volume-total">Volumen total</option>
+        <option value="volume-directional" selected>Volumen por sentido</option>
+        <option value="voc">Relación V/C</option>
+      </select>
+      <label style="font-size: 11px; color: var(--muted); display:block; margin-top: 4px;">
+        <input type="checkbox" id="toggle-congestion-color" checked /> Colorear links por V/C
+      </label>
+      <div style="font-size: 11px; color: var(--muted); margin-top:8px; margin-bottom:6px;">Árbol mínimo desde origen:</div>
+      <select id="tree-origin-select" style="width:100%;">
+        <option value="">— Ninguno (agregado) —</option>
+      </select>
+    </div>
+
+    <div class="section" id="selection-info" style="display:none;">
+      <h3>Selección</h3>
+      <div id="selection-content"></div>
+    </div>
+  </aside>
+
+  <!-- Canvas -->
+  <div class="canvas-container">
+    <svg id="canvas" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrow-tree-ab" viewBox="0 0 10 10" refX="9" refY="5"
+                markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#7c3aed" />
+        </marker>
+      </defs>
+      <g id="links-layer"></g>
+      <g id="zones-layer"></g>
+    </svg>
+
+    <div class="empty-state" id="empty-state">
+      <h2>Lienzo vacío</h2>
+      <p>Crea zonas, conéctalas con links (tiempo libre, capacidad, α, β) e ingresa la matriz OD.</p>
+      <p>Usa <b>"Cargar Ejemplo 12.18"</b> o <b>"Ejemplo 12.21"</b> para redes de referencia.</p>
+    </div>
+
+    <div class="legend">
+      <h4>Zonas / Links</h4>
+      <div><span class="dot" style="background:#fff; border:2px solid #475569;"></span>Zona</div>
+      <div><span class="dot" style="background:#f59e0b; border:2px solid #b45309;"></span>Origen seleccionado</div>
+      <div><span class="line" style="background:#7c3aed; height:3px;"></span>En árbol mínimo</div>
+      <h4>V/C (color)</h4>
+      <div><span class="line" style="background:#10b981; height:4px;"></span>≤ 0.6 (libre)</div>
+      <div><span class="line" style="background:#f59e0b; height:4px;"></span>≤ 0.85 (cerca)</div>
+      <div><span class="line" style="background:#ef4444; height:4px;"></span>≤ 1.0 (congestionado)</div>
+      <div><span class="line" style="background:#7f1d1d; height:4px;"></span>&gt; 1.0 (sobrecapacidad)</div>
+    </div>
+
+    <div class="status-bar">
+      <span id="status-left">Modo: Seleccionar</span>
+      <span id="status-right">0 zonas · 0 links</span>
+    </div>
+  </div>
+
+  <!-- Right: data + results -->
+  <aside class="sidebar-right">
+    <div class="tabs">
+      <div class="tab active" data-tab="matrix">Matriz OD</div>
+      <div class="tab" data-tab="links">Links</div>
+      <div class="tab" data-tab="results">Resultados</div>
+      <div class="tab" data-tab="convergence">Convergencia</div>
+      <div class="tab" data-tab="bpr">Curvas BPR</div>
+      <div class="tab" data-tab="help">Ayuda</div>
+    </div>
+
+    <!-- Tab: Matrix -->
+    <div class="tab-content active" id="tab-matrix">
+      <div class="section">
+        <h3>Matriz Origen-Destino</h3>
+        <div class="small-muted" style="margin-bottom: 8px;">
+          Filas = zona <b>origen</b>, columnas = zona <b>destino</b>. La diagonal es 0.
+        </div>
+        <div class="od-wrapper" id="od-matrix-container">
+          <div class="small-muted" style="padding: 14px;">Crea al menos 2 zonas para ver la matriz.</div>
+        </div>
+        <div style="margin-top: 10px; display: flex; gap: 6px;">
+          <button class="action-btn secondary" id="btn-od-clear" style="margin:0; flex:1;">Poner en 0</button>
+          <button class="action-btn secondary" id="btn-od-symmetric" style="margin:0; flex:1;">Simetrizar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Links -->
+    <div class="tab-content" id="tab-links">
+      <div class="section">
+        <h3>Propiedades de links</h3>
+        <div class="small-muted" style="margin-bottom: 8px;">
+          Cada link tiene tiempo libre <b>t₀</b> y capacidad <b>C</b> por sentido, más <b>α</b>, <b>β</b> compartidos. Doble-click en un link para editar.
+        </div>
+        <div id="links-table-container">
+          <div class="small-muted">No hay links todavía.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Results -->
+    <div class="tab-content" id="tab-results">
+      <div class="section">
+        <h3>Resumen</h3>
+        <div id="results-summary">
+          <div class="small-muted">Aún no se ha ejecutado el cálculo. Presiona <b>Calcular Asignación</b>.</div>
+        </div>
+      </div>
+      <div class="section">
+        <h3>Estado final de cada link</h3>
+        <div id="link-volumes-container">
+          <div class="small-muted">—</div>
+        </div>
+      </div>
+      <div class="section">
+        <h3>Árbol mínimo por origen (tiempos finales)</h3>
+        <div class="small-muted" style="margin-bottom: 6px;">Haz click en un origen para visualizarlo en el canvas.</div>
+        <div id="origin-chips-container" style="margin-bottom: 10px;"></div>
+        <div id="skim-tree-container">
+          <div class="small-muted">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Convergence -->
+    <div class="tab-content" id="tab-convergence">
+      <div class="section">
+        <h3>Iteraciones / Incrementos</h3>
+        <div id="convergence-container">
+          <div class="small-muted">Ejecuta el cálculo para ver la evolución iteración por iteración.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: BPR Curves -->
+    <div class="tab-content" id="tab-bpr">
+      <div class="section">
+        <h3>Curvas BPR — tiempo vs volumen</h3>
+        <div class="small-muted" style="margin-bottom: 8px;">
+          Cada gráfica muestra la función <b>t = t₀·[1 + α(V/C)<sup>β</sup>]</b> de una dirección del link. Los puntos marcan el estado (V, t) en cada iteración/incremento.
+        </div>
+        <div style="margin-bottom:8px;">
+          <span class="small-muted">Direcciones seleccionadas:</span>
+          <div id="bpr-chips-container" style="margin-top:4px;"></div>
+        </div>
+        <div id="bpr-charts-container">
+          <div class="small-muted">Aún no hay direcciones seleccionadas. En la pestaña <b>Links</b> o en el panel de <b>Selección</b> (al hacer click en un link del canvas) encontrarás botones 📈 para añadir una dirección a la gráfica.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Help -->
+    <div class="tab-content" id="tab-help">
+      <div class="section">
+        <h3>Función BPR de capacity restraint</h3>
+        <div class="info">
+          <div style="text-align:center; font-size:15px; margin: 6px 0;">
+            t = t₀ · [1 + α·(V/C)<sup>β</sup>]
+          </div>
+          Donde <b>t₀</b> es tiempo libre, <b>V</b> volumen, <b>C</b> capacidad, y <b>α, β</b> son parámetros del tipo de vía. Valores clásicos: α=0.15, β=4 (US-DOT).
+        </div>
+      </div>
+      <div class="section">
+        <h3>Métodos implementados</h3>
+        <p style="font-size:12px; margin-top:0;"><b>All-or-Nothing (AON)</b>: un solo Dijkstra con tiempos libres. Carga toda la demanda. No hay efecto de congestión.</p>
+        <p style="font-size:12px;"><b>Incremental</b>: divide la demanda en N fracciones. En cada paso usa los tiempos congestionados actuales, calcula caminos mínimos y carga la siguiente fracción, actualizando V y t con BPR. Es intuitivo y determinístico, pero el resultado depende del tamaño de los incrementos.</p>
+        <p style="font-size:12px;"><b>MSA (Method of Successive Averages)</b>: en la iteración k carga AON (auxiliar) con los tiempos actuales y promedia: V<sub>k+1</sub> = V<sub>k</sub> + (1/k)·(Aux − V<sub>k</sub>). Converge asintóticamente al equilibrio de usuario (Wardrop).</p>
+      </div>
+      <div class="section">
+        <h3>Valores típicos de α, β (Tabla 12.25)</h3>
+        <table>
+          <thead><tr><th>Tipo de vía</th><th>Vel. libre</th><th>α</th><th>β</th></tr></thead>
+          <tbody>
+            <tr><td>Autopista</td><td>112 km/h</td><td>0.88</td><td>9.8</td></tr>
+            <tr><td>Autopista</td><td>96 km/h</td><td>0.83</td><td>5.5</td></tr>
+            <tr><td>Autopista</td><td>80 km/h</td><td>0.56</td><td>3.6</td></tr>
+            <tr><td>Multilane</td><td>112 km/h</td><td>1.00</td><td>5.4</td></tr>
+            <tr><td>Multilane</td><td>96 km/h</td><td>0.83</td><td>2.7</td></tr>
+            <tr><td>Multilane</td><td>80 km/h</td><td>0.71</td><td>2.1</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="section">
+        <h3>Abrir / cerrar direcciones de un link</h3>
+        <div class="info">
+          Cada link tiene dos direcciones independientes que se pueden <b>cerrar</b> sin borrar el link. Una dirección cerrada no admite flujo (el algoritmo de asignación la ignora como si no existiera en ese sentido), pero conserva sus propiedades t₀/C/α/β para poder reabrirla después. Útil para:
+          <ul style="margin:6px 0 0 0; padding-left:18px; font-size:12px;">
+            <li>Links unidireccionales (calles de un solo sentido)</li>
+            <li>Cierre temporal por obras, accidentes, eventos</li>
+            <li>Analizar reversibles o efectos de restricciones</li>
+          </ul>
+          <br>
+          <b>Cómo cerrar/abrir:</b> doble-click en el link → checkboxes "A→B abierta" / "B→A abierta", o en la pestaña <b>Links</b> columna "Estado" con botones ✓ / ⊘, o en el panel de Selección del link.<br>
+          En el canvas, una dirección cerrada aparece como línea gris punteada con marcador ⊘.
+        </div>
+      </div>
+      <div class="section">
+        <h3>Curvas BPR (pestaña "Curvas BPR")</h3>
+        <div class="info">
+          Para cualquier link puedes <b>graficar la curva BPR</b> (tiempo de viaje vs. volumen) de una o las dos direcciones. Cada iteración/incremento agrega un punto que muestra cómo el volumen acumulado empuja al sistema por la curva hacia tiempos más altos. Se pueden seleccionar múltiples direcciones simultáneamente para comparar rutas alternativas (p.ej. en el Ejemplo 12.21 ver cómo la ruta 1→3 (C=20) se satura mientras 1→4 (C=200) apenas se mueve).<br><br>
+          <b>Cómo añadir una dirección:</b> (1) click en el link del canvas y usa los botones <b>📈 A→B</b> / <b>📈 B→A</b> en el panel de Selección; o (2) en la pestaña <b>Links</b>, usa las columnas 📈→ y 📈← de la tabla.
+        </div>
+      </div>
+      <div class="section">
+        <h3>¿Incremental es la mejor opción?</h3>
+        <div class="info warning">
+          Incremental es una excelente opción <b>pedagógica</b> (fácil de visualizar paso a paso) y produce resultados razonables. Sin embargo, no converge exactamente al equilibrio de usuario (UE). Para análisis más rigurosos, el <b>MSA</b> converge al UE, y el <b>Frank-Wolfe</b> es el estándar para grandes redes. En esta app puedes comparar AON / Incremental / MSA.
+        </div>
+      </div>
+      <div class="section">
+        <h3>Flujo de trabajo</h3>
+        <ol style="font-size:12px; padding-left:18px; line-height:1.7;">
+          <li>Define valores por defecto (C, t₀, α, β).</li>
+          <li>Crea zonas, arrástralas donde quieras.</li>
+          <li>Conecta con links y ajusta sus propiedades por sentido.</li>
+          <li>Completa la matriz OD.</li>
+          <li>Elige el método y calcula.</li>
+          <li>Inspecciona iteración por iteración en la pestaña <b>Convergencia</b>.</li>
+        </ol>
+      </div>
+      <div class="section">
+        <h3>Atajos</h3>
+        <table>
+          <tr><td><b>V</b></td><td>Seleccionar / Mover</td></tr>
+          <tr><td><b>Z</b></td><td>Añadir Zona</td></tr>
+          <tr><td><b>L</b></td><td>Conectar Zonas</td></tr>
+          <tr><td><b>D</b></td><td>Eliminar</td></tr>
+        </table>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<!-- Modal: link properties -->
+<div class="modal-overlay" id="modal-link">
+  <div class="modal">
+    <h3 id="modal-link-title">Propiedades del link</h3>
+
+    <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted); font-weight:700; margin-bottom:6px;">Direcciones habilitadas</div>
+    <div class="link-props-row-2" style="margin-bottom:12px;">
+      <label style="display:flex; align-items:center; gap:6px; border:1px solid var(--border); border-radius:5px; padding:8px; cursor:pointer; font-size:12px; color:var(--text);">
+        <input type="checkbox" id="link-open-ab" checked style="width:auto; margin:0;" />
+        <span id="modal-open-ab-label">A→B abierta</span>
+      </label>
+      <label style="display:flex; align-items:center; gap:6px; border:1px solid var(--border); border-radius:5px; padding:8px; cursor:pointer; font-size:12px; color:var(--text);">
+        <input type="checkbox" id="link-open-ba" checked style="width:auto; margin:0;" />
+        <span id="modal-open-ba-label">B→A abierta</span>
+      </label>
+    </div>
+    <div class="small-muted" style="margin-bottom:10px;">Si desmarcas una dirección, el tráfico no puede fluir por ese sentido (link unidireccional o temporalmente cerrado).</div>
+
+    <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted); font-weight:700; margin-bottom:6px;">Tiempo libre t₀ (min)</div>
+    <div class="link-props-row">
+      <div>
+        <label for="link-time-ab"><span id="modal-ab-label">A→B</span></label>
+        <input type="number" id="link-time-ab" min="0" step="0.1" value="1" />
+      </div>
+      <div>
+        <label style="visibility:hidden;">_</label>
+        <button class="sync-btn active" id="link-sync-time" title="Sincronizar">⇄</button>
+      </div>
+      <div>
+        <label for="link-time-ba"><span id="modal-ba-label">B→A</span></label>
+        <input type="number" id="link-time-ba" min="0" step="0.1" value="1" />
+      </div>
+    </div>
+
+    <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted); font-weight:700; margin:10px 0 6px 0;">Capacidad C (veh/h)</div>
+    <div class="link-props-row">
+      <div>
+        <label for="link-cap-ab"><span id="modal-ab-label2">A→B</span></label>
+        <input type="number" id="link-cap-ab" min="1" step="1" value="500" />
+      </div>
+      <div>
+        <label style="visibility:hidden;">_</label>
+        <button class="sync-btn active" id="link-sync-cap" title="Sincronizar">⇄</button>
+      </div>
+      <div>
+        <label for="link-cap-ba"><span id="modal-ba-label2">B→A</span></label>
+        <input type="number" id="link-cap-ba" min="1" step="1" value="500" />
+      </div>
+    </div>
+
+    <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted); font-weight:700; margin:10px 0 6px 0;">Parámetros BPR</div>
+    <div class="link-props-row-2">
+      <div>
+        <label for="link-alpha">α</label>
+        <input type="number" id="link-alpha" min="0" step="0.01" value="0.15" />
+      </div>
+      <div>
+        <label for="link-beta">β</label>
+        <input type="number" id="link-beta" min="0" step="0.1" value="4" />
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="modal-link-delete" class="danger" style="margin-right:auto;">Eliminar link</button>
+      <button id="modal-link-cancel">Cancelar</button>
+      <button id="modal-link-ok" class="primary">Aceptar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: zone rename -->
+<div class="modal-overlay" id="modal-zone">
+  <div class="modal">
+    <h3>Editar Zona</h3>
+    <div class="form-row">
+      <label for="zone-label-input">Etiqueta / Número</label>
+      <input type="text" id="zone-label-input" />
+    </div>
+    <div class="actions">
+      <button id="modal-zone-cancel">Cancelar</button>
+      <button id="modal-zone-ok" class="primary">Aceptar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================================
+   TRIP ASSIGNMENT CON CAPACITY RESTRAINT (BPR)
+   - Links direccionales con t0_AB, t0_BA, C_AB, C_BA, alpha, beta
+   - Matriz OD completa
+   - Métodos: AON, Incremental, MSA
+   ========================================================================= */
+
+const svgNS = "http://www.w3.org/2000/svg";
+
+// ---------- State ----------
+const state = {
+  zones: {},
+  links: {},    // id -> { id, a, b, timeAB, timeBA, capAB, capBA, alpha, beta, tSynced, cSynced }
+  od: {},
+  nextZoneId: 1, nextLinkId: 1, nextZoneLabel: 1,
+  mode: "select",
+  selected: null,
+  linkSource: null,
+  dragging: null,
+  defaults: { cap: 500, time: 1, alpha: 0.15, beta: 4 },
+  method: "incremental",
+  methodParams: { numIncrements: 4, pattern: "equal", maxIter: 15, tol: 0.005 },
+  results: null,     // see computeAssignment
+  displayOrigin: null,
+  displayMode: "volume-directional",
+  congestionColor: true,
+  incrementalStep: 0,  // for step-by-step
+  chartSelections: []  // [{linkId, dir}]  directions being watched in BPR curves tab
+};
+
+// ---------- DOM refs ----------
+const canvas = document.getElementById("canvas");
+const zonesLayer = document.getElementById("zones-layer");
+const linksLayer = document.getElementById("links-layer");
+const emptyState = document.getElementById("empty-state");
+const statusLeft = document.getElementById("status-left");
+const statusRight = document.getElementById("status-right");
+const selectionInfo = document.getElementById("selection-info");
+const selectionContent = document.getElementById("selection-content");
+const odMatrixContainer = document.getElementById("od-matrix-container");
+const linksTableContainer = document.getElementById("links-table-container");
+const resultsSummary = document.getElementById("results-summary");
+const skimTreeContainer = document.getElementById("skim-tree-container");
+const linkVolumesContainer = document.getElementById("link-volumes-container");
+const originChipsContainer = document.getElementById("origin-chips-container");
+const treeOriginSelect = document.getElementById("tree-origin-select");
+const displayModeSelect = document.getElementById("display-mode");
+const convergenceContainer = document.getElementById("convergence-container");
+const bprChipsContainer = document.getElementById("bpr-chips-container");
+const bprChartsContainer = document.getElementById("bpr-charts-container");
+
+// ---------- Helpers ----------
+function zoneById(id) { return state.zones[id]; }
+function linkById(id) { return state.links[id]; }
+function findLinkBetween(a, b) {
+  for (const id in state.links) {
+    const l = state.links[id];
+    if ((l.a === a && l.b === b) || (l.a === b && l.b === a)) return l;
+  }
+  return null;
+}
+function outEdges(zoneId, timesAB, timesBA) {
+  // timesAB / timesBA: optional overrides. If null, use free-flow (link.timeAB/timeBA).
+  // Closed directions (openAB/openBA === false) are excluded from routing.
+  const out = [];
+  for (const id in state.links) {
+    const l = state.links[id];
+    const tAB = timesAB ? (timesAB[id] != null ? timesAB[id] : l.timeAB) : l.timeAB;
+    const tBA = timesBA ? (timesBA[id] != null ? timesBA[id] : l.timeBA) : l.timeBA;
+    if (l.a === zoneId && l.openAB !== false) out.push({ to: l.b, time: tAB, linkId: id, dir: "AB" });
+    if (l.b === zoneId && l.openBA !== false) out.push({ to: l.a, time: tBA, linkId: id, dir: "BA" });
+  }
+  return out;
+}
+function sortedZones() {
+  return Object.values(state.zones).sort((a, b) => {
+    const la = parseInt(a.label), lb = parseInt(b.label);
+    if (!isNaN(la) && !isNaN(lb)) return la - lb;
+    return a.label.localeCompare(b.label);
+  });
+}
+function svgCoords(e) {
+  const pt = canvas.createSVGPoint();
+  pt.x = e.clientX; pt.y = e.clientY;
+  return pt.matrixTransform(canvas.getScreenCTM().inverse());
+}
+function round(x, d) {
+  const f = Math.pow(10, d || 2);
+  return Math.round(x * f) / f;
+}
+function bpr(t0, v, c, a, b) {
+  if (c <= 0) return t0;
+  return t0 * (1 + a * Math.pow(v / c, b));
+}
+function toggleDirectionOpen(linkId, dir) {
+  const l = state.links[linkId];
+  if (!l) return;
+  if (dir === "AB") l.openAB = !(l.openAB !== false);
+  else if (dir === "BA") l.openBA = !(l.openBA !== false);
+  state.results = null;
+  render();
+  updateLinksTable();
+  updateSelectionPanel();
+  updateResultsPanel();
+  updateConvergencePanel();
+  updateBPRCharts();
+}
+
+// ---------- Modes ----------
+function setMode(mode) {
+  state.mode = mode;
+  state.linkSource = null;
+  document.querySelectorAll(".tool-btn").forEach(b => {
+    b.classList.toggle("active", b.dataset.mode === mode);
+  });
+  canvas.className = "mode-" + mode;
+  const names = {
+    select: "Seleccionar / Mover",
+    zone: "Añadir Zona (click en el canvas)",
+    link: "Conectar Zonas (click primer zona, luego segunda)",
+    delete: "Eliminar (click en zona o link)"
+  };
+  statusLeft.textContent = "Modo: " + names[mode];
+  render();
+}
+document.querySelectorAll(".tool-btn").forEach(btn => {
+  btn.addEventListener("click", () => setMode(btn.dataset.mode));
+});
+document.addEventListener("keydown", (e) => {
+  if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") return;
+  const k = e.key.toLowerCase();
+  if (k === "v") setMode("select");
+  else if (k === "z") setMode("zone");
+  else if (k === "l") setMode("link");
+  else if (k === "d") setMode("delete");
+  else if (k === "escape") { deselect(); state.linkSource = null; render(); }
+  else if (k === "delete" || k === "backspace") { if (state.selected) deleteSelected(); }
+});
+
+// ---------- Defaults ----------
+["def-cap","def-time","def-alpha","def-beta"].forEach(id => {
+  document.getElementById(id).addEventListener("input", (e) => {
+    const v = parseFloat(e.target.value);
+    if (isNaN(v)) return;
+    if (id === "def-cap") state.defaults.cap = v;
+    else if (id === "def-time") state.defaults.time = v;
+    else if (id === "def-alpha") state.defaults.alpha = v;
+    else if (id === "def-beta") state.defaults.beta = v;
+  });
+});
+
+// ---------- Method selector ----------
+document.getElementById("method-select").addEventListener("change", (e) => {
+  state.method = e.target.value;
+  document.getElementById("params-incremental").style.display = (state.method === "incremental") ? "" : "none";
+  document.getElementById("params-msa").style.display = (state.method === "msa") ? "" : "none";
+  document.getElementById("btn-step").style.display = (state.method === "incremental") ? "" : "none";
+});
+document.getElementById("num-increments").addEventListener("input", e => {
+  const v = parseInt(e.target.value); if (!isNaN(v) && v >= 1) state.methodParams.numIncrements = v;
+});
+document.getElementById("increment-pattern").addEventListener("change", e => {
+  state.methodParams.pattern = e.target.value;
+});
+document.getElementById("max-iter").addEventListener("input", e => {
+  const v = parseInt(e.target.value); if (!isNaN(v) && v >= 1) state.methodParams.maxIter = v;
+});
+document.getElementById("convergence-tol").addEventListener("input", e => {
+  const v = parseFloat(e.target.value); if (!isNaN(v) && v >= 0) state.methodParams.tol = v;
+});
+document.getElementById("toggle-congestion-color").addEventListener("change", (e) => {
+  state.congestionColor = e.target.checked;
+  render();
+});
+
+// Show the step button for incremental by default
+document.getElementById("btn-step").style.display = (state.method === "incremental") ? "" : "none";
+
+// ---------- CRUD ----------
+function createZone(x, y, label) {
+  const id = "z" + state.nextZoneId++;
+  const lbl = (label !== undefined) ? String(label) : String(state.nextZoneLabel++);
+  state.zones[id] = { id, label: lbl, x, y };
+  for (const oid in state.zones) {
+    if (!state.od[oid]) state.od[oid] = {};
+    if (oid !== id) state.od[oid][id] = 0;
+  }
+  state.od[id] = {};
+  for (const oid in state.zones) {
+    if (oid !== id) state.od[id][oid] = 0;
+  }
+  render();
+  updateODMatrix();
+  updateLinksTable();
+  updateTreeOriginSelect();
+  return id;
+}
+function deleteZone(id) {
+  delete state.zones[id];
+  for (const lid in state.links) {
+    const l = state.links[lid];
+    if (l.a === id || l.b === id) { removeChartSelectionsForLink(lid); delete state.links[lid]; }
+  }
+  delete state.od[id];
+  for (const oid in state.od) delete state.od[oid][id];
+  if (state.displayOrigin === id) state.displayOrigin = null;
+  state.selected = null;
+  state.results = null;
+  render();
+  updateODMatrix(); updateLinksTable(); updateTreeOriginSelect(); updateResultsPanel(); updateBPRCharts();
+}
+function createLink(a, b, overrides) {
+  if (a === b) return null;
+  const existing = findLinkBetween(a, b);
+  if (existing) return existing;
+  const id = "l" + state.nextLinkId++;
+  const d = state.defaults;
+  const o = overrides || {};
+  const tAB = (o.timeAB != null) ? o.timeAB : d.time;
+  const tBA = (o.timeBA != null) ? o.timeBA : tAB;
+  const cAB = (o.capAB != null) ? o.capAB : d.cap;
+  const cBA = (o.capBA != null) ? o.capBA : cAB;
+  state.links[id] = {
+    id, a, b,
+    timeAB: tAB, timeBA: tBA,
+    capAB: cAB, capBA: cBA,
+    alpha: (o.alpha != null) ? o.alpha : d.alpha,
+    beta: (o.beta != null) ? o.beta : d.beta,
+    openAB: (o.openAB != null) ? !!o.openAB : true,
+    openBA: (o.openBA != null) ? !!o.openBA : true,
+    tSynced: (tAB === tBA),
+    cSynced: (cAB === cBA)
+  };
+  state.results = null;
+  render();
+  updateLinksTable();
+  updateResultsPanel();
+  return state.links[id];
+}
+function deleteLink(id) {
+  removeChartSelectionsForLink(id);
+  delete state.links[id];
+  state.selected = null;
+  state.results = null;
+  render();
+  updateLinksTable();
+  updateResultsPanel();
+  updateBPRCharts();
+}
+function deleteSelected() {
+  if (!state.selected) return;
+  if (state.selected.kind === "zone") deleteZone(state.selected.id);
+  else if (state.selected.kind === "link") deleteLink(state.selected.id);
+}
+
+// ---------- Canvas events ----------
+canvas.addEventListener("mousedown", (e) => {
+  if (e.target === canvas || e.target.tagName === "defs") {
+    const { x, y } = svgCoords(e);
+    if (state.mode === "zone") createZone(x, y);
+    else if (state.mode === "select") { deselect(); render(); }
+    else if (state.mode === "link") { state.linkSource = null; render(); }
+  }
+});
+canvas.addEventListener("mousemove", (e) => {
+  if (state.dragging) {
+    const { x, y } = svgCoords(e);
+    const z = zoneById(state.dragging.id);
+    if (z) { z.x = x - state.dragging.offsetX; z.y = y - state.dragging.offsetY; render(); }
+  }
+});
+canvas.addEventListener("mouseup", () => { state.dragging = null; });
+canvas.addEventListener("mouseleave", () => { state.dragging = null; });
+
+// ---------- Selection ----------
+function selectZone(id) { state.selected = { kind: "zone", id }; render(); updateSelectionPanel(); }
+function selectLink(id) { state.selected = { kind: "link", id }; render(); updateSelectionPanel(); }
+function deselect() { state.selected = null; updateSelectionPanel(); }
+
+function updateSelectionPanel() {
+  if (!state.selected) { selectionInfo.style.display = "none"; return; }
+  selectionInfo.style.display = "block";
+  if (state.selected.kind === "zone") {
+    const z = zoneById(state.selected.id);
+    if (!z) { selectionInfo.style.display = "none"; return; }
+    selectionContent.innerHTML = `
+      <div style="margin-bottom:10px;"><b>Zona ${z.label}</b></div>
+      <button class="action-btn secondary" id="sel-rename">Renombrar</button>
+      <button class="action-btn secondary" id="sel-focus-tree">Ver árbol desde esta zona</button>
+      <button class="action-btn danger" id="sel-delete">Eliminar Zona</button>
+    `;
+    document.getElementById("sel-rename").onclick = () => openZoneModal(z.id);
+    document.getElementById("sel-focus-tree").onclick = () => {
+      state.displayOrigin = z.id;
+      treeOriginSelect.value = z.id;
+      render();
+      updateResultsPanel();
+    };
+    document.getElementById("sel-delete").onclick = () => deleteZone(z.id);
+  } else {
+    const l = linkById(state.selected.id);
+    if (!l) { selectionInfo.style.display = "none"; return; }
+    const za = zoneById(l.a), zb = zoneById(l.b);
+    const abActive = isInChart(l.id, "AB");
+    const baActive = isInChart(l.id, "BA");
+    const openAB = l.openAB !== false;
+    const openBA = l.openBA !== false;
+    const closedNote = (!openAB || !openBA)
+      ? `<div class="info warning" style="font-size:11px; margin-bottom:8px; padding:6px 8px;">
+           ${!openAB ? `Dirección <b>${za.label}→${zb.label}</b> cerrada. ` : ''}
+           ${!openBA ? `Dirección <b>${zb.label}→${za.label}</b> cerrada.` : ''}
+         </div>`
+      : '';
+    selectionContent.innerHTML = `
+      <div style="margin-bottom:10px;"><b>Link ${za.label} — ${zb.label}</b></div>
+      ${closedNote}
+      <button class="action-btn" id="sel-edit">Editar propiedades…</button>
+      <div style="font-size:11px; color:var(--muted); margin:8px 0 4px;">Abrir / cerrar direcciones:</div>
+      <div style="display:flex; gap:6px; margin-bottom:8px;">
+        <button class="action-btn ${openAB ? '' : 'secondary'}" id="sel-open-ab" style="flex:1; margin:0; padding:7px; ${openAB ? '' : 'background:#fee2e2; color:var(--danger); border-color:#fecaca;'}">
+          ${openAB ? '✓ Abierta' : '⊘ Cerrada'} ${za.label}→${zb.label}
+        </button>
+        <button class="action-btn ${openBA ? '' : 'secondary'}" id="sel-open-ba" style="flex:1; margin:0; padding:7px; ${openBA ? '' : 'background:#fee2e2; color:var(--danger); border-color:#fecaca;'}">
+          ${openBA ? '✓ Abierta' : '⊘ Cerrada'} ${zb.label}→${za.label}
+        </button>
+      </div>
+      <div style="font-size:11px; color:var(--muted); margin:8px 0 4px;">Gráfica BPR (tiempo vs volumen):</div>
+      <div style="display:flex; gap:6px; margin-bottom:8px;">
+        <button class="action-btn ${abActive ? '' : 'secondary'}" id="sel-chart-ab" style="flex:1; margin:0; padding:7px;">
+          ${abActive ? '✓' : '📈'} ${za.label}→${zb.label}
+        </button>
+        <button class="action-btn ${baActive ? '' : 'secondary'}" id="sel-chart-ba" style="flex:1; margin:0; padding:7px;">
+          ${baActive ? '✓' : '📈'} ${zb.label}→${za.label}
+        </button>
+      </div>
+      <button class="action-btn danger" id="sel-link-delete">Eliminar Link</button>
+    `;
+    document.getElementById("sel-edit").onclick = () => openLinkModal(l.id);
+    document.getElementById("sel-open-ab").onclick = () => toggleDirectionOpen(l.id, "AB");
+    document.getElementById("sel-open-ba").onclick = () => toggleDirectionOpen(l.id, "BA");
+    document.getElementById("sel-chart-ab").onclick = () => toggleChartSelection(l.id, "AB");
+    document.getElementById("sel-chart-ba").onclick = () => toggleChartSelection(l.id, "BA");
+    document.getElementById("sel-link-delete").onclick = () => deleteLink(l.id);
+  }
+}
+
+// ---------- Rendering ----------
+function render() {
+  zonesLayer.innerHTML = "";
+  linksLayer.innerHTML = "";
+
+  // Determine tree direction per link for displayOrigin
+  const treeLinksDir = {};
+  if (state.results && state.displayOrigin && state.results.final && state.results.final.byOrigin && state.results.final.byOrigin[state.displayOrigin]) {
+    const r = state.results.final.byOrigin[state.displayOrigin];
+    for (const dest in r.pathByDest) {
+      const path = r.pathByDest[dest];
+      for (let i = 0; i < path.length - 1; i++) {
+        const from = path[i], to = path[i+1];
+        const l = findLinkBetween(from, to);
+        if (l) treeLinksDir[l.id] = (l.a === from) ? "AB" : "BA";
+      }
+    }
+  }
+
+  // Helper: get current times / volumes from results
+  function getCurrentVol(lid, dir) {
+    if (!state.results || !state.results.final) return 0;
+    return (dir === "AB") ? (state.results.final.linkVolAB[lid] || 0) : (state.results.final.linkVolBA[lid] || 0);
+  }
+  function getCurrentTime(lid, dir) {
+    if (!state.results || !state.results.final) {
+      const l = state.links[lid];
+      return (dir === "AB") ? l.timeAB : l.timeBA;
+    }
+    return (dir === "AB") ? (state.results.final.linkTimeAB[lid] ?? state.links[lid].timeAB) : (state.results.final.linkTimeBA[lid] ?? state.links[lid].timeBA);
+  }
+  function vocColor(voc) {
+    if (voc <= 0.6) return "#10b981";
+    if (voc <= 0.85) return "#f59e0b";
+    if (voc <= 1.0) return "#ef4444";
+    return "#7f1d1d";
+  }
+
+  // Links
+  for (const id in state.links) {
+    const l = state.links[id];
+    const za = zoneById(l.a), zb = zoneById(l.b);
+    if (!za || !zb) continue;
+    const g = document.createElementNS(svgNS, "g");
+    g.setAttribute("class", "link-group");
+    g.dataset.id = id;
+    const onTree = treeLinksDir[id] !== undefined;
+    if (onTree) g.classList.add("on-skim-tree");
+    if (state.selected && state.selected.kind === "link" && state.selected.id === id) g.classList.add("selected");
+
+    // Hit area
+    const hit = document.createElementNS(svgNS, "line");
+    hit.setAttribute("class", "link-hit");
+    hit.setAttribute("x1", za.x); hit.setAttribute("y1", za.y);
+    hit.setAttribute("x2", zb.x); hit.setAttribute("y2", zb.y);
+    g.appendChild(hit);
+
+    // Congestion coloring (two parallel segments for AB and BA)
+    const openAB = l.openAB !== false;
+    const openBA = l.openBA !== false;
+    const dx0 = zb.x - za.x, dy0 = zb.y - za.y;
+    const len0 = Math.sqrt(dx0*dx0 + dy0*dy0) || 1;
+    const nx0 = -dy0 / len0, ny0 = dx0 / len0;
+    if (state.congestionColor && state.results) {
+      const vAB = getCurrentVol(id, "AB"), vBA = getCurrentVol(id, "BA");
+      const vocAB = vAB / Math.max(0.0001, l.capAB);
+      const vocBA = vBA / Math.max(0.0001, l.capBA);
+      if (openAB) {
+        const abLine = document.createElementNS(svgNS, "line");
+        abLine.setAttribute("class", "link-congestion-line");
+        abLine.setAttribute("x1", za.x + nx0 * 4); abLine.setAttribute("y1", za.y + ny0 * 4);
+        abLine.setAttribute("x2", zb.x + nx0 * 4); abLine.setAttribute("y2", zb.y + ny0 * 4);
+        abLine.setAttribute("stroke", vocColor(vocAB));
+        g.appendChild(abLine);
+      }
+      if (openBA) {
+        const baLine = document.createElementNS(svgNS, "line");
+        baLine.setAttribute("class", "link-congestion-line");
+        baLine.setAttribute("x1", za.x - nx0 * 4); baLine.setAttribute("y1", za.y - ny0 * 4);
+        baLine.setAttribute("x2", zb.x - nx0 * 4); baLine.setAttribute("y2", zb.y - ny0 * 4);
+        baLine.setAttribute("stroke", vocColor(vocBA));
+        g.appendChild(baLine);
+      }
+    }
+    // Closed direction markers (dashed gray line with ⊘ symbol)
+    if (!openAB) {
+      const cLine = document.createElementNS(svgNS, "line");
+      cLine.setAttribute("x1", za.x + nx0 * 4); cLine.setAttribute("y1", za.y + ny0 * 4);
+      cLine.setAttribute("x2", zb.x + nx0 * 4); cLine.setAttribute("y2", zb.y + ny0 * 4);
+      cLine.setAttribute("stroke", "#9ca3af");
+      cLine.setAttribute("stroke-width", "3");
+      cLine.setAttribute("stroke-dasharray", "4,4");
+      cLine.setAttribute("opacity", "0.7");
+      g.appendChild(cLine);
+    }
+    if (!openBA) {
+      const cLine = document.createElementNS(svgNS, "line");
+      cLine.setAttribute("x1", za.x - nx0 * 4); cLine.setAttribute("y1", za.y - ny0 * 4);
+      cLine.setAttribute("x2", zb.x - nx0 * 4); cLine.setAttribute("y2", zb.y - ny0 * 4);
+      cLine.setAttribute("stroke", "#9ca3af");
+      cLine.setAttribute("stroke-width", "3");
+      cLine.setAttribute("stroke-dasharray", "4,4");
+      cLine.setAttribute("opacity", "0.7");
+      g.appendChild(cLine);
+    }
+
+    const line = document.createElementNS(svgNS, "line");
+    line.setAttribute("class", "link-line");
+    line.setAttribute("x1", za.x); line.setAttribute("y1", za.y);
+    line.setAttribute("x2", zb.x); line.setAttribute("y2", zb.y);
+    g.appendChild(line);
+
+    // Tree arrow overlay
+    if (onTree) {
+      const dir = treeLinksDir[id];
+      const from = (dir === "AB") ? za : zb;
+      const to = (dir === "AB") ? zb : za;
+      const dx = to.x - from.x, dy = to.y - from.y;
+      const len = Math.sqrt(dx*dx + dy*dy) || 1;
+      const r = 22;
+      const x1 = from.x + (dx / len) * r;
+      const y1 = from.y + (dy / len) * r;
+      const x2 = to.x - (dx / len) * r;
+      const y2 = to.y - (dy / len) * r;
+      const arr = document.createElementNS(svgNS, "line");
+      arr.setAttribute("x1", x1); arr.setAttribute("y1", y1);
+      arr.setAttribute("x2", x2); arr.setAttribute("y2", y2);
+      arr.setAttribute("stroke", "#7c3aed");
+      arr.setAttribute("stroke-width", "3");
+      arr.setAttribute("marker-end", "url(#arrow-tree-ab)");
+      g.appendChild(arr);
+    }
+
+    // Labels
+    const mx = (za.x + zb.x) / 2, my = (za.y + zb.y) / 2;
+    const dx = zb.x - za.x, dy = zb.y - za.y;
+    const len = Math.sqrt(dx*dx + dy*dy) || 1;
+    const nx = -dy / len, ny = dx / len;
+
+    const mode = state.displayMode;
+    const bothOpen = openAB && openBA;
+    if (mode === "time") {
+      if (bothOpen && l.timeAB === l.timeBA) addLinkLabel(g, mx, my, String(l.timeAB));
+      else {
+        if (openAB) addLinkLabel(g, (za.x*0.35 + zb.x*0.65) + nx*9, (za.y*0.35 + zb.y*0.65) + ny*9, l.timeAB + " →");
+        if (openBA) addLinkLabel(g, (za.x*0.65 + zb.x*0.35) - nx*9, (za.y*0.65 + zb.y*0.35) - ny*9, "← " + l.timeBA);
+      }
+    } else if (mode === "time-congested") {
+      const tAB = round(getCurrentTime(id, "AB"), 2);
+      const tBA = round(getCurrentTime(id, "BA"), 2);
+      if (bothOpen && tAB === tBA) addLinkLabel(g, mx, my, "t=" + tAB);
+      else {
+        if (openAB) addLinkLabel(g, (za.x*0.35 + zb.x*0.65) + nx*9, (za.y*0.35 + zb.y*0.65) + ny*9, tAB + " →");
+        if (openBA) addLinkLabel(g, (za.x*0.65 + zb.x*0.35) - nx*9, (za.y*0.65 + zb.y*0.35) - ny*9, "← " + tBA);
+      }
+    } else if (mode === "volume-total") {
+      const vAB = openAB ? getCurrentVol(id, "AB") : 0;
+      const vBA = openBA ? getCurrentVol(id, "BA") : 0;
+      const tot = vAB + vBA;
+      const cStr = bothOpen ? ("C=" + l.capAB + (l.capAB===l.capBA ? "" : "/"+l.capBA)) : ("C=" + (openAB ? l.capAB : l.capBA));
+      addLinkLabel(g, mx, my, cStr);
+      if (tot > 0) addVolumeLabel(g, mx + nx*14, my + ny*14, "V=" + round(tot,1));
+    } else if (mode === "voc") {
+      const vAB = openAB ? getCurrentVol(id, "AB") : 0;
+      const vBA = openBA ? getCurrentVol(id, "BA") : 0;
+      const vocAB = vAB / Math.max(0.0001, l.capAB);
+      const vocBA = vBA / Math.max(0.0001, l.capBA);
+      const cStr = bothOpen ? ("C=" + l.capAB + (l.capAB===l.capBA ? "" : "/"+l.capBA)) : ("C=" + (openAB ? l.capAB : l.capBA));
+      addLinkLabel(g, mx, my, cStr);
+      if (openAB && vAB > 0) addVolumeLabel(g, (za.x*0.3 + zb.x*0.7) + nx*12, (za.y*0.3 + zb.y*0.7) + ny*12, "→" + round(vocAB,2));
+      if (openBA && vBA > 0) addVolumeLabel(g, (za.x*0.7 + zb.x*0.3) - nx*12, (za.y*0.7 + zb.y*0.3) - ny*12, "←" + round(vocBA,2));
+    } else {
+      // volume-directional
+      let tStr;
+      if (bothOpen) tStr = (l.timeAB === l.timeBA) ? String(l.timeAB) : (l.timeAB + "/" + l.timeBA);
+      else tStr = openAB ? String(l.timeAB) : String(l.timeBA);
+      addLinkLabel(g, mx, my, "t₀=" + tStr);
+      const vAB = openAB ? getCurrentVol(id, "AB") : 0;
+      const vBA = openBA ? getCurrentVol(id, "BA") : 0;
+      if (openAB && vAB > 0) addVolumeLabel(g, (za.x*0.3 + zb.x*0.7) + nx*12, (za.y*0.3 + zb.y*0.7) + ny*12, "→" + round(vAB,1));
+      if (openBA && vBA > 0) addVolumeLabel(g, (za.x*0.7 + zb.x*0.3) - nx*12, (za.y*0.7 + zb.y*0.3) - ny*12, "←" + round(vBA,1));
+    }
+
+    // "⊘" markers for closed directions (centered on the offset segment)
+    if (!openAB) {
+      const cx = mx + nx * 4;
+      const cy = my + ny * 4;
+      const bg = document.createElementNS(svgNS, "rect");
+      bg.setAttribute("x", cx - 14); bg.setAttribute("y", cy - 7);
+      bg.setAttribute("width", 28); bg.setAttribute("height", 14);
+      bg.setAttribute("rx", 7);
+      bg.setAttribute("fill", "#f3f4f6"); bg.setAttribute("stroke", "#9ca3af");
+      g.appendChild(bg);
+      const txt = document.createElementNS(svgNS, "text");
+      txt.setAttribute("class", "link-closed-marker");
+      txt.setAttribute("x", cx); txt.setAttribute("y", cy + 3);
+      txt.textContent = "→ ⊘";
+      g.appendChild(txt);
+    }
+    if (!openBA) {
+      const cx = mx - nx * 4;
+      const cy = my - ny * 4;
+      const bg = document.createElementNS(svgNS, "rect");
+      bg.setAttribute("x", cx - 14); bg.setAttribute("y", cy - 7);
+      bg.setAttribute("width", 28); bg.setAttribute("height", 14);
+      bg.setAttribute("rx", 7);
+      bg.setAttribute("fill", "#f3f4f6"); bg.setAttribute("stroke", "#9ca3af");
+      g.appendChild(bg);
+      const txt = document.createElementNS(svgNS, "text");
+      txt.setAttribute("class", "link-closed-marker");
+      txt.setAttribute("x", cx); txt.setAttribute("y", cy + 3);
+      txt.textContent = "⊘ ←";
+      g.appendChild(txt);
+    }
+
+    g.addEventListener("mousedown", (e) => {
+      e.stopPropagation();
+      if (state.mode === "delete") deleteLink(id);
+      else if (state.mode === "select") selectLink(id);
+    });
+    g.addEventListener("dblclick", (e) => {
+      e.stopPropagation();
+      openLinkModal(id);
+    });
+
+    linksLayer.appendChild(g);
+  }
+
+  // Zones
+  for (const id in state.zones) {
+    const z = state.zones[id];
+    const g = document.createElementNS(svgNS, "g");
+    g.setAttribute("class", "zone-group");
+    g.setAttribute("transform", `translate(${z.x}, ${z.y})`);
+    g.dataset.id = id;
+
+    if (state.displayOrigin === id) g.classList.add("origin-focus");
+    if (state.selected && state.selected.kind === "zone" && state.selected.id === id) g.classList.add("selected");
+    if (state.linkSource === id) g.classList.add("link-source");
+
+    const c = document.createElementNS(svgNS, "circle");
+    c.setAttribute("class", "zone-circle");
+    c.setAttribute("r", 22);
+    g.appendChild(c);
+
+    const t = document.createElementNS(svgNS, "text");
+    t.setAttribute("class", "zone-label");
+    t.textContent = z.label;
+    g.appendChild(t);
+
+    if (state.results && state.displayOrigin && state.results.final && state.results.final.byOrigin && state.results.final.byOrigin[state.displayOrigin]) {
+      const d = state.results.final.byOrigin[state.displayOrigin].distances[id];
+      if (d !== undefined && id !== state.displayOrigin) {
+        const ct = document.createElementNS(svgNS, "text");
+        ct.setAttribute("class", "cumtime-label");
+        ct.setAttribute("x", 0); ct.setAttribute("y", -30);
+        ct.textContent = "t=" + round(d, 2);
+        g.appendChild(ct);
+      }
+    }
+
+    g.addEventListener("mousedown", (e) => {
+      e.stopPropagation();
+      if (state.mode === "select") {
+        selectZone(id);
+        const p = svgCoords(e);
+        state.dragging = { id, offsetX: p.x - z.x, offsetY: p.y - z.y };
+      } else if (state.mode === "delete") {
+        deleteZone(id);
+      } else if (state.mode === "link") {
+        if (state.linkSource === null) { state.linkSource = id; render(); }
+        else if (state.linkSource === id) { state.linkSource = null; render(); }
+        else {
+          const existing = findLinkBetween(state.linkSource, id);
+          if (existing) { state.linkSource = null; openLinkModal(existing.id); }
+          else {
+            const nl = createLink(state.linkSource, id);
+            state.linkSource = null;
+            if (nl) openLinkModal(nl.id);
+          }
+        }
+      }
+    });
+    g.addEventListener("dblclick", (e) => {
+      e.stopPropagation();
+      openZoneModal(id);
+    });
+
+    zonesLayer.appendChild(g);
+  }
+
+  emptyState.style.display = Object.keys(state.zones).length > 0 ? "none" : "block";
+  const nOrig = state.displayOrigin ? (zoneById(state.displayOrigin)?.label || "-") : "-";
+  statusRight.textContent = `${Object.keys(state.zones).length} zonas · ${Object.keys(state.links).length} links · árbol: ${nOrig}`;
+}
+
+function addLinkLabel(g, x, y, text) {
+  const w = Math.max(18, String(text).length * 6 + 8);
+  const h = 15;
+  const r = document.createElementNS(svgNS, "rect");
+  r.setAttribute("class", "link-time-bg");
+  r.setAttribute("x", x - w/2); r.setAttribute("y", y - h/2);
+  r.setAttribute("width", w); r.setAttribute("height", h);
+  r.setAttribute("rx", 3);
+  g.appendChild(r);
+  const t = document.createElementNS(svgNS, "text");
+  t.setAttribute("class", "link-time-label");
+  t.setAttribute("x", x); t.setAttribute("y", y);
+  t.textContent = text;
+  g.appendChild(t);
+}
+function addVolumeLabel(g, x, y, text) {
+  const t = document.createElementNS(svgNS, "text");
+  t.setAttribute("class", "link-volume-label");
+  t.setAttribute("x", x); t.setAttribute("y", y);
+  t.textContent = text;
+  g.appendChild(t);
+}
+
+// ---------- OD Matrix UI ----------
+function updateODMatrix() {
+  const zones = sortedZones();
+  if (zones.length < 2) {
+    odMatrixContainer.innerHTML = '<div class="small-muted" style="padding: 14px;">Crea al menos 2 zonas para ver la matriz.</div>';
+    return;
+  }
+  for (const o of zones) {
+    if (!state.od[o.id]) state.od[o.id] = {};
+    for (const d of zones) {
+      if (o.id === d.id) continue;
+      if (state.od[o.id][d.id] === undefined) state.od[o.id][d.id] = 0;
+    }
+  }
+  const rowTotals = {}, colTotals = {};
+  let grand = 0;
+  for (const o of zones) {
+    rowTotals[o.id] = 0;
+    for (const d of zones) {
+      if (o.id !== d.id) {
+        const v = state.od[o.id][d.id] || 0;
+        rowTotals[o.id] += v;
+        colTotals[d.id] = (colTotals[d.id] || 0) + v;
+        grand += v;
+      }
+    }
+  }
+
+  let html = '<table class="od-matrix"><thead><tr>';
+  html += '<th class="corner">O \\ D</th>';
+  for (const d of zones) html += `<th>${d.label}</th>`;
+  html += '<th style="background:#cbd5e1;">Σ fila</th>';
+  html += '</tr></thead><tbody>';
+  for (const o of zones) {
+    html += `<tr><th>${o.label}</th>`;
+    for (const d of zones) {
+      if (o.id === d.id) html += `<td class="diagonal">—</td>`;
+      else {
+        const v = state.od[o.id][d.id] || 0;
+        html += `<td><input type="number" min="0" step="1" data-o="${o.id}" data-d="${d.id}" value="${v}" /></td>`;
+      }
+    }
+    html += `<td style="background:#e2e8f0; font-weight:700;">${rowTotals[o.id]}</td>`;
+    html += '</tr>';
+  }
+  html += '</tbody><tfoot><tr><th>Σ col</th>';
+  for (const d of zones) html += `<td>${colTotals[d.id] || 0}</td>`;
+  html += `<th style="background:#cbd5e1;">${grand}</th>`;
+  html += '</tr></tfoot></table>';
+  odMatrixContainer.innerHTML = html;
+
+  odMatrixContainer.querySelectorAll("input").forEach(inp => {
+    inp.addEventListener("input", () => {
+      const o = inp.dataset.o, d = inp.dataset.d;
+      const v = parseFloat(inp.value);
+      if (!state.od[o]) state.od[o] = {};
+      state.od[o][d] = isNaN(v) ? 0 : v;
+      state.results = null;
+      updateResultsPanel();
+      updateBPRCharts();
+      refreshODTotals();
+    });
+  });
+}
+
+function refreshODTotals() {
+  const zones = sortedZones();
+  const rowTotals = {}, colTotals = {};
+  let grand = 0;
+  for (const o of zones) {
+    rowTotals[o.id] = 0;
+    for (const d of zones) {
+      if (o.id !== d.id) {
+        const v = state.od[o.id][d.id] || 0;
+        rowTotals[o.id] += v;
+        colTotals[d.id] = (colTotals[d.id] || 0) + v;
+        grand += v;
+      }
+    }
+  }
+  const trs = odMatrixContainer.querySelectorAll("tbody tr");
+  trs.forEach((tr, i) => {
+    const z = zones[i];
+    const cells = tr.querySelectorAll("td");
+    if (cells.length) cells[cells.length - 1].textContent = rowTotals[z.id];
+  });
+  const ftds = odMatrixContainer.querySelectorAll("tfoot td");
+  zones.forEach((z, i) => { if (ftds[i]) ftds[i].textContent = colTotals[z.id] || 0; });
+  const grandCell = odMatrixContainer.querySelector("tfoot th:last-child");
+  if (grandCell) grandCell.textContent = grand;
+}
+
+document.getElementById("btn-od-clear").addEventListener("click", () => {
+  if (!confirm("¿Poner todos los viajes en 0?")) return;
+  for (const o in state.od) for (const d in state.od[o]) state.od[o][d] = 0;
+  state.results = null;
+  updateODMatrix(); updateResultsPanel();
+});
+document.getElementById("btn-od-symmetric").addEventListener("click", () => {
+  for (const oid in state.od) {
+    for (const did in state.od[oid]) {
+      if (oid < did) {
+        const v1 = state.od[oid][did] || 0;
+        const v2 = (state.od[did] && state.od[did][oid]) || 0;
+        const avg = (v1 + v2) / 2;
+        state.od[oid][did] = avg;
+        if (!state.od[did]) state.od[did] = {};
+        state.od[did][oid] = avg;
+      }
+    }
+  }
+  state.results = null;
+  updateODMatrix(); updateResultsPanel();
+});
+
+// ---------- Links Table ----------
+function updateLinksTable() {
+  const links = Object.values(state.links);
+  if (links.length === 0) {
+    linksTableContainer.innerHTML = '<div class="small-muted">No hay links todavía.</div>';
+    return;
+  }
+  const rows = links.map(l => {
+    const za = zoneById(l.a), zb = zoneById(l.b);
+    if (!za || !zb) return "";
+    const abActive = isInChart(l.id, "AB");
+    const baActive = isInChart(l.id, "BA");
+    const openAB = l.openAB !== false;
+    const openBA = l.openBA !== false;
+    return `<tr>
+      <td>${za.label}—${zb.label}</td>
+      <td><input class="narrow" type="number" min="0" step="0.1" data-link="${l.id}" data-f="timeAB" value="${l.timeAB}" ${openAB ? '' : 'disabled'} /></td>
+      <td><input class="narrow" type="number" min="0" step="0.1" data-link="${l.id}" data-f="timeBA" value="${l.timeBA}" ${openBA ? '' : 'disabled'} /></td>
+      <td><input class="narrow" type="number" min="1" step="1" data-link="${l.id}" data-f="capAB" value="${l.capAB}" ${openAB ? '' : 'disabled'} /></td>
+      <td><input class="narrow" type="number" min="1" step="1" data-link="${l.id}" data-f="capBA" value="${l.capBA}" ${openBA ? '' : 'disabled'} /></td>
+      <td><input class="narrow" type="number" min="0" step="0.01" data-link="${l.id}" data-f="alpha" value="${l.alpha}" /></td>
+      <td><input class="narrow" type="number" min="0" step="0.1" data-link="${l.id}" data-f="beta" value="${l.beta}" /></td>
+      <td style="white-space:nowrap;">
+        <button class="open-toggle-btn ${openAB ? 'open' : 'closed'}" data-open-link="${l.id}" data-open-dir="AB" title="${openAB ? 'Cerrar' : 'Abrir'} ${za.label}→${zb.label}">${openAB ? '→ ✓' : '→ ⊘'}</button>
+        <button class="open-toggle-btn ${openBA ? 'open' : 'closed'}" data-open-link="${l.id}" data-open-dir="BA" title="${openBA ? 'Cerrar' : 'Abrir'} ${zb.label}→${za.label}">${openBA ? '← ✓' : '← ⊘'}</button>
+      </td>
+      <td style="white-space:nowrap;">
+        <button class="chart-toggle-btn ${abActive ? 'active' : ''}" data-chart-link="${l.id}" data-chart-dir="AB" title="Gráfica ${za.label}→${zb.label}">📈→</button>
+        <button class="chart-toggle-btn ${baActive ? 'active' : ''}" data-chart-link="${l.id}" data-chart-dir="BA" title="Gráfica ${zb.label}→${za.label}">📈←</button>
+      </td>
+    </tr>`;
+  }).join("");
+  linksTableContainer.innerHTML = `
+    <div style="overflow:auto;">
+    <table>
+      <thead><tr><th>Link</th><th>t₀ AB</th><th>t₀ BA</th><th>C AB</th><th>C BA</th><th>α</th><th>β</th><th>Estado</th><th>BPR</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    </div>
+  `;
+  linksTableContainer.querySelectorAll("input").forEach(inp => {
+    inp.addEventListener("input", () => {
+      const lid = inp.dataset.link, f = inp.dataset.f;
+      const v = parseFloat(inp.value);
+      if (state.links[lid] && !isNaN(v) && v >= 0) {
+        state.links[lid][f] = v;
+        state.results = null;
+        render(); updateResultsPanel(); updateBPRCharts();
+      }
+    });
+  });
+  linksTableContainer.querySelectorAll("[data-chart-link]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      toggleChartSelection(btn.dataset.chartLink, btn.dataset.chartDir);
+    });
+  });
+  linksTableContainer.querySelectorAll("[data-open-link]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      toggleDirectionOpen(btn.dataset.openLink, btn.dataset.openDir);
+    });
+  });
+}
+
+// ---------- Display mode + tree origin ----------
+displayModeSelect.addEventListener("change", () => {
+  state.displayMode = displayModeSelect.value;
+  render();
+});
+
+function updateTreeOriginSelect() {
+  const zones = sortedZones();
+  const cur = state.displayOrigin;
+  treeOriginSelect.innerHTML = '<option value="">— Ninguno (agregado) —</option>' +
+    zones.map(z => `<option value="${z.id}" ${z.id === cur ? 'selected' : ''}>Zona ${z.label}</option>`).join("");
+}
+treeOriginSelect.addEventListener("change", () => {
+  state.displayOrigin = treeOriginSelect.value || null;
+  render(); updateResultsPanel();
+});
+
+// ---------- Algorithm: Dijkstra ----------
+function runDijkstra(origin, timesAB, timesBA) {
+  const dist = {}, prev = {}, visited = {};
+  for (const id in state.zones) dist[id] = Infinity;
+  dist[origin] = 0;
+  while (true) {
+    let best = null, bd = Infinity;
+    for (const id in state.zones) {
+      if (!visited[id] && dist[id] < bd) { best = id; bd = dist[id]; }
+    }
+    if (best === null || bd === Infinity) break;
+    visited[best] = true;
+    const nbrs = outEdges(best, timesAB, timesBA);
+    for (const n of nbrs) {
+      if (visited[n.to]) continue;
+      const nd = dist[best] + n.time;
+      if (nd < dist[n.to]) { dist[n.to] = nd; prev[n.to] = best; }
+      else if (nd === dist[n.to]) {
+        const ep = prev[n.to];
+        if (ep !== undefined && dist[best] < dist[ep]) prev[n.to] = best;
+      }
+    }
+  }
+  const distances = {};
+  for (const id in dist) if (dist[id] !== Infinity) distances[id] = Math.round(dist[id] * 1000) / 1000;
+  const pathByDest = {};
+  for (const id in state.zones) {
+    if (id === origin || dist[id] === Infinity) continue;
+    const path = [];
+    let cur = id;
+    while (cur !== undefined) {
+      path.unshift(cur);
+      if (cur === origin) break;
+      cur = prev[cur];
+    }
+    if (path[0] === origin) pathByDest[id] = path;
+  }
+  return { distances, prev, pathByDest };
+}
+
+// Run AON given current times, producing byOrigin + auxiliary volumes
+function runAON(timesAB, timesBA) {
+  const volAB = {}, volBA = {};
+  for (const id in state.links) { volAB[id] = 0; volBA[id] = 0; }
+  const byOrigin = {};
+  let assignedTrips = 0;
+  for (const origId in state.zones) {
+    const r = runDijkstra(origId, timesAB, timesBA);
+    byOrigin[origId] = r;
+    for (const destId in r.pathByDest) {
+      const t = (state.od[origId] && state.od[origId][destId]) ? parseFloat(state.od[origId][destId]) : 0;
+      if (!t || t <= 0) continue;
+      assignedTrips += t;
+      const path = r.pathByDest[destId];
+      for (let i = 0; i < path.length - 1; i++) {
+        const from = path[i], to = path[i+1];
+        const l = findLinkBetween(from, to);
+        if (!l) continue;
+        if (l.a === from && l.b === to) volAB[l.id] += t;
+        else volBA[l.id] += t;
+      }
+    }
+  }
+  return { volAB, volBA, byOrigin, assignedTrips };
+}
+
+// Update congested times from given volumes
+function updateTimes(volAB, volBA) {
+  const timesAB = {}, timesBA = {};
+  for (const id in state.links) {
+    const l = state.links[id];
+    timesAB[id] = bpr(l.timeAB, volAB[id] || 0, l.capAB, l.alpha, l.beta);
+    timesBA[id] = bpr(l.timeBA, volBA[id] || 0, l.capBA, l.alpha, l.beta);
+  }
+  return { timesAB, timesBA };
+}
+
+function totalSystemCost(volAB, volBA, timesAB, timesBA) {
+  let cost = 0;
+  for (const id in state.links) {
+    cost += (volAB[id] || 0) * (timesAB[id] || state.links[id].timeAB);
+    cost += (volBA[id] || 0) * (timesBA[id] || state.links[id].timeBA);
+  }
+  return cost;
+}
+
+// Incremental partial loading
+function runIncrementalStep(origAB, origBA, fraction, partialAB, partialBA) {
+  // origAB/origBA: current times to use for shortest paths
+  // Load `fraction` of total demand; add onto partialAB/partialBA
+  const byOrigin = {};
+  let added = 0;
+  for (const origId in state.zones) {
+    const r = runDijkstra(origId, origAB, origBA);
+    byOrigin[origId] = r;
+    for (const destId in r.pathByDest) {
+      const t = (state.od[origId] && state.od[origId][destId]) ? parseFloat(state.od[origId][destId]) : 0;
+      if (!t || t <= 0) continue;
+      const loaded = t * fraction;
+      added += loaded;
+      const path = r.pathByDest[destId];
+      for (let i = 0; i < path.length - 1; i++) {
+        const from = path[i], to = path[i+1];
+        const l = findLinkBetween(from, to);
+        if (!l) continue;
+        if (l.a === from && l.b === to) partialAB[l.id] = (partialAB[l.id] || 0) + loaded;
+        else partialBA[l.id] = (partialBA[l.id] || 0) + loaded;
+      }
+    }
+  }
+  return { byOrigin, added };
+}
+
+function getFractions(n, pattern) {
+  if (pattern === "equal") return Array(n).fill(1 / n);
+  if (pattern === "decreasing") {
+    // 40/30/20/10 style, normalized
+    const base = [];
+    for (let i = 0; i < n; i++) base.push(n - i);
+    const sum = base.reduce((a,b) => a+b, 0);
+    return base.map(x => x / sum);
+  }
+  if (pattern === "front") {
+    // front-loaded
+    const base = [];
+    for (let i = 0; i < n; i++) base.push(Math.pow(0.6, i));
+    const sum = base.reduce((a,b) => a+b, 0);
+    return base.map(x => x / sum);
+  }
+  return Array(n).fill(1 / n);
+}
+
+// ---------- Main compute ----------
+function computeAssignment() {
+  if (Object.keys(state.zones).length < 2) { alert("Se necesitan al menos 2 zonas."); return; }
+
+  const iterations = [];
+  let finalVolAB = {}, finalVolBA = {}, finalTimesAB = {}, finalTimesBA = {}, finalByOrigin = {};
+
+  if (state.method === "aon") {
+    const aon = runAON(null, null); // use free-flow
+    const times = updateTimes(aon.volAB, aon.volBA);
+    finalVolAB = aon.volAB; finalVolBA = aon.volBA;
+    finalTimesAB = times.timesAB; finalTimesBA = times.timesBA;
+    finalByOrigin = aon.byOrigin;
+    iterations.push({
+      step: 1,
+      label: "All-or-Nothing",
+      volAB: { ...aon.volAB }, volBA: { ...aon.volBA },
+      timesAB: { ...times.timesAB }, timesBA: { ...times.timesBA },
+      byOrigin: aon.byOrigin,
+      assignedTrips: aon.assignedTrips,
+      tsc: totalSystemCost(aon.volAB, aon.volBA, times.timesAB, times.timesBA),
+      rmse: null
+    });
+  } else if (state.method === "incremental") {
+    const N = Math.max(1, state.methodParams.numIncrements);
+    const fracs = getFractions(N, state.methodParams.pattern);
+    const volAB = {}, volBA = {};
+    for (const id in state.links) { volAB[id] = 0; volBA[id] = 0; }
+    let curAB = null, curBA = null; // null means use free-flow
+    for (let k = 0; k < N; k++) {
+      // Compute times from accumulated volumes (for k=0, this uses free-flow since vols are 0)
+      const { timesAB, timesBA } = updateTimes(volAB, volBA);
+      curAB = timesAB; curBA = timesBA;
+      const { byOrigin, added } = runIncrementalStep(curAB, curBA, fracs[k], volAB, volBA);
+      // Recompute times after loading this increment
+      const postTimes = updateTimes(volAB, volBA);
+      iterations.push({
+        step: k + 1,
+        label: `Incremento ${k+1} de ${N} (f=${round(fracs[k], 3)})`,
+        volAB: { ...volAB }, volBA: { ...volBA },
+        timesAB: { ...postTimes.timesAB }, timesBA: { ...postTimes.timesBA },
+        byOrigin,
+        assignedTrips: added,
+        tsc: totalSystemCost(volAB, volBA, postTimes.timesAB, postTimes.timesBA),
+        rmse: null
+      });
+      finalVolAB = { ...volAB }; finalVolBA = { ...volBA };
+      finalTimesAB = postTimes.timesAB; finalTimesBA = postTimes.timesBA;
+      finalByOrigin = byOrigin;
+    }
+  } else if (state.method === "msa") {
+    const maxIter = state.methodParams.maxIter;
+    const tol = state.methodParams.tol;
+    // Initial: AON with free-flow
+    let { volAB, volBA, byOrigin } = runAON(null, null);
+    let { timesAB, timesBA } = updateTimes(volAB, volBA);
+    iterations.push({
+      step: 1, label: "Iteración 1 (AON inicial)",
+      volAB: { ...volAB }, volBA: { ...volBA },
+      timesAB: { ...timesAB }, timesBA: { ...timesBA },
+      byOrigin, assignedTrips: null,
+      tsc: totalSystemCost(volAB, volBA, timesAB, timesBA),
+      rmse: null
+    });
+    for (let k = 2; k <= maxIter; k++) {
+      // Compute times with current vols
+      const upd = updateTimes(volAB, volBA);
+      // Auxiliary all-or-nothing using updated times
+      const aux = runAON(upd.timesAB, upd.timesBA);
+      // MSA averaging: lambda = 1/k
+      const lambda = 1 / k;
+      const newVolAB = {}, newVolBA = {};
+      let sumSq = 0, nLinks = 0;
+      for (const id in state.links) {
+        newVolAB[id] = volAB[id] + lambda * (aux.volAB[id] - volAB[id]);
+        newVolBA[id] = volBA[id] + lambda * (aux.volBA[id] - volBA[id]);
+        const dA = newVolAB[id] - volAB[id];
+        const dB = newVolBA[id] - volBA[id];
+        sumSq += dA*dA + dB*dB;
+        nLinks += 2;
+      }
+      const rmse = Math.sqrt(sumSq / Math.max(1, nLinks));
+      volAB = newVolAB; volBA = newVolBA;
+      const post = updateTimes(volAB, volBA);
+      timesAB = post.timesAB; timesBA = post.timesBA;
+      byOrigin = aux.byOrigin;
+      iterations.push({
+        step: k, label: `Iteración ${k} (λ=${round(lambda, 3)})`,
+        volAB: { ...volAB }, volBA: { ...volBA },
+        timesAB: { ...timesAB }, timesBA: { ...timesBA },
+        byOrigin, assignedTrips: null,
+        tsc: totalSystemCost(volAB, volBA, timesAB, timesBA),
+        rmse
+      });
+      if (rmse < tol) break;
+    }
+    finalVolAB = volAB; finalVolBA = volBA;
+    finalTimesAB = timesAB; finalTimesBA = timesBA;
+    finalByOrigin = byOrigin;
+  }
+
+  state.results = {
+    method: state.method,
+    iterations,
+    final: {
+      linkVolAB: finalVolAB,
+      linkVolBA: finalVolBA,
+      linkTimeAB: finalTimesAB,
+      linkTimeBA: finalTimesBA,
+      byOrigin: finalByOrigin,
+      tsc: totalSystemCost(finalVolAB, finalVolBA, finalTimesAB, finalTimesBA)
+    }
+  };
+
+  if (!state.displayOrigin) {
+    const first = sortedZones()[0];
+    if (first) { state.displayOrigin = first.id; treeOriginSelect.value = first.id; }
+  }
+  render();
+  updateResultsPanel();
+  updateConvergencePanel();
+  updateBPRCharts();
+
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.tab === "results"));
+  document.querySelectorAll(".tab-content").forEach(t => t.classList.toggle("active", t.id === "tab-results"));
+}
+
+// Step-by-step for incremental (runs ONE more increment from current state)
+function computeIncrementalStep() {
+  if (Object.keys(state.zones).length < 2) { alert("Se necesitan al menos 2 zonas."); return; }
+  const N = Math.max(1, state.methodParams.numIncrements);
+  const fracs = getFractions(N, state.methodParams.pattern);
+  // Initialize results if not already incremental
+  if (!state.results || state.results.method !== "incremental") {
+    state.results = {
+      method: "incremental",
+      iterations: [],
+      final: {
+        linkVolAB: {}, linkVolBA: {},
+        linkTimeAB: {}, linkTimeBA: {},
+        byOrigin: {},
+        tsc: 0
+      }
+    };
+    for (const id in state.links) {
+      state.results.final.linkVolAB[id] = 0;
+      state.results.final.linkVolBA[id] = 0;
+    }
+  }
+  const k = state.results.iterations.length;
+  if (k >= N) { alert("Ya se han completado todos los incrementos. Limpia resultados para reiniciar."); return; }
+  const volAB = state.results.final.linkVolAB;
+  const volBA = state.results.final.linkVolBA;
+  const { timesAB, timesBA } = updateTimes(volAB, volBA);
+  const { byOrigin, added } = runIncrementalStep(timesAB, timesBA, fracs[k], volAB, volBA);
+  const postTimes = updateTimes(volAB, volBA);
+  state.results.iterations.push({
+    step: k + 1,
+    label: `Incremento ${k+1} de ${N} (f=${round(fracs[k], 3)})`,
+    volAB: { ...volAB }, volBA: { ...volBA },
+    timesAB: { ...postTimes.timesAB }, timesBA: { ...postTimes.timesBA },
+    byOrigin,
+    assignedTrips: added,
+    tsc: totalSystemCost(volAB, volBA, postTimes.timesAB, postTimes.timesBA),
+    rmse: null
+  });
+  state.results.final = {
+    linkVolAB: volAB, linkVolBA: volBA,
+    linkTimeAB: postTimes.timesAB, linkTimeBA: postTimes.timesBA,
+    byOrigin,
+    tsc: totalSystemCost(volAB, volBA, postTimes.timesAB, postTimes.timesBA)
+  };
+  if (!state.displayOrigin) {
+    const first = sortedZones()[0];
+    if (first) { state.displayOrigin = first.id; treeOriginSelect.value = first.id; }
+  }
+  render();
+  updateResultsPanel();
+  updateConvergencePanel();
+  updateBPRCharts();
+}
+
+document.getElementById("btn-compute").addEventListener("click", computeAssignment);
+document.getElementById("btn-step").addEventListener("click", computeIncrementalStep);
+document.getElementById("btn-reset-results").addEventListener("click", () => {
+  state.results = null; render(); updateResultsPanel(); updateConvergencePanel(); updateBPRCharts();
+});
+
+// ---------- Results panel ----------
+function updateResultsPanel() {
+  if (!state.results) {
+    resultsSummary.innerHTML = '<div class="small-muted">Aún no se ha ejecutado el cálculo. Presiona <b>Calcular Asignación</b>.</div>';
+    linkVolumesContainer.innerHTML = '<div class="small-muted">—</div>';
+    skimTreeContainer.innerHTML = '<div class="small-muted">—</div>';
+    originChipsContainer.innerHTML = '';
+    return;
+  }
+  const r = state.results;
+  const final = r.final;
+  let totalOD = 0;
+  for (const o in state.od) for (const d in state.od[o]) totalOD += state.od[o][d] || 0;
+  const methodLabel = { aon: "All-or-Nothing", incremental: "Incremental", msa: "MSA" }[r.method] || r.method;
+  const numIter = r.iterations.length;
+
+  resultsSummary.innerHTML = `
+    <div class="results-summary">
+      <b>Método: ${methodLabel}</b>
+      Iteraciones/incrementos: ${numIter}<br>
+      Demanda total en OD: ${round(totalOD, 2)}<br>
+      Costo total del sistema (ΣV·t): <b>${round(final.tsc, 2)}</b><br>
+      Links con volumen: ${Object.keys(final.linkVolAB).filter(id => ((final.linkVolAB[id] || 0) + (final.linkVolBA[id] || 0)) > 0).length} de ${Object.keys(state.links).length}
+    </div>
+  `;
+
+  // Link volumes with congested times and V/C
+  const rows = Object.keys(state.links).map(id => {
+    const l = state.links[id];
+    const za = zoneById(l.a), zb = zoneById(l.b);
+    const vAB = final.linkVolAB[id] || 0;
+    const vBA = final.linkVolBA[id] || 0;
+    const tAB = final.linkTimeAB[id] ?? l.timeAB;
+    const tBA = final.linkTimeBA[id] ?? l.timeBA;
+    const vocAB = vAB / Math.max(0.0001, l.capAB);
+    const vocBA = vBA / Math.max(0.0001, l.capBA);
+    return { id, label: `${za.label}—${zb.label}`, vAB, vBA, tAB, tBA, vocAB, vocBA, cAB: l.capAB, cBA: l.capBA, t0AB: l.timeAB, t0BA: l.timeBA };
+  }).sort((a,b) => (b.vAB + b.vBA) - (a.vAB + a.vBA));
+
+  function vocBadge(v) {
+    let color = "#10b981";
+    if (v > 0.6) color = "#f59e0b";
+    if (v > 0.85) color = "#ef4444";
+    if (v > 1.0) color = "#7f1d1d";
+    return `<span class="voc-badge" style="background:${color}">${round(v, 2)}</span>`;
+  }
+
+  linkVolumesContainer.innerHTML = `
+    <div style="overflow:auto;">
+    <table>
+      <thead><tr>
+        <th>Link</th><th>Sent.</th><th>V</th><th>C</th><th>V/C</th><th>t₀</th><th>t</th>
+      </tr></thead>
+      <tbody>
+        ${rows.flatMap(x => {
+          const l = state.links[x.id];
+          const openAB = l.openAB !== false;
+          const openBA = l.openBA !== false;
+          return [
+            `<tr style="${openAB ? '' : 'opacity:0.5;'}">
+              <td rowspan="2" style="vertical-align:middle;"><b>${x.label}</b></td>
+              <td>→ ${openAB ? '' : '<span class="voc-badge" style="background:#9ca3af">cerrada</span>'}</td>
+              <td>${openAB ? round(x.vAB,1) : '—'}</td>
+              <td>${openAB ? x.cAB : '—'}</td>
+              <td>${openAB ? vocBadge(x.vocAB) : '—'}</td>
+              <td>${openAB ? round(x.t0AB,2) : '—'}</td>
+              <td><b>${openAB ? round(x.tAB,2) : '—'}</b></td>
+            </tr>`,
+            `<tr style="${openBA ? '' : 'opacity:0.5;'}">
+              <td>← ${openBA ? '' : '<span class="voc-badge" style="background:#9ca3af">cerrada</span>'}</td>
+              <td>${openBA ? round(x.vBA,1) : '—'}</td>
+              <td>${openBA ? x.cBA : '—'}</td>
+              <td>${openBA ? vocBadge(x.vocBA) : '—'}</td>
+              <td>${openBA ? round(x.t0BA,2) : '—'}</td>
+              <td><b>${openBA ? round(x.tBA,2) : '—'}</b></td>
+            </tr>`
+          ];
+        }).join("")}
+      </tbody>
+    </table>
+    </div>
+  `;
+
+  // Origin chips
+  const zones = sortedZones();
+  originChipsContainer.innerHTML = zones.map(z => {
+    const active = state.displayOrigin === z.id ? "active" : "";
+    return `<span class="origin-chip ${active}" data-id="${z.id}">${z.label}</span>`;
+  }).join("");
+  originChipsContainer.querySelectorAll(".origin-chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      state.displayOrigin = chip.dataset.id;
+      treeOriginSelect.value = chip.dataset.id;
+      render(); updateResultsPanel();
+    });
+  });
+
+  if (state.displayOrigin && final.byOrigin[state.displayOrigin]) {
+    const or = final.byOrigin[state.displayOrigin];
+    const oLabel = zoneById(state.displayOrigin).label;
+    const dests = Object.values(state.zones)
+      .filter(z => z.id !== state.displayOrigin)
+      .sort((a,b) => {
+        const la = parseInt(a.label), lb = parseInt(b.label);
+        if (!isNaN(la) && !isNaN(lb)) return la - lb;
+        return a.label.localeCompare(b.label);
+      });
+    const treeRows = dests.map(z => {
+      const d = or.distances[z.id];
+      const path = or.pathByDest[z.id];
+      const trips = (state.od[state.displayOrigin] && state.od[state.displayOrigin][z.id]) || 0;
+      if (d === undefined || !path) {
+        return `<div class="path-detail"><b>${oLabel} → ${z.label}</b>: <span class="dim">inalcanzable</span></div>`;
+      }
+      const segs = [];
+      for (let i = 0; i < path.length - 1; i++) {
+        const za = zoneById(path[i]), zb = zoneById(path[i+1]);
+        segs.push(za.label + "→" + zb.label);
+      }
+      return `<div class="path-detail">
+        <b>${oLabel} → ${z.label}</b> · t = ${round(d, 2)} · ${trips} viajes
+        <div class="dim" style="margin-top:2px;">Ruta: ${segs.join(", ") || "(directo)"}</div>
+      </div>`;
+    }).join("");
+    skimTreeContainer.innerHTML = `<div style="font-size:12px; margin-bottom: 6px; color:var(--muted);">Árbol desde zona <b>${oLabel}</b> (con tiempos congestionados finales):</div>` + (treeRows || '<div class="small-muted">Sin destinos alcanzables</div>');
+  } else {
+    skimTreeContainer.innerHTML = '<div class="small-muted">Selecciona un origen arriba.</div>';
+  }
+}
+
+// ---------- BPR Curves ----------
+function isInChart(linkId, dir) {
+  return state.chartSelections.some(s => s.linkId === linkId && s.dir === dir);
+}
+function toggleChartSelection(linkId, dir) {
+  if (!state.links[linkId]) return;
+  const i = state.chartSelections.findIndex(s => s.linkId === linkId && s.dir === dir);
+  if (i >= 0) state.chartSelections.splice(i, 1);
+  else state.chartSelections.push({ linkId, dir });
+  updateBPRCharts();
+  updateLinksTable();
+  updateSelectionPanel();
+}
+function removeChartSelectionsForLink(linkId) {
+  state.chartSelections = state.chartSelections.filter(s => s.linkId !== linkId);
+}
+
+function renderBPRChartSVG(sel, idx) {
+  const l = state.links[sel.linkId];
+  if (!l) return "";
+  const za = zoneById(l.a), zb = zoneById(l.b);
+  if (!za || !zb) return "";
+  const fromLabel = (sel.dir === "AB") ? za.label : zb.label;
+  const toLabel   = (sel.dir === "AB") ? zb.label : za.label;
+  const t0    = (sel.dir === "AB") ? l.timeAB : l.timeBA;
+  const C     = (sel.dir === "AB") ? l.capAB  : l.capBA;
+  const alpha = l.alpha, beta = l.beta;
+  const isClosed = (sel.dir === "AB") ? (l.openAB === false) : (l.openBA === false);
+
+  // Gather iteration points from current results (for this direction)
+  const pts = [];
+  if (state.results && state.results.iterations) {
+    state.results.iterations.forEach(it => {
+      const v = (sel.dir === "AB") ? (it.volAB[sel.linkId] || 0) : (it.volBA[sel.linkId] || 0);
+      const t = (sel.dir === "AB") ? (it.timesAB[sel.linkId] || t0) : (it.timesBA[sel.linkId] || t0);
+      pts.push({ v, t, step: it.step, label: it.label });
+    });
+  }
+
+  // Chart dimensions (scalable via viewBox)
+  const W = 400, H = 240, padL = 56, padR = 18, padT = 26, padB = 42;
+  const innerW = W - padL - padR, innerH = H - padT - padB;
+
+  // Axis ranges
+  const maxVPts = pts.length ? Math.max(...pts.map(p => p.v)) : 0;
+  const vMax = Math.max(C * 1.35, maxVPts * 1.15, 1);
+  const tAtVMax = bpr(t0, vMax, C, alpha, beta);
+  const maxTPts = pts.length ? Math.max(...pts.map(p => p.t)) : t0;
+  const tMax = Math.max(tAtVMax, maxTPts) * 1.05 || (t0 * 2);
+
+  // Helpers
+  const toX = (v) => padL + (v / vMax) * innerW;
+  const toY = (t) => padT + innerH - (t / tMax) * innerH;
+
+  // BPR curve path
+  const nPts = 90;
+  let pathD = "";
+  for (let i = 0; i <= nPts; i++) {
+    const v = (i / nPts) * vMax;
+    const t = bpr(t0, v, C, alpha, beta);
+    pathD += (i === 0 ? "M" : "L") + toX(v).toFixed(1) + "," + toY(t).toFixed(1) + " ";
+  }
+
+  // Capacity vertical line
+  const capX = toX(C);
+
+  // Iteration points + dashed connector (also include V=0,t=t0 as implicit start)
+  let dotsHtml = "", connHtml = "";
+  const drawPts = [{ v: 0, t: t0, step: 0, label: "Inicio" }].concat(pts);
+  if (drawPts.length > 1) {
+    const coords = drawPts.map(p => ({ x: toX(p.v), y: toY(p.t), p }));
+    const polyPoints = coords.map(c => c.x.toFixed(1) + "," + c.y.toFixed(1)).join(" ");
+    connHtml = `<polyline points="${polyPoints}" fill="none" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="4,3" />`;
+    coords.forEach((c, i) => {
+      const isLast = (i === coords.length - 1);
+      const isStart = (i === 0);
+      const r = isLast ? 6 : (isStart ? 4 : 4);
+      const fill = isLast ? "#dc2626" : (isStart ? "#10b981" : "#2563eb");
+      const title = isStart
+        ? `Inicio: V=0, t=t₀=${round(t0,2)}`
+        : `Paso ${c.p.step}: V=${round(c.p.v,1)}, t=${round(c.p.t,2)}, V/C=${round(c.p.v/Math.max(0.001,C),2)}`;
+      dotsHtml += `<circle cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="${r}" fill="${fill}" stroke="white" stroke-width="1.5"><title>${title}</title></circle>`;
+      if (!isStart && (isLast || drawPts.length <= 9)) {
+        dotsHtml += `<text x="${(c.x + 7).toFixed(1)}" y="${(c.y - 7).toFixed(1)}" font-size="10" fill="${fill}" font-weight="700">${c.p.step}</text>`;
+      }
+    });
+  } else {
+    // Just the start point
+    const x0 = toX(0), y0 = toY(t0);
+    dotsHtml = `<circle cx="${x0.toFixed(1)}" cy="${y0.toFixed(1)}" r="4" fill="#10b981" stroke="white" stroke-width="1.5"><title>Inicio: V=0, t=t₀=${round(t0,2)}</title></circle>`;
+  }
+
+  // Axis ticks
+  const xTicks = 5, yTicks = 5;
+  let xTicksHtml = "", yTicksHtml = "", gridHtml = "";
+  for (let i = 0; i <= xTicks; i++) {
+    const v = (i / xTicks) * vMax;
+    const x = toX(v);
+    if (i > 0) gridHtml += `<line x1="${x.toFixed(1)}" y1="${padT}" x2="${x.toFixed(1)}" y2="${padT + innerH}" stroke="#eef1f5" />`;
+    xTicksHtml += `<line x1="${x.toFixed(1)}" y1="${padT + innerH}" x2="${x.toFixed(1)}" y2="${padT + innerH + 4}" stroke="#64748b" />`;
+    xTicksHtml += `<text x="${x.toFixed(1)}" y="${padT + innerH + 16}" font-size="10" fill="#64748b" text-anchor="middle">${round(v, 0)}</text>`;
+  }
+  for (let i = 0; i <= yTicks; i++) {
+    const t = (i / yTicks) * tMax;
+    const y = toY(t);
+    if (i > 0) gridHtml += `<line x1="${padL}" y1="${y.toFixed(1)}" x2="${padL + innerW}" y2="${y.toFixed(1)}" stroke="#eef1f5" />`;
+    yTicksHtml += `<line x1="${padL}" y1="${y.toFixed(1)}" x2="${padL - 4}" y2="${y.toFixed(1)}" stroke="#64748b" />`;
+    yTicksHtml += `<text x="${padL - 7}" y="${(y + 3).toFixed(1)}" font-size="10" fill="#64748b" text-anchor="end">${round(t, 2)}</text>`;
+  }
+
+  // Current info
+  const lastP = pts[pts.length - 1];
+  const voc = lastP ? lastP.v / Math.max(0.001, C) : 0;
+  const vocCol = voc <= 0.6 ? "#059669" : voc <= 0.85 ? "#d97706" : voc <= 1.0 ? "#dc2626" : "#7f1d1d";
+  const currentInfo = lastP
+    ? `<span>V actual: <b>${round(lastP.v, 1)}</b></span><span>t actual: <b>${round(lastP.t, 2)}</b></span><span>Δt vs t₀: <b>+${round((lastP.t - t0) / Math.max(0.001, t0) * 100, 1)}%</b></span><span>V/C: <b style="color:${vocCol}">${round(voc, 2)}</b></span>`
+    : `<span class="small-muted">Sin iteraciones — ejecuta la asignación para ver los puntos.</span>`;
+
+  const capLabel = (capX >= padL && capX <= padL + innerW)
+    ? `<line x1="${capX.toFixed(1)}" y1="${padT}" x2="${capX.toFixed(1)}" y2="${padT + innerH}" stroke="#dc2626" stroke-width="1.2" stroke-dasharray="4,3" opacity="0.6"/>
+       <text x="${capX.toFixed(1)}" y="${(padT - 6).toFixed(1)}" font-size="10" fill="#dc2626" text-anchor="middle" font-weight="700">C=${C}</text>`
+    : '';
+
+  const closedOverlay = isClosed
+    ? `<rect x="${padL}" y="${padT}" width="${innerW}" height="${innerH}" fill="#9ca3af" fill-opacity="0.18"/>
+       <text x="${(padL + innerW/2).toFixed(1)}" y="${(padT + innerH/2).toFixed(1)}" font-size="22" font-weight="800" fill="#dc2626" text-anchor="middle" opacity="0.55">⊘ CERRADA</text>`
+    : '';
+  const curveColor = isClosed ? "#94a3b8" : "#2563eb";
+  const curveOpacity = isClosed ? "0.55" : "1";
+  const headerBadge = isClosed
+    ? `<span class="voc-badge" style="background:#dc2626;">CERRADA</span>`
+    : '';
+
+  return `
+    <div class="bpr-chart-wrap">
+      <div class="bpr-chart-header">
+        <b>${fromLabel} → ${toLabel}</b> ${headerBadge}
+        <span class="small-muted">t₀=${t0}, C=${C}, α=${alpha}, β=${beta}</span>
+        <button class="remove-btn" data-remove-idx="${idx}" title="Quitar">✕</button>
+      </div>
+      <svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+        <rect x="${padL}" y="${padT}" width="${innerW}" height="${innerH}" fill="#fafbfc" stroke="#e2e8f0"/>
+        ${gridHtml}
+        ${capLabel}
+        <line x1="${padL}" y1="${toY(t0).toFixed(1)}" x2="${(padL + innerW).toFixed(1)}" y2="${toY(t0).toFixed(1)}" stroke="#10b981" stroke-width="0.9" stroke-dasharray="2,3" opacity="0.55"/>
+        <text x="${(padL + innerW - 4).toFixed(1)}" y="${(toY(t0) - 3).toFixed(1)}" font-size="9" fill="#10b981" text-anchor="end">t₀=${t0}</text>
+        ${xTicksHtml}
+        ${yTicksHtml}
+        <line x1="${padL}" y1="${padT + innerH}" x2="${padL + innerW}" y2="${padT + innerH}" stroke="#1f2d3d" stroke-width="1.2"/>
+        <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT + innerH}" stroke="#1f2d3d" stroke-width="1.2"/>
+        <path d="${pathD}" fill="none" stroke="${curveColor}" stroke-width="2.2" opacity="${curveOpacity}"/>
+        ${connHtml}
+        ${dotsHtml}
+        ${closedOverlay}
+        <text x="${padL + innerW / 2}" y="${H - 8}" font-size="11" fill="#1f2d3d" text-anchor="middle">Volumen V (veh)</text>
+        <text x="14" y="${padT + innerH / 2}" font-size="11" fill="#1f2d3d" text-anchor="middle" transform="rotate(-90, 14, ${padT + innerH / 2})">Tiempo t</text>
+      </svg>
+      <div class="bpr-chart-info">${isClosed ? '<span style="color:var(--danger); font-weight:600;">Dirección cerrada — no fluye volumen.</span>' : currentInfo}</div>
+    </div>
+  `;
+}
+
+function updateBPRCharts() {
+  // Drop any stale selections (link was deleted)
+  state.chartSelections = state.chartSelections.filter(s => state.links[s.linkId]);
+
+  // Chips
+  if (bprChipsContainer) {
+    if (state.chartSelections.length === 0) {
+      bprChipsContainer.innerHTML = '<span class="small-muted">Ninguna — añade desde el panel de Selección o la pestaña Links.</span>';
+    } else {
+      const chips = state.chartSelections.map((s, i) => {
+        const l = state.links[s.linkId];
+        const za = zoneById(l.a), zb = zoneById(l.b);
+        const from = s.dir === "AB" ? za.label : zb.label;
+        const to   = s.dir === "AB" ? zb.label : za.label;
+        return `<span class="chart-chip">${from}→${to}<span class="chart-chip-x" data-chip-idx="${i}" title="Quitar">✕</span></span>`;
+      }).join("");
+      bprChipsContainer.innerHTML = chips +
+        ` <button class="action-btn secondary" id="btn-bpr-clear-all" style="margin-left:6px; padding:3px 8px; font-size:11px; width:auto; display:inline-block;">Quitar todas</button>`;
+      bprChipsContainer.querySelectorAll(".chart-chip-x").forEach(el => {
+        el.addEventListener("click", () => {
+          const i = parseInt(el.dataset.chipIdx);
+          state.chartSelections.splice(i, 1);
+          updateBPRCharts();
+          updateLinksTable();
+          updateSelectionPanel();
+        });
+      });
+      const clr = document.getElementById("btn-bpr-clear-all");
+      if (clr) clr.onclick = () => {
+        state.chartSelections = [];
+        updateBPRCharts(); updateLinksTable(); updateSelectionPanel();
+      };
+    }
+  }
+
+  // Charts
+  if (!bprChartsContainer) return;
+  if (state.chartSelections.length === 0) {
+    bprChartsContainer.innerHTML = '<div class="small-muted">Aún no hay direcciones seleccionadas. En la pestaña <b>Links</b> o en el panel de <b>Selección</b> (al hacer click en un link del canvas) encontrarás botones 📈 para añadir una dirección a la gráfica.</div>';
+    return;
+  }
+  bprChartsContainer.innerHTML = state.chartSelections.map((s, i) => renderBPRChartSVG(s, i)).join("");
+  bprChartsContainer.querySelectorAll("[data-remove-idx]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const i = parseInt(btn.dataset.removeIdx);
+      state.chartSelections.splice(i, 1);
+      updateBPRCharts();
+      updateLinksTable();
+      updateSelectionPanel();
+    });
+  });
+}
+
+function updateConvergencePanel() {
+  if (!state.results || state.results.iterations.length === 0) {
+    convergenceContainer.innerHTML = '<div class="small-muted">Ejecuta el cálculo para ver la evolución iteración por iteración.</div>';
+    return;
+  }
+  const its = state.results.iterations;
+  const maxTsc = Math.max(...its.map(x => x.tsc)) || 1;
+  let html = `
+    <div class="info success" style="margin-bottom: 10px;">
+      Evolución del costo total del sistema (ΣV·t) y relaciones V/C a lo largo del proceso.
+    </div>
+    <div class="iter-bar-wrap">
+  `;
+  for (const it of its) {
+    const pct = (it.tsc / maxTsc) * 100;
+    html += `
+      <div class="iter-bar">
+        <span class="label">#${it.step}</span>
+        <div class="bar"><div class="fill" style="width:${pct}%"></div></div>
+        <span class="value">${round(it.tsc, 1)}</span>
+      </div>
+    `;
+  }
+  html += `</div>`;
+
+  // Detailed per-iteration collapsible
+  html += '<div style="margin-top: 14px;">';
+  for (const it of its) {
+    const linksWithVol = Object.keys(state.links).filter(id => ((it.volAB[id]||0) + (it.volBA[id]||0)) > 0);
+    const maxVoc = linksWithVol.length === 0 ? 0 : Math.max(...linksWithVol.flatMap(id => {
+      const l = state.links[id];
+      return [(it.volAB[id]||0)/Math.max(0.001, l.capAB), (it.volBA[id]||0)/Math.max(0.001, l.capBA)];
+    }));
+    html += `
+      <details>
+        <summary>${it.label} · Costo = ${round(it.tsc, 2)}${it.rmse !== null ? ` · RMSE = ${round(it.rmse, 4)}` : ''} · V/C máx = ${round(maxVoc, 2)}</summary>
+        <table>
+          <thead><tr><th>Link</th><th>→ V / t</th><th>← V / t</th><th>V/C máx</th></tr></thead>
+          <tbody>
+            ${Object.keys(state.links).map(lid => {
+              const l = state.links[lid];
+              const za = zoneById(l.a), zb = zoneById(l.b);
+              const vAB = it.volAB[lid] || 0, vBA = it.volBA[lid] || 0;
+              const tAB = it.timesAB[lid] || l.timeAB, tBA = it.timesBA[lid] || l.timeBA;
+              if (vAB === 0 && vBA === 0) return "";
+              const vocAB = vAB / Math.max(0.001, l.capAB);
+              const vocBA = vBA / Math.max(0.001, l.capBA);
+              return `<tr>
+                <td>${za.label}—${zb.label}</td>
+                <td>${round(vAB,1)} / ${round(tAB,2)}</td>
+                <td>${round(vBA,1)} / ${round(tBA,2)}</td>
+                <td>${round(Math.max(vocAB, vocBA), 2)}</td>
+              </tr>`;
+            }).join("")}
+          </tbody>
+        </table>
+      </details>
+    `;
+  }
+  html += '</div>';
+  convergenceContainer.innerHTML = html;
+}
+
+// ---------- Tabs ----------
+document.querySelectorAll(".tab").forEach(t => {
+  t.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(x => x.classList.toggle("active", x === t));
+    document.querySelectorAll(".tab-content").forEach(tc => tc.classList.toggle("active", tc.id === "tab-" + t.dataset.tab));
+  });
+});
+
+// ---------- Modals ----------
+const modalLink = document.getElementById("modal-link");
+const modalLinkTitle = document.getElementById("modal-link-title");
+const modalABLabel = document.getElementById("modal-ab-label");
+const modalBALabel = document.getElementById("modal-ba-label");
+const modalABLabel2 = document.getElementById("modal-ab-label2");
+const modalBALabel2 = document.getElementById("modal-ba-label2");
+const linkTimeAB = document.getElementById("link-time-ab");
+const linkTimeBA = document.getElementById("link-time-ba");
+const linkCapAB = document.getElementById("link-cap-ab");
+const linkCapBA = document.getElementById("link-cap-ba");
+const linkAlpha = document.getElementById("link-alpha");
+const linkBeta = document.getElementById("link-beta");
+const linkSyncTimeBtn = document.getElementById("link-sync-time");
+const linkSyncCapBtn = document.getElementById("link-sync-cap");
+const linkOpenAB = document.getElementById("link-open-ab");
+const linkOpenBA = document.getElementById("link-open-ba");
+const modalOpenABLabel = document.getElementById("modal-open-ab-label");
+const modalOpenBALabel = document.getElementById("modal-open-ba-label");
+let currentModalLinkId = null;
+let tSync = true, cSync = true;
+
+function openLinkModal(id) {
+  const l = linkById(id);
+  if (!l) return;
+  currentModalLinkId = id;
+  const za = zoneById(l.a), zb = zoneById(l.b);
+  modalLinkTitle.textContent = `Link ${za.label} — ${zb.label}`;
+  modalABLabel.textContent = `${za.label}→${zb.label}`;
+  modalBALabel.textContent = `${zb.label}→${za.label}`;
+  modalABLabel2.textContent = `${za.label}→${zb.label}`;
+  modalBALabel2.textContent = `${zb.label}→${za.label}`;
+  modalOpenABLabel.textContent = `${za.label}→${zb.label} abierta`;
+  modalOpenBALabel.textContent = `${zb.label}→${za.label} abierta`;
+  linkTimeAB.value = l.timeAB; linkTimeBA.value = l.timeBA;
+  linkCapAB.value = l.capAB; linkCapBA.value = l.capBA;
+  linkAlpha.value = l.alpha; linkBeta.value = l.beta;
+  linkOpenAB.checked = (l.openAB !== false);
+  linkOpenBA.checked = (l.openBA !== false);
+  tSync = l.tSynced; cSync = l.cSynced;
+  linkSyncTimeBtn.classList.toggle("active", tSync);
+  linkSyncCapBtn.classList.toggle("active", cSync);
+  modalLink.classList.add("active");
+  setTimeout(() => linkTimeAB.select(), 10);
+}
+function closeLinkModal() { modalLink.classList.remove("active"); currentModalLinkId = null; }
+linkSyncTimeBtn.addEventListener("click", () => {
+  tSync = !tSync;
+  if (tSync) linkTimeBA.value = linkTimeAB.value;
+  linkSyncTimeBtn.classList.toggle("active", tSync);
+});
+linkSyncCapBtn.addEventListener("click", () => {
+  cSync = !cSync;
+  if (cSync) linkCapBA.value = linkCapAB.value;
+  linkSyncCapBtn.classList.toggle("active", cSync);
+});
+linkTimeAB.addEventListener("input", () => { if (tSync) linkTimeBA.value = linkTimeAB.value; });
+linkTimeBA.addEventListener("input", () => { if (tSync) linkTimeAB.value = linkTimeBA.value; });
+linkCapAB.addEventListener("input", () => { if (cSync) linkCapBA.value = linkCapAB.value; });
+linkCapBA.addEventListener("input", () => { if (cSync) linkCapAB.value = linkCapBA.value; });
+document.getElementById("modal-link-ok").onclick = () => {
+  if (currentModalLinkId && state.links[currentModalLinkId]) {
+    const l = state.links[currentModalLinkId];
+    const tAB = parseFloat(linkTimeAB.value), tBA = parseFloat(linkTimeBA.value);
+    const cAB = parseFloat(linkCapAB.value), cBA = parseFloat(linkCapBA.value);
+    const a = parseFloat(linkAlpha.value), b = parseFloat(linkBeta.value);
+    if ([tAB,tBA,cAB,cBA,a,b].every(x => !isNaN(x) && x >= 0) && cAB > 0 && cBA > 0) {
+      l.timeAB = tAB; l.timeBA = tBA;
+      l.capAB = cAB; l.capBA = cBA;
+      l.alpha = a; l.beta = b;
+      l.openAB = !!linkOpenAB.checked;
+      l.openBA = !!linkOpenBA.checked;
+      l.tSynced = tSync && (tAB === tBA);
+      l.cSynced = cSync && (cAB === cBA);
+      state.results = null;
+      render(); updateLinksTable(); updateResultsPanel(); updateConvergencePanel(); updateBPRCharts();
+    }
+  }
+  closeLinkModal();
+};
+document.getElementById("modal-link-cancel").onclick = closeLinkModal;
+document.getElementById("modal-link-delete").onclick = () => {
+  if (currentModalLinkId) deleteLink(currentModalLinkId);
+  closeLinkModal();
+};
+[linkTimeAB, linkTimeBA, linkCapAB, linkCapBA, linkAlpha, linkBeta].forEach(inp => {
+  inp.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") document.getElementById("modal-link-ok").click();
+    if (e.key === "Escape") closeLinkModal();
+  });
+});
+
+const modalZone = document.getElementById("modal-zone");
+const zoneLabelInput = document.getElementById("zone-label-input");
+let currentModalZoneId = null;
+function openZoneModal(id) {
+  const z = zoneById(id);
+  if (!z) return;
+  currentModalZoneId = id;
+  zoneLabelInput.value = z.label;
+  modalZone.classList.add("active");
+  setTimeout(() => zoneLabelInput.select(), 10);
+}
+function closeZoneModal() { modalZone.classList.remove("active"); currentModalZoneId = null; }
+document.getElementById("modal-zone-ok").onclick = () => {
+  if (currentModalZoneId && state.zones[currentModalZoneId]) {
+    const v = zoneLabelInput.value.trim() || state.zones[currentModalZoneId].label;
+    state.zones[currentModalZoneId].label = v;
+    render(); updateODMatrix(); updateLinksTable(); updateTreeOriginSelect(); updateSelectionPanel(); updateResultsPanel();
+  }
+  closeZoneModal();
+};
+document.getElementById("modal-zone-cancel").onclick = closeZoneModal;
+zoneLabelInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") document.getElementById("modal-zone-ok").click();
+  if (e.key === "Escape") closeZoneModal();
+});
+
+// ---------- Save / Load / Clear ----------
+document.getElementById("btn-save").addEventListener("click", () => {
+  const data = {
+    zones: state.zones, links: state.links, od: state.od,
+    defaults: state.defaults, method: state.method, methodParams: state.methodParams,
+    nextZoneId: state.nextZoneId, nextLinkId: state.nextLinkId, nextZoneLabel: state.nextZoneLabel
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "trip_assignment_cr.json";
+  a.click();
+});
+document.getElementById("btn-load").addEventListener("click", () => {
+  document.getElementById("file-input").click();
+});
+document.getElementById("file-input").addEventListener("change", (e) => {
+  const f = e.target.files[0]; if (!f) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const d = JSON.parse(ev.target.result);
+      state.zones = d.zones || {};
+      state.links = {};
+      if (d.links) {
+        for (const id in d.links) {
+          const l = d.links[id];
+          // Migrate if needed
+          let tAB = l.timeAB ?? l.time ?? 1;
+          let tBA = l.timeBA ?? l.time ?? tAB;
+          let cAB = l.capAB ?? 500;
+          let cBA = l.capBA ?? (l.capAB ?? 500);
+          // Legacy: a direction blocked via huge time (BIG=99999) becomes closed; reset time/cap to sane defaults.
+          let openAB = l.openAB !== false;
+          let openBA = l.openBA !== false;
+          if (tAB >= 9999) { openAB = false; tAB = tBA >= 9999 ? 1 : tBA; if (cAB >= 99999) cAB = cBA >= 99999 ? 500 : cBA; }
+          if (tBA >= 9999) { openBA = false; tBA = tAB >= 9999 ? 1 : tAB; if (cBA >= 99999) cBA = cAB >= 99999 ? 500 : cAB; }
+          state.links[id] = {
+            id: l.id, a: l.a, b: l.b,
+            timeAB: tAB, timeBA: tBA,
+            capAB: cAB, capBA: cBA,
+            alpha: l.alpha ?? 0.15, beta: l.beta ?? 4,
+            openAB, openBA,
+            tSynced: l.tSynced ?? (tAB === tBA),
+            cSynced: l.cSynced ?? (cAB === cBA)
+          };
+        }
+      }
+      state.od = d.od || {};
+      state.defaults = d.defaults || state.defaults;
+      state.method = d.method || "incremental";
+      state.methodParams = d.methodParams || state.methodParams;
+      state.nextZoneId = d.nextZoneId || Object.keys(state.zones).length + 1;
+      state.nextLinkId = d.nextLinkId || Object.keys(state.links).length + 1;
+      state.nextZoneLabel = d.nextZoneLabel || 1;
+      state.results = null; state.selected = null; state.displayOrigin = null;
+      state.chartSelections = [];
+      // Update UI fields
+      document.getElementById("def-cap").value = state.defaults.cap;
+      document.getElementById("def-time").value = state.defaults.time;
+      document.getElementById("def-alpha").value = state.defaults.alpha;
+      document.getElementById("def-beta").value = state.defaults.beta;
+      document.getElementById("method-select").value = state.method;
+      document.getElementById("method-select").dispatchEvent(new Event("change"));
+      document.getElementById("num-increments").value = state.methodParams.numIncrements;
+      document.getElementById("max-iter").value = state.methodParams.maxIter;
+      document.getElementById("convergence-tol").value = state.methodParams.tol;
+      render(); updateODMatrix(); updateLinksTable(); updateTreeOriginSelect(); updateResultsPanel(); updateConvergencePanel(); updateBPRCharts();
+    } catch (err) { alert("Error al cargar el archivo: " + err.message); }
+  };
+  reader.readAsText(f);
+  e.target.value = "";
+});
+document.getElementById("btn-clear").addEventListener("click", () => {
+  if (!confirm("¿Borrar toda la red? Esta acción no se puede deshacer.")) return;
+  state.zones = {}; state.links = {}; state.od = {};
+  state.nextZoneId = 1; state.nextLinkId = 1; state.nextZoneLabel = 1;
+  state.selected = null; state.results = null; state.displayOrigin = null;
+  state.chartSelections = [];
+  render(); updateODMatrix(); updateLinksTable(); updateTreeOriginSelect(); updateResultsPanel(); updateConvergencePanel(); updateSelectionPanel(); updateBPRCharts();
+});
+
+// ---------- Example: 12.18 ----------
+document.getElementById("btn-example").addEventListener("click", () => {
+  if (Object.keys(state.zones).length > 0) {
+    if (!confirm("Se reemplazará la red actual con el Ejemplo 12.18. ¿Continuar?")) return;
+  }
+  loadExample1218();
+});
+function loadExample1218() {
+  state.zones = {}; state.links = {}; state.od = {};
+  state.nextZoneId = 1; state.nextLinkId = 1; state.nextZoneLabel = 1;
+  state.selected = null; state.results = null; state.displayOrigin = null;
+
+  const cols = 4, rows = 4;
+  const startX = 180, startY = 140;
+  const dx = 160, dy = 140;
+  const ids = {};
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const label = r * cols + c + 1;
+      const id = createZone(startX + c * dx, startY + r * dy, String(label));
+      ids[label] = id;
+    }
+  }
+  const edges = [
+    [1,2,1],[2,3,3],[3,4,6],
+    [5,6,2],[6,7,3],[7,8,2],
+    [9,10,4],[10,11,3],[11,12,3],
+    [13,14,4],[14,15,4],[15,16,4],
+    [1,5,2],[5,9,2],[9,13,2],
+    [2,6,4],[6,10,3],[10,14,3],
+    [3,7,2],[7,11,1],[11,15,1],
+    [4,8,1],[8,12,1],[12,16,1]
+  ];
+  for (const [a, b, t] of edges) {
+    if (ids[a] && ids[b]) createLink(ids[a], ids[b], {
+      timeAB: t, timeBA: t, capAB: 500, capBA: 500, alpha: 0.15, beta: 4
+    });
+  }
+  const fromOne = { 2:50, 3:75, 4:80, 5:100, 6:125, 7:60, 8:30, 9:90, 10:40,
+                    11:80, 12:25, 13:70, 14:60, 15:20, 16:85 };
+  for (const [lbl, n] of Object.entries(fromOne)) {
+    if (ids[lbl]) {
+      state.od[ids[1]][ids[lbl]] = n;
+      state.od[ids[lbl]][ids[1]] = n;
+    }
+  }
+
+  render(); updateODMatrix(); updateLinksTable(); updateTreeOriginSelect(); updateResultsPanel(); updateConvergencePanel(); updateBPRCharts();
+}
+
+// ---------- Example: 12.21 (Capacity Restraint) ----------
+document.getElementById("btn-example-cr").addEventListener("click", () => {
+  if (Object.keys(state.zones).length > 0) {
+    if (!confirm("Se reemplazará la red actual con el Ejemplo 12.21. ¿Continuar?")) return;
+  }
+  loadExample1221();
+});
+function loadExample1221() {
+  state.zones = {}; state.links = {}; state.od = {};
+  state.nextZoneId = 1; state.nextLinkId = 1; state.nextZoneLabel = 1;
+  state.selected = null; state.results = null; state.displayOrigin = null;
+
+  // 4 nodes: 1 (origin), 2 (destination), 3, 4 (intersections)
+  // Unidirectional links: L13, L14, L32, L34, L42
+  const id1 = createZone(160, 320, "1");
+  const id4 = createZone(450, 180, "4");
+  const id3 = createZone(450, 460, "3");
+  const id2 = createZone(740, 320, "2");
+
+  // Unidirectional links (as in Figure 12.16): the reverse direction is closed via openBA: false.
+  // The BA-direction's time/capacity are set to the same as AB but won't be used since the direction is closed.
+  function mkDirLink(aId, bId, t, c) {
+    createLink(aId, bId, { timeAB: t, timeBA: t, capAB: c, capBA: c, alpha: 1, beta: 2, openAB: true, openBA: false });
+  }
+
+  // Links and their free-flow times / capacities from Figure 12.16
+  // L13: 1→3, t0=5, C=20
+  mkDirLink(id1, id3, 5, 20);
+  // L14: 1→4, t0=20, C=200
+  mkDirLink(id1, id4, 20, 200);
+  // L34: 3→4, t0=3, C=50
+  mkDirLink(id3, id4, 3, 50);
+  // L42: 4→2, t0=4, C=20
+  mkDirLink(id4, id2, 4, 20);
+  // L32: 3→2, t0=5, C=20
+  mkDirLink(id3, id2, 5, 20);
+
+  // OD: 50 trips from 1 to 2
+  state.od[id1][id2] = 50;
+
+  // Set method params friendly for this example
+  state.method = "incremental";
+  state.methodParams.numIncrements = 10;
+  state.methodParams.pattern = "equal";
+  document.getElementById("method-select").value = "incremental";
+  document.getElementById("num-increments").value = 10;
+  document.getElementById("method-select").dispatchEvent(new Event("change"));
+
+  // Pre-seleccionar las dos salidas desde el nodo 1 para demostrar las curvas BPR
+  // (1→3: capacidad baja, 1→4: capacidad alta)
+  state.chartSelections = [];
+  const linksArr = Object.values(state.links);
+  if (linksArr[0]) state.chartSelections.push({ linkId: linksArr[0].id, dir: "AB" });
+  if (linksArr[1]) state.chartSelections.push({ linkId: linksArr[1].id, dir: "AB" });
+
+  render(); updateODMatrix(); updateLinksTable(); updateTreeOriginSelect(); updateResultsPanel(); updateConvergencePanel(); updateBPRCharts();
+}
+
+// ---------- Init ----------
+setMode("select");
+render();
+updateODMatrix(); updateLinksTable(); updateTreeOriginSelect(); updateResultsPanel(); updateConvergencePanel(); updateBPRCharts();
+
+</script>
+</body>
+</html>

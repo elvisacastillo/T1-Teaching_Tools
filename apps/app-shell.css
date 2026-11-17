@@ -1,0 +1,181 @@
+/* ============================================================
+   Franja superior unificada de las herramientas interactivas
+   Dr. Elvis A. Castillo-Camarena
+   Se carga al final del <head> para prevalecer sobre los
+   estilos propios de cada aplicación.
+   ============================================================ */
+
+header.ec-topbar {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+  flex-wrap: wrap !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 10px 18px !important;
+  background: linear-gradient(135deg, #3b0d70 0%, #5b21b6 55%, #7c3aed 100%) !important;
+  color: #fff !important;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, .16) !important;
+  box-shadow: 0 2px 14px rgba(14, 18, 32, .22) !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif !important;
+  box-sizing: border-box;
+}
+
+header.ec-topbar * { box-sizing: border-box; }
+
+/* --- Botón de regreso al sitio --- */
+header.ec-topbar .ec-back {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, .12);
+  border: 1px solid rgba(255, 255, 255, .22);
+  color: #fff !important;
+  text-decoration: none !important;
+  font-size: 21px;
+  line-height: 1;
+  padding-bottom: 3px;
+  transition: background .15s ease, border-color .15s ease;
+}
+header.ec-topbar .ec-back:hover {
+  background: rgba(255, 255, 255, .26);
+  border-color: rgba(255, 255, 255, .45);
+}
+
+/* --- Identidad de la herramienta --- */
+header.ec-topbar .ec-id { flex: 1 1 340px; min-width: 0; }
+
+header.ec-topbar h1 {
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  line-height: 1.25 !important;
+  letter-spacing: -.01em !important;
+  color: #fff !important;
+  text-transform: none !important;
+  border: 0 !important;
+}
+
+header.ec-topbar .ec-sub {
+  font-size: 12px;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, .78);
+  margin-top: 2px;
+}
+header.ec-topbar .ec-sub sub { font-size: .78em; }
+
+header.ec-topbar .ec-author {
+  font-size: 11px;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, .58);
+  margin-top: 3px;
+  letter-spacing: .01em;
+}
+header.ec-topbar .ec-author b {
+  color: rgba(255, 255, 255, .92);
+  font-weight: 650;
+}
+
+/* --- Controles propios de cada app, unificados --- */
+header.ec-topbar .ec-tools {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+header.ec-topbar .ec-tools .badge,
+header.ec-topbar .ec-tools .mode-btn,
+header.ec-topbar .ec-tools .action-btn,
+header.ec-topbar .ec-tools button,
+header.ec-topbar .ec-tools .unitToggle > button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 7px 12px !important;
+  border-radius: 8px !important;
+  background: rgba(255, 255, 255, .13) !important;
+  border: 1px solid rgba(255, 255, 255, .24) !important;
+  color: #fff !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s ease, border-color .15s ease;
+}
+
+header.ec-topbar .ec-tools .badge {
+  cursor: default;
+  background: rgba(255, 255, 255, .09) !important;
+  color: rgba(255, 255, 255, .88) !important;
+  font-weight: 550 !important;
+}
+
+header.ec-topbar .ec-tools .mode-btn:hover,
+header.ec-topbar .ec-tools .action-btn:hover,
+header.ec-topbar .ec-tools button:hover,
+header.ec-topbar .ec-tools .unitToggle > button:hover {
+  background: rgba(255, 255, 255, .26) !important;
+  border-color: rgba(255, 255, 255, .45) !important;
+}
+
+/* grupos de conmutación (unidades, modos) */
+header.ec-topbar .ec-tools .unitToggle {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+header.ec-topbar .ec-tools .unitToggle > button.on {
+  background: #fbbf24 !important;
+  border-color: #fbbf24 !important;
+  color: #3d2600 !important;
+  font-weight: 700 !important;
+}
+header.ec-topbar .ec-tools .unitToggle > button.on:hover {
+  background: #f59e0b !important;
+  border-color: #f59e0b !important;
+}
+
+/* los input file ocultos no deben ocupar espacio */
+header.ec-topbar .ec-tools input[type="file"] { display: none !important; }
+
+/* --- Adaptación a pantallas estrechas --- */
+@media (max-width: 720px) {
+  header.ec-topbar { padding: 10px 14px !important; gap: 10px !important; }
+  header.ec-topbar h1 { font-size: 14.5px !important; }
+  header.ec-topbar .ec-id { flex: 1 1 100%; }
+  header.ec-topbar .ec-tools { margin-left: 0; width: 100%; }
+  header.ec-topbar .ec-tools .badge,
+  header.ec-topbar .ec-tools .mode-btn,
+  header.ec-topbar .ec-tools .action-btn,
+  header.ec-topbar .ec-tools button,
+  header.ec-topbar .ec-tools .unitToggle > button {
+    font-size: 11.5px !important;
+    padding: 6px 10px !important;
+  }
+}

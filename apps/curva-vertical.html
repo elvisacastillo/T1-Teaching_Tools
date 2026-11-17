@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Curva Vertical Parabólica — Alineamiento Vertical — Dr. Elvis A. Castillo-Camarena, Ph.D.</title>
+<meta name="author" content="Dr. Elvis A. Castillo-Camarena, Ph.D.">
+<style>
+  :root{
+    --bg:#f4f6f9; --panel:#ffffff; --ink:#1f2733; --muted:#6b7686;
+    --accent: #5b21b6; --accent2: #6d28d9; --grid:#dde3ec; --line:#111827;
+    --tan:#c0392b; --veh:#2c3e50; --good:#1e8449;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       background:var(--bg);color:var(--ink);}
+  header{background:var(--accent);color:#fff;padding:10px 18px;}
+  header h1{margin:0;font-size:17px;font-weight:600;}
+  header p{margin:2px 0 0;font-size:12px;opacity:.85;}
+  .wrap{display:flex;gap:14px;padding:14px;align-items:flex-start;flex-wrap:wrap;}
+  .panel{background:var(--panel);border:1px solid var(--grid);border-radius:10px;
+         box-shadow:0 1px 3px rgba(0,0,0,.05);}
+  .controls{width:320px;flex:0 0 320px;padding:14px;}
+  .plotbox{flex:1 1 560px;min-width:480px;padding:10px;}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);
+     margin:0 0 10px;border-bottom:1px solid var(--grid);padding-bottom:6px;}
+  .row{margin-bottom:12px;}
+  .row label{display:block;font-size:13px;font-weight:600;margin-bottom:3px;}
+  .row .unit{color:var(--muted);font-weight:400;font-size:12px;}
+  input[type=number]{width:100%;padding:6px 8px;border:1px solid var(--grid);border-radius:6px;
+        font-size:14px;background:#fff;}
+  input[type=range]{width:100%;}
+  .sliderval{font-size:12px;color:var(--accent2);font-weight:600;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .results{font-size:13px;line-height:1.7;}
+  .results .k{color:var(--muted);}
+  .results .v{font-weight:600;font-family:"SF Mono",ui-monospace,Menlo,monospace;}
+  .badge{display:inline-block;padding:2px 7px;border-radius:5px;font-size:11px;font-weight:600;}
+  .badge.crest{background:#fdecea;color:#c0392b;}
+  .badge.sag{background:#eafaf1;color:#1e8449;}
+  .seg{display:flex;gap:6px;margin:8px 0;}
+  .seg button{flex:1;padding:7px;border:1px solid var(--grid);background:#fff;border-radius:6px;
+        cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);}
+  .seg button.active{background:var(--accent2);color:#fff;border-color:var(--accent2);}
+  .smallbtn{padding:5px 9px;border:1px solid var(--grid);background:#fff;border-radius:6px;
+        cursor:pointer;font-size:12px;}
+  .smallbtn:hover{background:#f0f3f8;}
+  canvas{width:100%;height:auto;display:block;border-radius:8px;background:#fff;cursor:grab;}
+  canvas.dragging{cursor:grabbing;}
+  .hint{font-size:11px;color:var(--muted);margin-top:6px;}
+  .chk{display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:8px;}
+  details{margin-top:8px;}
+  summary{font-size:12px;color:var(--accent2);cursor:pointer;}
+  .axisgrid{display:grid;grid-template-columns:auto 1fr 1fr;gap:6px 8px;align-items:center;font-size:12px;}
+  .axisgrid input{padding:4px 6px;font-size:12px;}
+  .veh-pos{font-size:12px;color:var(--muted);}
+</style>
+<link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="app-shell.css">
+</head>
+<body>
+<header class="ec-topbar">
+  <a class="ec-back" href="../index.html" title="Volver al índice de herramientas" aria-label="Volver al índice de herramientas">‹</a>
+  <div class="ec-id">
+    <h1>Curva Vertical Parabólica — Alineamiento Vertical</h1>
+    <div class="ec-sub">Diseño Geométrico · Modifica los parámetros y observa cómo se comporta la parábola</div>
+    <div class="ec-author">Autor: <b>Dr. Elvis A. Castillo-Camarena, Ph.D.</b></div>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- ============ CONTROLES ============ -->
+  <div class="panel controls">
+    <h2>Parámetros de la curva</h2>
+
+    <div class="row">
+      <label>g₁ — pendiente de entrada <span class="unit">(%)</span></label>
+      <input type="number" id="g1" value="3" step="0.1">
+      <input type="range" id="g1r" min="-12" max="12" step="0.1" value="3">
+    </div>
+    <div class="row">
+      <label>g₂ — pendiente de salida <span class="unit">(%)</span></label>
+      <input type="number" id="g2" value="-5" step="0.1">
+      <input type="range" id="g2r" min="-12" max="12" step="0.1" value="-5">
+    </div>
+    <div class="row">
+      <label>L — longitud de la curva <span class="unit">(m)</span></label>
+      <input type="number" id="L" value="417" step="1" min="1">
+      <input type="range" id="Lr" min="20" max="800" step="1" value="417">
+    </div>
+    <div class="grid2">
+      <div class="row">
+        <label>Elev. PIv <span class="unit">(m)</span></label>
+        <input type="number" id="EPI" value="300" step="0.1">
+      </div>
+      <div class="row">
+        <label>Estación PIv <span class="unit">(m)</span></label>
+        <input type="number" id="SPI" value="15000" step="1">
+      </div>
+    </div>
+
+    <h2 style="margin-top:6px;">Escala de los ejes</h2>
+    <div class="seg" id="scaleSeg">
+      <button data-mode="exag" class="active">Exagerada</button>
+      <button data-mode="real">Real 1:1</button>
+    </div>
+    <p class="hint" id="scaleHint">La escala vertical está exagerada para apreciar la forma de la parábola. El vehículo se ajusta a la escala mostrada.</p>
+
+    <label class="chk"><input type="checkbox" id="autolim" checked> Ajustar límites automáticamente</label>
+    <details id="limWrap">
+      <summary>Fijar límites de ejes manualmente</summary>
+      <div class="axisgrid" style="margin-top:8px;">
+        <span></span><span style="color:var(--muted)">mín</span><span style="color:var(--muted)">máx</span>
+        <span>Estación X</span>
+        <input type="number" id="xmin" step="1">
+        <input type="number" id="xmax" step="1">
+        <span>Elev. Y</span>
+        <input type="number" id="ymin" step="0.5">
+        <input type="number" id="ymax" step="0.5">
+      </div>
+      <button class="smallbtn" id="applyLim" style="margin-top:8px;">Aplicar límites</button>
+    </details>
+
+    <h2 style="margin-top:14px;">Vehículo (Auto · clase P)</h2>
+    <div class="row">
+      <label>Posición sobre la curva <span class="veh-pos" id="vehStn"></span></label>
+      <input type="range" id="vehr" min="-350" max="1350" step="1" value="500">
+    </div>
+    <label class="chk"><input type="checkbox" id="showVeh" checked> Mostrar vehículo</label>
+    <label class="chk"><input type="checkbox" id="showTan" checked> Mostrar tangentes (g₁, g₂)</label>
+    <label class="chk"><input type="checkbox" id="showDim"> Mostrar cotas (L/2 y distancia externa E)</label>
+    <p class="hint">Auto AASHTO “P”: 5.8 m de largo, 1.3 m de alto. Arrastra el plano o usa el deslizador para mover el auto, incluso fuera de la curva: sobre la tangente de entrada (antes del PCv) o de salida (después del PTv).</p>
+
+    <h2 style="margin-top:14px;">Distancia de visibilidad de frenado</h2>
+    <label class="chk"><input type="checkbox" id="showSight" checked> Mostrar análisis de visibilidad (SSD)</label>
+    <div class="hint" style="background:#f0f3f8;border:1px solid var(--grid);border-radius:6px;padding:8px;line-height:1.7;">
+      <b>Valores AASHTO 2018 (fijos):</b><br>
+      Altura ojo del conductor h₁ = <b>1.08 m</b><br>
+      Altura obstáculo / lámpara h₂ = <b>0.60 m</b><br>
+      Divergencia del haz de luz = <b>1°</b><br>
+      SSD = <b id="ssdShow">—</b> · Tabla 3-1 para V = <span id="ssdV">—</span>
+    </div>
+    <p class="hint"><b>Cima:</b> obstáculo a SSD adelante y línea de visión ojo→obstáculo.<br>
+    <b>Columpio:</b> haz de luz (±1° sobre la tangente) y punto donde el haz superior toca la curva.<br>
+    La SSD se calcula automáticamente con la velocidad de diseño V de la sección inferior.</p>
+  </div>
+
+  <!-- ============ GRÁFICA + RESULTADOS ============ -->
+  <div class="plotbox panel">
+    <canvas id="cv" width="900" height="560"></canvas>
+    <div class="hint">Arrastra horizontalmente sobre el plano para desplazar el auto a lo largo de la curva.</div>
+  </div>
+
+  <div class="panel controls" style="width:280px;flex:0 0 280px;">
+    <h2>Resultados</h2>
+    <div class="results" id="out"></div>
+    <details style="margin-top:10px;">
+      <summary>Ecuaciones usadas</summary>
+      <div class="hint" style="line-height:1.6;margin-top:6px;">
+        Y = Y<sub>PCv</sub> + g₁·x + (r/2)·x²<br>
+        r = (g₂ − g₁) / L<br>
+        Y<sub>PCv</sub> = Elev<sub>PIv</sub> − g₁·(L/2)<br>
+        Est<sub>PCv</sub> = Est<sub>PIv</sub> − L/2<br>
+        Est<sub>PTv</sub> = Est<sub>PIv</sub> + L/2<br>
+        x<sub>max/min</sub> = g₁·L / (g₁ − g₂)<br>
+        <em>x se mide desde el PCv; g en fracción (3% = 0.03).</em>
+      </div>
+    </details>
+  </div>
+</div>
+
+<!-- ============ DETERMINACIÓN DE LA LONGITUD (AASHTO 2018) ============ -->
+<header style="background:var(--accent2);margin-top:4px;">
+  <h1>Determinación de la longitud de la curva — Criterios AASHTO (2018)</h1>
+  <p>Longitud mínima según distancia de visibilidad, comodidad, apariencia y drenaje · unidades métricas · usa g₁, g₂ y L de la sección superior</p>
+</header>
+
+<div class="wrap">
+  <!-- controles -->
+  <div class="panel controls">
+    <h2>Parámetros de diseño</h2>
+    <div class="row">
+      <label>V — velocidad de diseño <span class="unit">(km/h)</span> <span class="sliderval" id="VdVal">80</span></label>
+      <input type="range" id="Vd" min="20" max="130" step="10" value="80">
+    </div>
+    <div class="row" id="critRow">
+      <label>Criterio de visibilidad (cima)</label>
+      <div class="seg" id="critSeg">
+        <button data-c="ssd" class="active">Frenado (SSD)</button>
+        <button data-c="psd">Rebase (PSD)</button>
+      </div>
+    </div>
+    <label class="chk"><input type="checkbox" id="manS"> Ingresar S manualmente</label>
+    <div class="row" id="manSRow" style="display:none;">
+      <label>S — distancia de visibilidad <span class="unit">(m)</span></label>
+      <input type="number" id="Sman" value="130" step="1" min="1">
+    </div>
+    <label class="chk"><input type="checkbox" id="showKlines" checked> Mostrar líneas K de diseño (todas las velocidades)</label>
+    <label class="chk"><input type="checkbox" id="showDrain" checked> Mostrar máximo de drenaje (K = 51)</label>
+    <p class="hint">La gráfica reproduce las Figuras 3-36 (cima) y 3-37 (columpio) de AASHTO: A vs L con las ramas S &lt; L y S &gt; L, el lugar geométrico S = L y la longitud mínima L<sub>mín</sub> = 0.6·V. <b>Haz clic sobre la gráfica para asignar esa L a la curva de arriba.</b></p>
+
+    <details style="margin-top:10px;">
+      <summary>Ecuaciones usadas (métrico)</summary>
+      <div class="hint" style="line-height:1.7;margin-top:6px;">
+        <b>Cima — frenado (Ec. 3-44/3-45):</b><br>
+        S &lt; L: L = A·S²⁄658<br>
+        S &gt; L: L = 2S − 658⁄A<br>
+        <b>Cima — rebase (Ec. 3-46/3-47):</b> constante 864<br>
+        <b>Columpio — faros (Ec. 3-48 a 3-51):</b><br>
+        S &lt; L: L = A·S²⁄(120 + 3.5S)<br>
+        S &gt; L: L = 2S − (120 + 3.5S)⁄A<br>
+        <b>Comodidad (Ec. 3-52):</b> L = A·V²⁄395<br>
+        <b>Apariencia:</b> L = 30·A &nbsp;·&nbsp; <b>Drenaje:</b> K ≤ 51<br>
+        <b>Mínima:</b> L<sub>mín</sub> = 0.6·V &nbsp;·&nbsp; <b>Diseño:</b> L = K<sub>dis</sub>·A<br>
+        <em>A = |g₂ − g₁| en %, S y L en m, V en km/h. h₁ = 1.08 m, h₂ = 0.60 m (frenado); h₂ = 1.08 m (rebase); faro a 0.60 m con divergencia de 1°.</em>
+      </div>
+    </details>
+    <details style="margin-top:8px;">
+      <summary>Tablas K de diseño (AASHTO 3-35, 3-36 y 3-37)</summary>
+      <div id="kTable" class="hint" style="margin-top:6px;"></div>
+    </details>
+  </div>
+
+  <!-- gráfica -->
+  <div class="plotbox panel">
+    <canvas id="cvL" width="900" height="540"></canvas>
+    <div class="hint">Punto rojo: curva actual (A, L). Mueve el cursor para leer L, A y K; haz clic para fijar esa L en la curva.</div>
+  </div>
+
+  <!-- resultados -->
+  <div class="panel controls" style="width:300px;flex:0 0 300px;">
+    <h2>Longitudes según criterio</h2>
+    <div class="results" id="outL"></div>
+    <button class="smallbtn" id="applyLdes" style="margin-top:10px;width:100%;background:var(--accent2);color:#fff;border-color:var(--accent2);">Aplicar L de diseño a la curva ⤴</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const cv = $("cv"), ctx = cv.getContext("2d");
+
+  // ----- Auto AASHTO clase P (dimensiones reales en metros) -----
+  const VEH = { len:5.8, height:1.3, wheelR:0.36, body:0.95 }; // largo, alto total, radio rueda, alto carrocería sobre ruedas
+
+  // ----- Parámetros de visibilidad AASHTO 2018 (fijos) -----
+  const SIGHT = { hEye:1.08, hObj:0.60, beamDeg:1.0 };
+  // SSD según velocidad de diseño (Tabla 3-1, métrico)
+  const SSD_V=[20,30,40,50,60,70,80,90,100,110,120,130];
+  const SSD_S=[20,35,50,65,85,105,130,160,185,220,250,285];
+  function getSSD(){
+    const v=parseFloat($("Vd").value);
+    if(v<=SSD_V[0]) return SSD_S[0];
+    if(v>=SSD_V[SSD_V.length-1]) return SSD_S[SSD_S.length-1];
+    let i=1; while(SSD_V[i]<v) i++;
+    const t=(v-SSD_V[i-1])/(SSD_V[i]-SSD_V[i-1]);
+    return SSD_S[i-1]+t*(SSD_S[i]-SSD_S[i-1]);
+  }
+
+  let state = {
+    scale:"exag",
+    autolim:true,
+    showVeh:true,
+    showTan:true,
+    showDim:false,
+    showSight:true,
+    vehFrac:0.5,      // 0..1 a lo largo de la curva
+    lim:null          // {xmin,xmax,ymin,ymax} si manual
+  };
+  // ventana efectivamente dibujada (tras ajuste de escala real 1:1); se usa para
+  // precargar los límites manuales y para mapear el arrastre del vehículo
+  let view = null;
+
+  function num(id){ return parseFloat($(id).value); }
+
+  function params(){
+    const g1 = num("g1")/100, g2 = num("g2")/100;
+    const L = Math.max(num("L"),1);
+    const EPI = num("EPI"), SPI = num("SPI");
+    const r = (g2 - g1)/L;
+    const Ypcv = EPI - g1*(L/2);
+    const SPCv = SPI - L/2;
+    const SPTv = SPI + L/2;
+    // punto alto/bajo (x desde PCv)
+    let xext = (g1*L)/(g1 - g2);
+    let hasExt = (g1 - g2) !== 0 && xext >= 0 && xext <= L;
+    const yAt = x => Ypcv + g1*x + (r/2)*x*x;
+    const slopeAt = x => g1 + r*x; // derivada
+    // perfil de la rasante: curva entre 0..L, tangentes fuera de ese rango
+    const roadElev = x => {
+      if(x < 0) return Ypcv + g1*x;
+      if(x > L) return (Ypcv + g1*L + (r/2)*L*L) + g2*(x - L);
+      return yAt(x);
+    };
+    const roadSlope = x => (x < 0 ? g1 : (x > L ? g2 : slopeAt(x)));
+    const yext = hasExt ? yAt(xext) : null;
+    const Sext = hasExt ? SPCv + xext : null;
+    const crest = (g1 - g2) > 0; // cima si g1>g2 (A=g2-g1<0)
+    return {g1,g2,L,EPI,SPI,r,Ypcv,SPCv,SPTv,xext,hasExt,yAt,slopeAt,roadElev,roadSlope,yext,Sext,crest,
+            Ypcv_start:Ypcv, Yptv:yAt(L)};
+  }
+
+  // Determina límites de la ventana (en X estación, Y elev)
+  function bounds(p){
+    if(!state.autolim && state.lim){
+      return {...state.lim};
+    }
+    // auto: cubrir toda la curva + algo de tangente.
+    // Garantiza que PCv, PIv y PTv queden siempre dentro del dibujo.
+    const xs = [p.SPCv, p.SPI, p.SPTv];
+    const ys = [p.Ypcv, p.EPI, p.Yptv];
+    if(p.hasExt){ ys.push(p.yext); }
+    // incluir un poco de las tangentes fuera de la curva
+    const ext = p.L*0.12;
+    const yLeft = p.Ypcv - p.g1*ext;
+    const yRight = p.Yptv + p.g2*ext;
+    ys.push(yLeft, yRight);
+    let xmin = p.SPCv - ext, xmax = p.SPTv + ext;
+    // incluir la posición del vehículo (puede estar fuera de la curva, sobre las tangentes)
+    if(state.showVeh){
+      const stnV=p.SPCv + p.L*state.vehFrac;
+      xmin=Math.min(xmin, stnV - p.L*0.05);
+      xmax=Math.max(xmax, stnV + p.L*0.05);
+      ys.push(p.roadElev(p.L*state.vehFrac));
+    }
+    // incluir elementos de visibilidad (obstáculo / haz a SSD) si están activos
+    if(state.showSight && state.showVeh){
+      const xv=p.L*state.vehFrac, stnV=p.SPCv+xv, elV=p.roadElev(xv);
+      const ssd=getSSD(), hEye=SIGHT.hEye, hObj=SIGHT.hObj;
+      const fwd = stnV + ssd;
+      xmax = Math.max(xmax, fwd + p.L*0.06);
+      xmin = Math.min(xmin, stnV - p.L*0.04);
+      if(p.crest){ ys.push(elV+hEye, p.roadElev(fwd-p.SPCv)+hObj); }
+      else if((p.g1-p.g2)<0){ ys.push(elV+hObj, p.roadElev(fwd-p.SPCv)); }
+    }
+    let ymin = Math.min(...ys), ymax = Math.max(...ys);
+    const padY = Math.max((ymax-ymin)*0.18, 0.5);
+    ymin -= padY; ymax += padY;
+    return {xmin,xmax,ymin,ymax};
+  }
+
+  function draw(){
+    const p = params();
+    const b = bounds(p);
+
+    // mostrar los valores de visibilidad en uso
+    $("ssdShow").textContent = getSSD().toFixed(0)+" m";
+    $("ssdV").textContent = $("Vd").value+" km/h";
+
+    // tamaño lógico
+    const W = cv.width, H = cv.height;
+    const m = {l:64,r:24,t:24,b:46};
+    const pw = W - m.l - m.r, ph = H - m.t - m.b;
+
+    // escalas px/unidad
+    let sx = pw/(b.xmax-b.xmin);
+    let syRaw = ph/(b.ymax-b.ymin);
+    let sy = syRaw;
+    let xmin=b.xmin, xmax=b.xmax, ymin=b.ymin, ymax=b.ymax;
+
+    if(state.scale==="real"){
+      // forzar misma escala en ambos ejes -> centrar
+      const s = Math.min(sx, syRaw);
+      sx = s; sy = s;
+      // recenter para llenar
+      const cx=(b.xmin+b.xmax)/2, cy=(b.ymin+b.ymax)/2;
+      const halfX = (pw/s)/2, halfY = (ph/s)/2;
+      xmin=cx-halfX; xmax=cx+halfX; ymin=cy-halfY; ymax=cy+halfY;
+    }
+
+    // guardar la ventana efectivamente dibujada
+    view = {xmin,xmax,ymin,ymax,sx,sy,ml:m.l};
+
+    const X = stn => m.l + (stn - xmin)*sx;
+    const Y = el  => m.t + (ymax - el)*sy;
+
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle="#fff"; ctx.fillRect(0,0,W,H);
+
+    // ---- grid ----
+    ctx.strokeStyle="#e8edf4"; ctx.lineWidth=1; ctx.fillStyle="#94a0b0";
+    ctx.font="11px -apple-system,sans-serif";
+    const nx=8, ny=6;
+    ctx.textAlign="center"; ctx.textBaseline="top";
+    for(let i=0;i<=nx;i++){
+      const stn = xmin + (xmax-xmin)*i/nx;
+      const px = X(stn);
+      ctx.beginPath(); ctx.moveTo(px,m.t); ctx.lineTo(px,m.t+ph); ctx.stroke();
+      ctx.fillText(stn.toFixed(0), px, m.t+ph+5);
+    }
+    ctx.textAlign="right"; ctx.textBaseline="middle";
+    for(let i=0;i<=ny;i++){
+      const el = ymin + (ymax-ymin)*i/ny;
+      const py = Y(el);
+      ctx.beginPath(); ctx.moveTo(m.l,py); ctx.lineTo(m.l+pw,py); ctx.stroke();
+      ctx.fillText(el.toFixed(1), m.l-6, py);
+    }
+    // marco
+    ctx.strokeStyle="#cdd6e2"; ctx.strokeRect(m.l,m.t,pw,ph);
+    // labels ejes
+    ctx.fillStyle="#6b7686"; ctx.textAlign="center"; ctx.textBaseline="top";
+    ctx.font="12px -apple-system,sans-serif";
+    ctx.fillText("Estación (m)", m.l+pw/2, H-16);
+    ctx.save(); ctx.translate(16,m.t+ph/2); ctx.rotate(-Math.PI/2);
+    ctx.fillText("Elevación (m)",0,0); ctx.restore();
+
+    // ---- tangentes ----
+    if(state.showTan){
+      ctx.strokeStyle="#c0392b"; ctx.lineWidth=1.4; ctx.setLineDash([6,4]);
+      // tangente de entrada: pasa por PCv con pendiente g1, extender al PIv y un poco más
+      const xPC=p.SPCv, xPI=p.SPI, xPT=p.SPTv;
+      const ePC=p.Ypcv, ePIv=p.EPI, ePT=p.Yptv;
+      const extL = (xmin - xPC);
+      ctx.beginPath();
+      ctx.moveTo(X(xmin), Y(ePC + p.g1*(xmin-xPC)));
+      ctx.lineTo(X(xPI),  Y(ePIv));
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(X(xPI),  Y(ePIv));
+      ctx.lineTo(X(xmax), Y(ePT + p.g2*(xmax-xPT)));
+      ctx.stroke();
+      ctx.setLineDash([]);
+      // PIv marker
+      ctx.fillStyle="#c0392b";
+      dot(X(xPI),Y(ePIv),3.5);
+      ctx.fillStyle="#c0392b"; ctx.font="11px sans-serif"; ctx.textAlign="left"; ctx.textBaseline="bottom";
+      ctx.fillText("PIv", X(xPI)+6, Y(ePIv)-4);
+    }
+
+    // ---- parábola ----
+    ctx.strokeStyle="#111827"; ctx.lineWidth=2.4; ctx.setLineDash([]);
+    ctx.beginPath();
+    const N=200;
+    for(let i=0;i<=N;i++){
+      const x = p.L*i/N;
+      const stn = p.SPCv + x;
+      const el = p.yAt(x);
+      const px=X(stn), py=Y(el);
+      if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+    }
+    ctx.stroke();
+
+    // ---- PCv / PTv markers ----
+    function labelPt(stn,el,txt,col,below){
+      ctx.fillStyle=col; dot(X(stn),Y(el),4);
+      ctx.font="bold 11px sans-serif"; ctx.textAlign="center";
+      ctx.textBaseline = below?"top":"bottom";
+      ctx.fillText(txt, X(stn), Y(el)+(below?8:-8));
+    }
+    labelPt(p.SPCv,p.Ypcv,"PCv","#1d6fb8", p.crest);
+    labelPt(p.SPTv,p.Yptv,"PTv","#1d6fb8", p.crest);
+
+    // ---- punto alto/bajo ----
+    if(p.hasExt){
+      ctx.strokeStyle="#1e8449"; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+      ctx.beginPath(); ctx.moveTo(X(p.Sext),Y(p.yext)); ctx.lineTo(X(p.Sext),m.t+ph); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle="#1e8449"; dot(X(p.Sext),Y(p.yext),4.5);
+      ctx.font="bold 11px sans-serif"; ctx.textAlign="center"; ctx.textBaseline=p.crest?"bottom":"top";
+      ctx.fillText(p.crest?"Punto alto":"Punto bajo", X(p.Sext), Y(p.yext)+(p.crest?-8:8));
+    }
+
+    // ---- cotas (acotado) ----
+    if(state.showDim){
+      const red="#c0392b", cyan="#1d6fb8";
+      // --- horizontales L/2 ---
+      const dyH = m.t+ph-20; // línea de cota horizontal cerca del borde inferior
+      ctx.lineWidth=1; ctx.strokeStyle="#d98880"; ctx.setLineDash([2,3]);
+      [[p.SPCv,p.Ypcv],[p.SPI,p.EPI],[p.SPTv,p.Yptv]].forEach(([s,e])=>{
+        ctx.beginPath(); ctx.moveTo(X(s),Y(e)); ctx.lineTo(X(s),dyH+6); ctx.stroke();
+      });
+      ctx.setLineDash([]);
+      ctx.lineWidth=1.4; ctx.strokeStyle=red; ctx.fillStyle=red;
+      hDim(X(p.SPCv),X(p.SPI),dyH,"L/2 = "+(p.L/2).toFixed(1)+" m");
+      hDim(X(p.SPI),X(p.SPTv),dyH,"L/2 = "+(p.L/2).toFixed(1)+" m");
+
+      // --- vertical: distancia externa E (del PIv a la curva en el centro) ---
+      const yMid = p.yAt(p.L/2);
+      const E = Math.abs(p.EPI - yMid);
+      const dimX = X(p.SPI) + 48;
+      ctx.lineWidth=1; ctx.strokeStyle="#7fb3d5"; ctx.setLineDash([2,3]);
+      ctx.beginPath(); ctx.moveTo(X(p.SPI),Y(p.EPI)); ctx.lineTo(dimX+6,Y(p.EPI)); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(X(p.SPI),Y(yMid)); ctx.lineTo(dimX+6,Y(yMid)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.lineWidth=1.4; ctx.strokeStyle=cyan; ctx.fillStyle=cyan;
+      vDim(dimX,Y(p.EPI),Y(yMid),"E = "+E.toFixed(2)+" m");
+
+      // --- vertical: diferencia de elevación entre PIv y PCv (= g1·L/2) ---
+      const dz = Math.abs(p.EPI - p.Ypcv);
+      const dimX2 = Math.max(m.l+16, X(p.SPCv) - 34);
+      const purple="#7a1f5c";
+      ctx.lineWidth=1; ctx.strokeStyle="#b98aa6"; ctx.setLineDash([2,3]);
+      // guía inferior: de la cota al PCv
+      ctx.beginPath(); ctx.moveTo(dimX2-6,Y(p.Ypcv)); ctx.lineTo(X(p.SPCv),Y(p.Ypcv)); ctx.stroke();
+      // guía superior: de la cota hasta el PIv (a la derecha)
+      ctx.beginPath(); ctx.moveTo(dimX2-6,Y(p.EPI)); ctx.lineTo(X(p.SPI),Y(p.EPI)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.lineWidth=1.4; ctx.strokeStyle=purple; ctx.fillStyle=purple;
+      vDim(dimX2,Y(p.Ypcv),Y(p.EPI),"Δelev PIv−PCv = "+dz.toFixed(2)+" m", true);
+    }
+
+    // ---- vehículo ----
+    if(state.showVeh){
+      const xv = p.L*state.vehFrac;
+      const stnV = p.SPCv + xv;
+      const elV = p.roadElev(xv);
+      const ang = Math.atan2( p.roadSlope(xv)*sy, sx ); // ángulo en pantalla (con escalas)
+      drawVehicle(X(stnV), Y(elV), ang, sx, sy);
+      // estación del vehículo
+      const zona = xv < 0 ? " · antes del PCv (tangente g₁)"
+                 : xv > p.L ? " · después del PTv (tangente g₂)" : " · dentro de la curva";
+      $("vehStn").textContent = "· Est " + stnV.toFixed(2) + " m · Elev " + elV.toFixed(3) + " m" + zona;
+    } else {
+      $("vehStn").textContent = "";
+    }
+
+    // ---- análisis de visibilidad de frenado (SSD) ---- (requiere vehículo visible)
+    if(state.showSight && state.showVeh){
+      const hEye=SIGHT.hEye, hObj=SIGHT.hObj, beamDeg=SIGHT.beamDeg, ssd=getSSD();
+      const xv = p.L*state.vehFrac;
+      const stnV = p.SPCv + xv;
+      const elV = p.roadElev(xv);
+      const roadStn = s => p.roadElev(s - p.SPCv);
+      const dyS = m.t+ph-50;   // nivel de la cota SSD
+      const dyB = m.t+ph-76;   // nivel de la cota alcance del haz
+
+      if(p.crest){
+        // ----- CIMA: ojo del conductor y obstáculo a SSD -----
+        const eyeEl = elV + hEye;
+        const obsStn = stnV + ssd;
+        const obsBase = roadStn(obsStn);
+        const obsTop = obsBase + hObj;
+        // línea de visión ojo -> tope del obstáculo
+        ctx.strokeStyle="#e67e22"; ctx.lineWidth=1.8; ctx.setLineDash([7,4]);
+        ctx.beginPath(); ctx.moveTo(X(stnV),Y(eyeEl)); ctx.lineTo(X(obsStn),Y(obsTop)); ctx.stroke();
+        ctx.setLineDash([]);
+        // ojo
+        ctx.fillStyle="#e67e22"; dot(X(stnV),Y(eyeEl),3.6);
+        ctx.font="11px sans-serif"; ctx.textAlign="left"; ctx.textBaseline="bottom"; ctx.fillStyle="#b9651b";
+        ctx.fillText("Ojo", X(stnV)+5, Y(eyeEl)-3);
+        // obstáculo
+        ctx.strokeStyle="#922b21"; ctx.lineWidth=3;
+        ctx.beginPath(); ctx.moveTo(X(obsStn),Y(obsBase)); ctx.lineTo(X(obsStn),Y(obsTop)); ctx.stroke();
+        ctx.fillStyle="#922b21"; ctx.fillRect(X(obsStn)-3,Y(obsTop)-3,6,3);
+        ctx.textAlign="center"; ctx.textBaseline="bottom";
+        ctx.fillText("Obstáculo", X(obsStn), Y(obsTop)-7);
+        // guía: SSD se mide HORIZONTALMENTE (tramo horizontal a nivel del ojo) y luego baja al obstáculo
+        ctx.strokeStyle="#9aa4b0"; ctx.setLineDash([2,4]); ctx.lineWidth=1;
+        ctx.beginPath();
+        ctx.moveTo(X(stnV),Y(eyeEl));
+        ctx.lineTo(X(obsStn),Y(eyeEl));
+        ctx.lineTo(X(obsStn),Y(obsTop));
+        ctx.stroke(); ctx.setLineDash([]);
+
+        if(state.showDim){
+          ctx.lineWidth=1.4; ctx.strokeStyle="#e67e22"; ctx.fillStyle="#e67e22";
+          vDim(X(stnV)-16, Y(eyeEl), Y(elV), "h ojo = "+hEye.toFixed(2)+" m", true);
+          ctx.strokeStyle="#922b21"; ctx.fillStyle="#922b21";
+          vDim(X(obsStn)+16, Y(obsTop), Y(obsBase), "h obs = "+hObj.toFixed(2)+" m", true);
+          // SSD horizontal
+          ctx.strokeStyle="#aeb6bf"; ctx.setLineDash([2,3]); ctx.lineWidth=1;
+          ctx.beginPath(); ctx.moveTo(X(stnV),Y(elV)); ctx.lineTo(X(stnV),dyS+6); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(X(obsStn),Y(obsBase)); ctx.lineTo(X(obsStn),dyS+6); ctx.stroke();
+          ctx.setLineDash([]); ctx.lineWidth=1.4; ctx.strokeStyle="#566573"; ctx.fillStyle="#566573";
+          hDim(X(stnV),X(obsStn),dyS,"SSD = "+ssd.toFixed(0)+" m");
+        }
+      } else if((p.g1-p.g2)<0){
+        // ----- COLUMPIO: haz de luz del faro -----
+        const lampEl = elV + hObj;
+        const mv = p.roadSlope(xv);
+        const beamRad = beamDeg*Math.PI/180;
+        const upSlope = Math.tan(Math.atan(mv)+beamRad);
+        const dnSlope = Math.tan(Math.atan(mv)-beamRad);
+        const beamUp = s => lampEl + upSlope*(s-stnV);
+        const beamDn = s => lampEl + dnSlope*(s-stnV);
+        // intersección de un rayo con la rasante (hacia adelante)
+        function hit(fn){
+          let s0=stnV, d0=hObj, step=0.5, maxS=stnV+3*ssd;
+          for(let s=stnV+step; s<=maxS; s+=step){
+            const d = fn(s)-roadStn(s);
+            if(d<=0){ const t=d0/(d0-d); return s0+(s-s0)*t; }
+            s0=s; d0=d;
+          }
+          return maxS;
+        }
+        const sU=hit(beamUp), sL=hit(beamDn);
+        // cuña del haz (relleno tenue)
+        ctx.fillStyle="rgba(241,196,15,0.20)";
+        ctx.beginPath();
+        ctx.moveTo(X(stnV),Y(lampEl));
+        ctx.lineTo(X(sU),Y(beamUp(sU)));
+        ctx.lineTo(X(sL),Y(beamDn(sL)));
+        ctx.closePath(); ctx.fill();
+        // bordes del haz
+        ctx.strokeStyle="#f39c12"; ctx.lineWidth=1.8;
+        ctx.beginPath(); ctx.moveTo(X(stnV),Y(lampEl)); ctx.lineTo(X(sU),Y(beamUp(sU))); ctx.stroke();
+        ctx.strokeStyle="#f8c471"; ctx.lineWidth=1.4;
+        ctx.beginPath(); ctx.moveTo(X(stnV),Y(lampEl)); ctx.lineTo(X(sL),Y(beamDn(sL))); ctx.stroke();
+        // lámpara
+        ctx.fillStyle="#f1c40f"; ctx.strokeStyle="#b7950b"; ctx.lineWidth=1;
+        ctx.beginPath(); ctx.arc(X(stnV),Y(lampEl),4,0,7); ctx.fill(); ctx.stroke();
+        ctx.fillStyle="#9a7d0a"; ctx.font="11px sans-serif"; ctx.textAlign="left"; ctx.textBaseline="bottom";
+        ctx.fillText("Lámpara", X(stnV)+6, Y(lampEl)-3);
+        // punto donde el haz superior toca la curva
+        ctx.fillStyle="#cb4335"; dot(X(sU),Y(beamUp(sU)),4.5);
+        ctx.textAlign="center"; ctx.textBaseline="top"; ctx.font="bold 11px sans-serif";
+        ctx.fillText("Haz superior ∩ curva", X(sU), Y(beamUp(sU))+8);
+        // punto a SSD adelante sobre la rasante
+        const ssdStn=stnV+ssd, ssdEl=roadStn(ssdStn);
+        ctx.strokeStyle="#1e8449"; ctx.setLineDash([3,3]); ctx.lineWidth=1.2;
+        ctx.beginPath(); ctx.moveTo(X(ssdStn),Y(ssdEl)); ctx.lineTo(X(ssdStn),Y(ssdEl)-42); ctx.stroke();
+        ctx.setLineDash([]); ctx.fillStyle="#1e8449"; dot(X(ssdStn),Y(ssdEl),3.6);
+        ctx.font="bold 11px sans-serif"; ctx.textAlign="center"; ctx.textBaseline="bottom";
+        ctx.fillText("SSD adelante", X(ssdStn), Y(ssdEl)-46);
+        // guía: SSD se mide HORIZONTALMENTE (tramo horizontal a nivel de la lámpara) y luego baja a la rasante
+        ctx.strokeStyle="#9aa4b0"; ctx.setLineDash([2,4]); ctx.lineWidth=1;
+        ctx.beginPath();
+        ctx.moveTo(X(stnV),Y(lampEl));
+        ctx.lineTo(X(ssdStn),Y(lampEl));
+        ctx.lineTo(X(ssdStn),Y(ssdEl));
+        ctx.stroke(); ctx.setLineDash([]);
+
+        if(state.showDim){
+          ctx.lineWidth=1.4; ctx.strokeStyle="#b7950b"; ctx.fillStyle="#b7950b";
+          vDim(X(stnV)-16, Y(lampEl), Y(elV), "h lámpara = "+hObj.toFixed(2)+" m", true);
+          // ángulo del haz
+          ctx.fillStyle="#9a7d0a"; ctx.font="bold 11px sans-serif"; ctx.textAlign="left"; ctx.textBaseline="middle";
+          ctx.fillText("±"+beamDeg+"°", X(stnV)+24, Y(lampEl)+1);
+          // SSD horizontal
+          ctx.strokeStyle="#aeb6bf"; ctx.setLineDash([2,3]); ctx.lineWidth=1;
+          ctx.beginPath(); ctx.moveTo(X(stnV),Y(elV)); ctx.lineTo(X(stnV),dyS+6); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(X(ssdStn),Y(ssdEl)); ctx.lineTo(X(ssdStn),dyS+6); ctx.stroke();
+          ctx.setLineDash([]); ctx.lineWidth=1.4; ctx.strokeStyle="#566573"; ctx.fillStyle="#566573";
+          hDim(X(stnV),X(ssdStn),dyS,"SSD = "+ssd.toFixed(0)+" m");
+          // alcance del haz superior
+          ctx.strokeStyle="#f0b27a"; ctx.setLineDash([2,3]); ctx.lineWidth=1;
+          ctx.beginPath(); ctx.moveTo(X(sU),Y(beamUp(sU))); ctx.lineTo(X(sU),dyB+6); ctx.stroke();
+          ctx.setLineDash([]); ctx.lineWidth=1.4; ctx.strokeStyle="#ca6f1e"; ctx.fillStyle="#ca6f1e";
+          hDim(X(stnV),X(sU),dyB,"Alcance haz = "+(sU-stnV).toFixed(0)+" m");
+        }
+      }
+    }
+
+    // ---- resultados ----
+    renderOut(p);
+
+    function dot(px,py,rad){ ctx.beginPath(); ctx.arc(px,py,rad,0,7); ctx.fill(); }
+  }
+
+  // Dibuja el auto a escala (usando sx, sy px/m), sobre el punto (px,py), inclinado ang
+  // Geometría en metros (y medido hacia ARRIBA desde la rasante), calibrada para que:
+  //   · el centro de las ventanas quede a ~1.08 m (altura del ojo del conductor)
+  //   · los faros delanteros queden a 0.60 m (altura de la lámpara)
+  //   · altura total = 1.30 m, largo = 5.8 m (auto AASHTO clase P)
+  function drawVehicle(px,py,ang,sx,sy){
+    ctx.save();
+    ctx.translate(px,py);
+    ctx.rotate(-ang); // pantalla: y hacia abajo; pendiente positiva sube => rotar
+    const fx = sx, fy = sy;
+    const path = pts => {
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0]*fx, -pts[0][1]*fy);
+      for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i][0]*fx, -pts[i][1]*fy);
+      ctx.closePath();
+    };
+    // carrocería (frente hacia +x): cofre/baúl ~0.95 m, techo 1.30 m, bajos 0.30 m
+    const body = [
+      [-2.90,0.30],[-2.90,0.90],[-1.60,0.98],[-1.00,1.30],
+      [ 0.70,1.30],[ 1.00,0.95],[ 2.30,0.88],[ 2.90,0.70],[ 2.90,0.30]
+    ];
+    path(body);
+    ctx.fillStyle="#e74c3c"; ctx.strokeStyle="#922b21"; ctx.lineWidth=1.2;
+    ctx.fill(); ctx.stroke();
+    // ventanas: de 0.92 a 1.24 m → centro = 1.08 m = altura del ojo
+    path([[-0.90,0.92],[-0.78,1.24],[0.50,1.24],[0.78,0.92]]);
+    ctx.fillStyle="#aed6f1"; ctx.fill();
+    // ruedas: r = 0.33 m, centros en ±1.85 m
+    const wr=0.33;
+    [[-1.85,wr],[1.85,wr]].forEach(([wx,wy])=>{
+      ctx.fillStyle="#2c3e50";
+      ctx.beginPath(); ctx.ellipse(wx*fx,-wy*fy,wr*fx,wr*fy,0,0,7); ctx.fill();
+      ctx.fillStyle="#7f8c8d";
+      ctx.beginPath(); ctx.ellipse(wx*fx,-wy*fy,wr*0.42*fx,wr*0.42*fy,0,0,7); ctx.fill();
+    });
+    // faro delantero a 0.60 m (= altura de la lámpara del análisis SSD)
+    ctx.fillStyle="#f1c40f"; ctx.strokeStyle="#b7950b"; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.ellipse(2.80*fx,-0.60*fy,0.13*fx,0.10*fy,0,0,7);
+    ctx.fill(); ctx.stroke();
+    // luz trasera a 0.60 m
+    ctx.fillStyle="#c0392b";
+    ctx.fillRect(-2.90*fx,-0.67*fy,0.12*fx,0.14*fy);
+    ctx.restore();
+  }
+
+  // ---- helpers de acotado (coordenadas en píxeles) ----
+  function head(x,y,ang){ // punta de flecha en (x,y) apuntando en dirección ang
+    const a=9, sp=0.4;
+    ctx.beginPath();
+    ctx.moveTo(x,y);
+    ctx.lineTo(x - a*Math.cos(ang-sp), y - a*Math.sin(ang-sp));
+    ctx.lineTo(x - a*Math.cos(ang+sp), y - a*Math.sin(ang+sp));
+    ctx.closePath(); ctx.fill();
+  }
+  function rrect(x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+  }
+  function dimLabel(x,y,text){
+    ctx.font="bold 11px -apple-system,sans-serif";
+    const col=ctx.fillStyle;
+    const w=ctx.measureText(text).width+10, h=16;
+    // mantener la etiqueta dentro del lienzo
+    let cx=Math.max(w/2+2, Math.min(cv.width - w/2 - 2, x));
+    let cy=Math.max(h/2+2, Math.min(cv.height - h/2 - 2, y));
+    ctx.fillStyle="#fff"; ctx.strokeStyle=col; ctx.lineWidth=1;
+    rrect(cx-w/2,cy-h/2,w,h,4); ctx.fill(); ctx.stroke();
+    ctx.fillStyle=col; ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillText(text,cx,cy);
+  }
+  function hDim(xa,xb,y,label){
+    ctx.beginPath(); ctx.moveTo(xa,y); ctx.lineTo(xb,y); ctx.stroke();
+    head(xa,y,Math.PI); head(xb,y,0);
+    dimLabel((xa+xb)/2,y,label);
+  }
+  function vDim(x,ya,yb,label,outward){
+    ctx.beginPath(); ctx.moveTo(x,ya); ctx.lineTo(x,yb); ctx.stroke();
+    if(outward){ // puntas apuntando hacia afuera (tip sobre cada nivel)
+      head(x,ya, ya>yb ? Math.PI/2 : -Math.PI/2);
+      head(x,yb, ya>yb ? -Math.PI/2 : Math.PI/2);
+    } else { // puntas hacia adentro
+      head(x,ya,-Math.PI/2); head(x,yb,Math.PI/2);
+    }
+    dimLabel(x,(ya+yb)/2,label);
+  }
+
+  function renderOut(p){
+    const f=(v,d=3)=>v.toFixed(d);
+    const A = (p.g2-p.g1)*100; // cambio de pendiente en %
+    const type = p.crest ? '<span class="badge crest">Curva en CIMA</span>'
+                         : ((p.g1-p.g2)<0 ? '<span class="badge sag">Curva en COLUMPIO</span>' : '<span class="badge">Sin curvatura</span>');
+    let extHtml = p.hasExt
+      ? `<div><span class="k">${p.crest?'Punto alto':'Punto bajo'} x:</span> <span class="v">${f(p.xext)} m</span> (desde PCv)</div>
+         <div><span class="k">Estación:</span> <span class="v">${f(p.Sext,2)}</span></div>
+         <div><span class="k">Elevación:</span> <span class="v">${f(p.yext)} m</span></div>`
+      : `<div class="k" style="color:#c0392b">El punto alto/bajo cae fuera de la curva (g₁ y g₂ del mismo signo).</div>`;
+    $("out").innerHTML = `
+      <div style="margin-bottom:8px">${type}</div>
+      <div><span class="k">A = g₂ − g₁:</span> <span class="v">${f(A,2)} %</span></div>
+      <div><span class="k">r = (g₂−g₁)/L:</span> <span class="v">${f(p.r,6)}</span></div>
+      <hr style="border:none;border-top:1px solid var(--grid);margin:8px 0">
+      <div><span class="k">Y<sub>PCv</sub>:</span> <span class="v">${f(p.Ypcv)} m</span></div>
+      <div><span class="k">Est. PCv:</span> <span class="v">${f(p.SPCv,2)}</span></div>
+      <div><span class="k">Est. PTv:</span> <span class="v">${f(p.SPTv,2)}</span></div>
+      <div><span class="k">Elev. PTv:</span> <span class="v">${f(p.Yptv)} m</span></div>
+      <hr style="border:none;border-top:1px solid var(--grid);margin:8px 0">
+      ${extHtml}
+    `;
+  }
+
+  // ---------- binding ----------
+  function sync(a,b){ $(a).addEventListener("input",()=>{ $(b).value=$(a).value; draw(); });
+                      $(b).addEventListener("input",()=>{ $(a).value=$(b).value; draw(); }); }
+  sync("g1","g1r"); sync("g2","g2r"); sync("L","Lr");
+  ["EPI","SPI"].forEach(id=>$(id).addEventListener("input",draw));
+
+  $("scaleSeg").addEventListener("click",e=>{
+    const btn=e.target.closest("button"); if(!btn)return;
+    [...$("scaleSeg").children].forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    state.scale=btn.dataset.mode;
+    $("scaleHint").textContent = state.scale==="real"
+      ? "Escala real 1:1 — la curva se ve casi plana, pero el auto queda en proporción exacta."
+      : "La escala vertical está exagerada para apreciar la forma de la parábola. El vehículo se ajusta a la escala mostrada.";
+    draw();
+  });
+
+  $("autolim").addEventListener("change",e=>{
+    state.autolim=e.target.checked;
+    if(!state.autolim){
+      // partir de la ventana tal como se está dibujando en este momento
+      // (incluye el reencuadre de la escala real 1:1) y congelarla de inmediato
+      const v = view || bounds(params());
+      const lim = {
+        xmin:+v.xmin.toFixed(0), xmax:+v.xmax.toFixed(0),
+        ymin:+v.ymin.toFixed(1), ymax:+v.ymax.toFixed(1)
+      };
+      state.lim=lim;
+      $("xmin").value=lim.xmin; $("xmax").value=lim.xmax;
+      $("ymin").value=lim.ymin; $("ymax").value=lim.ymax;
+      $("limWrap").open=true;
+    } else {
+      // volver al cálculo automático
+      state.lim=null;
+      $("limWrap").open=false;
+    }
+    draw();
+  });
+  $("applyLim").addEventListener("click",()=>{
+    state.autolim=false; $("autolim").checked=false;
+    state.lim={ xmin:num("xmin"),xmax:num("xmax"),ymin:num("ymin"),ymax:num("ymax") };
+    draw();
+  });
+  ["xmin","xmax","ymin","ymax"].forEach(id=>$(id).addEventListener("input",()=>{
+    if(!state.autolim){ state.lim={xmin:num("xmin"),xmax:num("xmax"),ymin:num("ymin"),ymax:num("ymax")}; draw(); }
+  }));
+
+  $("vehr").addEventListener("input",e=>{ state.vehFrac=e.target.value/1000; draw(); });
+  $("showVeh").addEventListener("change",e=>{ state.showVeh=e.target.checked; draw(); });
+  $("showTan").addEventListener("change",e=>{ state.showTan=e.target.checked; draw(); });
+  $("showDim").addEventListener("change",e=>{ state.showDim=e.target.checked; draw(); });
+  $("showSight").addEventListener("change",e=>{ state.showSight=e.target.checked; draw(); });
+  // la SSD depende de la velocidad de diseño de la sección inferior
+  $("Vd").addEventListener("input",draw);
+
+  // arrastrar para mover vehículo
+  let dragging=false;
+  cv.addEventListener("pointerdown",e=>{ dragging=true; cv.classList.add("dragging"); moveVeh(e); cv.setPointerCapture(e.pointerId);});
+  cv.addEventListener("pointermove",e=>{ if(dragging) moveVeh(e); });
+  cv.addEventListener("pointerup",()=>{ dragging=false; cv.classList.remove("dragging"); });
+  function moveVeh(e){
+    if(!view) return;
+    const rect=cv.getBoundingClientRect();
+    const px=(e.clientX-rect.left)*(cv.width/rect.width);
+    // mapear px -> estación usando la ventana realmente dibujada
+    const p=params();
+    const stn = view.xmin + (px - view.ml)/view.sx;
+    let frac=(stn - p.SPCv)/p.L;
+    frac=Math.max(-0.35,Math.min(1.35,frac));
+    state.vehFrac=frac; $("vehr").value=Math.round(frac*1000);
+    draw();
+  }
+
+  // responsive: redibujar (canvas fijo lógico, CSS escala)
+  draw();
+})();
+
+/* ================= DETERMINACIÓN DE LA LONGITUD — AASHTO 2018 ================= */
+(function(){
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const cvL = $("cvL"), ctx = cvL.getContext("2d");
+
+  // Tablas métricas AASHTO 2018
+  const TAB = {
+    V:   [20,30,40,50,60,70,80,90,100,110,120,130],
+    SSD: [20,35,50,65,85,105,130,160,185,220,250,285],   // Tabla 3-1
+    Kc:  [1,2,4,7,11,17,26,39,52,74,95,124],              // Tabla 3-35 (cima, frenado)
+    Ks:  [3,6,9,13,18,23,30,38,45,55,63,73],              // Tabla 3-37 (columpio)
+    Vp:  [30,40,50,60,70,80,90,100,110,120,130],
+    PSD: [120,140,160,180,210,245,280,320,355,395,440],   // Tabla 3-4
+    Kp:  [17,23,30,38,51,69,91,119,146,181,224]           // Tabla 3-36 (cima, rebase)
+  };
+  function interp(x, xs, ys){
+    if(x<=xs[0]) return ys[0];
+    if(x>=xs[xs.length-1]) return ys[ys.length-1];
+    let i=1; while(xs[i]<x) i++;
+    const t=(x-xs[i-1])/(xs[i]-xs[i-1]);
+    return ys[i-1]+t*(ys[i]-ys[i-1]);
+  }
+
+  let st = { crit:"ssd", manS:false, showK:true, showDrain:true, mouse:null };
+
+  function num(id){ return parseFloat($(id).value); }
+
+  // L mínima por visibilidad para A dado (elige rama correcta)
+  // Cima: C=658 (frenado) o 864 (rebase). Columpio: C = 120+3.5S (con S fijo)
+  function Lsight(A,S,C){
+    if(A<=0) return {L:0, regime:"—"};
+    const L1 = A*S*S/C;
+    if(L1>=S) return {L:L1, regime:"S < L"};
+    const L2 = 2*S - C/A;
+    return {L:Math.max(L2,0), regime:"S > L"};
+  }
+
+  function calc(){
+    const g1=num("g1"), g2=num("g2"), Lcur=Math.max(num("L"),1);
+    const V=num("Vd");
+    const A=Math.abs(g2-g1);
+    const crest=(g1-g2)>0, sag=(g1-g2)<0;
+    const usePsd = crest && st.crit==="psd";
+    let S = st.manS ? Math.max(num("Sman"),1)
+                    : (usePsd ? interp(V,TAB.Vp,TAB.PSD) : interp(V,TAB.V,TAB.SSD));
+    const C = crest ? (usePsd?864:658) : (120+3.5*S);
+    const Kdes = crest ? (usePsd?interp(V,TAB.Vp,TAB.Kp):interp(V,TAB.V,TAB.Kc))
+                       : interp(V,TAB.V,TAB.Ks);
+    const Kcalc = S*S/C;
+    const sight = Lsight(A,S,C);
+    const Lmin = 0.6*V;
+    const Lcalc = Math.max(sight.L, Lmin);
+    const Ldes  = Math.max(Kdes*A, Lmin);
+    const Lconf = A*V*V/395;     // columpio, comodidad
+    const Lapp  = 30*A;          // columpio, apariencia
+    const Ldrain= 51*A;          // K=51 (máx. recomendado p/ drenaje con cordón)
+    const Kcur  = A>0 ? Lcur/A : Infinity;
+    return {g1,g2,Lcur,V,A,crest,sag,usePsd,S,C,Kdes,Kcalc,sight,Lmin,Lcalc,Ldes,Lconf,Lapp,Ldrain,Kcur};
+  }
+
+  /* ---------------- gráfica A vs L (Figs. 3-36 / 3-37) ---------------- */
+  function drawChart(p){
+    const W=cvL.width, H=cvL.height, m={l:58,r:18,t:26,b:46};
+    const pw=W-m.l-m.r, ph=H-m.t-m.b;
+    const Lmax=Math.max(600, 1.15*Math.max(p.Lcur,p.Ldes,p.Lcalc));
+    const Amax=Math.max(16, 1.15*p.A);
+    const X=L=>m.l+L/Lmax*pw, Y=a=>m.t+(1-a/Amax)*ph;
+
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle="#fff"; ctx.fillRect(0,0,W,H);
+
+    // grid
+    ctx.font="11px -apple-system,sans-serif";
+    ctx.strokeStyle="#e8edf4"; ctx.fillStyle="#94a0b0"; ctx.lineWidth=1;
+    const stepL=Lmax>900?200:100, stepA=2;
+    ctx.textAlign="center"; ctx.textBaseline="top";
+    for(let L=0;L<=Lmax;L+=stepL){ ctx.beginPath();ctx.moveTo(X(L),m.t);ctx.lineTo(X(L),m.t+ph);ctx.stroke(); ctx.fillText(L.toFixed(0),X(L),m.t+ph+5); }
+    ctx.textAlign="right"; ctx.textBaseline="middle";
+    for(let a=0;a<=Amax;a+=stepA){ ctx.beginPath();ctx.moveTo(m.l,Y(a));ctx.lineTo(m.l+pw,Y(a));ctx.stroke(); ctx.fillText(a.toFixed(0),m.l-6,Y(a)); }
+    ctx.strokeStyle="#cdd6e2"; ctx.strokeRect(m.l,m.t,pw,ph);
+    ctx.fillStyle="#6b7686"; ctx.font="12px -apple-system,sans-serif";
+    ctx.textAlign="center"; ctx.textBaseline="top";
+    ctx.fillText("Longitud de la curva vertical, L (m)", m.l+pw/2, H-16);
+    ctx.save(); ctx.translate(14,m.t+ph/2); ctx.rotate(-Math.PI/2);
+    ctx.fillText("Diferencia algebraica de pendientes, A (%)",0,0); ctx.restore();
+    ctx.fillStyle="#6b7686"; ctx.textAlign="left"; ctx.textBaseline="bottom"; ctx.font="bold 12px -apple-system,sans-serif";
+    ctx.fillText(p.crest?"CIMA — Figura 3-36 (métrico)":(p.sag?"COLUMPIO — Figura 3-37 (métrico)":"g₁ = g₂ — sin curva"), m.l+8, m.t-6);
+
+    if(!p.crest && !p.sag){ return {X,Y,Lmax,Amax,m,pw,ph}; }
+
+    const clip=()=>{ctx.save();ctx.beginPath();ctx.rect(m.l,m.t,pw,ph);ctx.clip();};
+
+    // líneas K de diseño para todas las velocidades (como en la figura AASHTO)
+    if(st.showK){
+      clip();
+      const Vs   = p.usePsd?TAB.Vp:TAB.V;
+      const Ksrc = p.crest?(p.usePsd?TAB.Kp:TAB.Kc):TAB.Ks;
+      Vs.forEach((v,i)=>{
+        const K=Ksrc[i], sel=(v===p.V);
+        ctx.strokeStyle=sel?"#1d6fb8":"#d5dce6"; ctx.lineWidth=sel?2.2:1;
+        ctx.beginPath(); ctx.moveTo(X(0),Y(0)); ctx.lineTo(X(K*Amax),Y(Amax)); ctx.stroke();
+        // etiqueta donde la línea sale del marco
+        let ax=Amax, lx=K*Amax;
+        if(lx>Lmax){ lx=Lmax; ax=Lmax/K; }
+        ctx.fillStyle=sel?"#1d6fb8":"#aab4c0"; ctx.font=(sel?"bold ":"")+"10px sans-serif";
+        ctx.textAlign="left"; ctx.textBaseline="bottom";
+        ctx.save(); ctx.translate(X(lx)-2,Y(ax)+12);
+        ctx.fillText("V="+v+" K="+K,0,0); ctx.restore();
+      });
+      ctx.restore();
+    }
+
+    clip();
+    // rama S < L (azul):  L = A·S²/C  →  válida donde L ≥ S
+    ctx.strokeStyle="#1f4e9c"; ctx.lineWidth=2.4; ctx.beginPath();
+    let first=true;
+    for(let a=0.05;a<=Amax;a+=0.05){
+      const L=a*p.S*p.S/p.C; if(L<p.S) continue;
+      if(first){ctx.moveTo(X(L),Y(a));first=false;}else ctx.lineTo(X(L),Y(a));
+    }
+    ctx.stroke();
+    // rama S > L (naranja): L = 2S − C/A  →  válida donde 0 ≤ L ≤ S
+    ctx.strokeStyle="#e67e22"; ctx.lineWidth=2; ctx.beginPath(); first=true;
+    for(let a=0.05;a<=Amax;a+=0.02){
+      const L=2*p.S-p.C/a; if(L<0||L>p.S) continue;
+      if(first){ctx.moveTo(X(L),Y(a));first=false;}else ctx.lineTo(X(L),Y(a));
+    }
+    ctx.stroke();
+    // lugar geométrico S = L (verde discontinuo): A = C(L)/L
+    ctx.strokeStyle="#1e8449"; ctx.lineWidth=1.4; ctx.setLineDash([6,4]); ctx.beginPath(); first=true;
+    for(let L=5;L<=Lmax;L+=2){
+      const a=p.crest ? p.C/L : (120+3.5*L)/L;
+      if(a>Amax) continue;
+      if(first){ctx.moveTo(X(L),Y(a));first=false;}else ctx.lineTo(X(L),Y(a));
+    }
+    ctx.stroke(); ctx.setLineDash([]);
+
+    // máximo de drenaje K=51: L = 51·A
+    if(st.showDrain){
+      ctx.strokeStyle="#8e44ad"; ctx.lineWidth=1.3; ctx.setLineDash([2,4]);
+      ctx.beginPath(); ctx.moveTo(X(0),Y(0)); ctx.lineTo(X(51*Amax),Y(Amax)); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // L mínima = 0.6V (vertical)
+    ctx.strokeStyle="#7a1f5c"; ctx.lineWidth=1.4; ctx.setLineDash([8,4]);
+    ctx.beginPath(); ctx.moveTo(X(p.Lmin),m.t); ctx.lineTo(X(p.Lmin),m.t+ph); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle="#7a1f5c"; ctx.font="10px sans-serif"; ctx.textAlign="left"; ctx.textBaseline="top";
+    ctx.fillText("Lmín=0.6V", X(p.Lmin)+3, m.t+4);
+
+    // comodidad (columpio): L = A·V²/395
+    if(p.sag){
+      ctx.strokeStyle="#a04000"; ctx.lineWidth=1.3; ctx.setLineDash([10,3,2,3]);
+      const kComf=p.V*p.V/395;
+      ctx.beginPath(); ctx.moveTo(X(0),Y(0)); ctx.lineTo(X(kComf*Amax),Y(Amax)); ctx.stroke();
+      ctx.setLineDash([]);
+      let ax=Amax, lx=kComf*Amax; if(lx>Lmax){lx=Lmax;ax=Lmax/kComf;}
+      ctx.fillStyle="#a04000"; ctx.textAlign="right"; ctx.textBaseline="bottom";
+      ctx.fillText("Comodidad", X(lx)-2, Y(ax)+12);
+    }
+
+    // marca horizontal en A actual + L calculada
+    ctx.strokeStyle="#c0392b"; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(m.l,Y(p.A)); ctx.lineTo(m.l+pw,Y(p.A)); ctx.stroke(); ctx.setLineDash([]);
+    // punto L calculada (visibilidad) y L de diseño sobre la línea A
+    ctx.fillStyle="#1f4e9c"; circ(X(p.Lcalc),Y(p.A),4);
+    ctx.fillStyle="#1d6fb8"; circ(X(p.Ldes),Y(p.A),4);
+    // punto de la curva actual
+    ctx.fillStyle="#c0392b"; circ(X(p.Lcur),Y(p.A),5.5);
+    ctx.strokeStyle="#fff"; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(X(p.Lcur),Y(p.A),5.5,0,7); ctx.stroke();
+    ctx.fillStyle="#c0392b"; ctx.font="bold 11px sans-serif"; ctx.textAlign="center"; ctx.textBaseline="bottom";
+    ctx.fillText("Curva actual", X(p.Lcur), Y(p.A)-8);
+    ctx.restore();
+
+    // leyenda
+    const leg=[["#1f4e9c","S < L"],["#e67e22","S > L"],["#1e8449","S = L"],["#7a1f5c","L mínima"]];
+    if(p.sag) leg.push(["#a04000","Comodidad"]);
+    if(st.showDrain) leg.push(["#8e44ad","Drenaje K=51"]);
+    let lx=m.l+12, ly=m.t+12;
+    ctx.font="11px sans-serif"; ctx.textAlign="left"; ctx.textBaseline="middle";
+    leg.forEach(([c,t])=>{
+      ctx.strokeStyle=c; ctx.lineWidth=2.4; ctx.beginPath(); ctx.moveTo(lx,ly); ctx.lineTo(lx+20,ly); ctx.stroke();
+      ctx.fillStyle="#3b4654"; ctx.fillText(t,lx+25,ly);
+      lx+=35+ctx.measureText(t).width;
+    });
+
+    // cursor
+    if(st.mouse){
+      const {px,py}=st.mouse;
+      if(px>m.l&&px<m.l+pw&&py>m.t&&py<m.t+ph){
+        const Lm=(px-m.l)/pw*Lmax, am=(1-(py-m.t)/ph)*Amax;
+        ctx.strokeStyle="#b2bac4"; ctx.lineWidth=1; ctx.setLineDash([2,3]);
+        ctx.beginPath();ctx.moveTo(px,m.t);ctx.lineTo(px,m.t+ph);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(m.l,py);ctx.lineTo(m.l+pw,py);ctx.stroke();
+        ctx.setLineDash([]);
+        const txt="L="+Lm.toFixed(0)+" m · A="+am.toFixed(1)+"% · K="+(am>0?(Lm/am).toFixed(1):"∞");
+        ctx.font="bold 11px sans-serif";
+        const w=ctx.measureText(txt).width+12;
+        const bx=Math.min(px+10,W-w-4), by=Math.max(py-26,m.t+2);
+        ctx.fillStyle="rgba(255,255,255,.92)"; ctx.strokeStyle="#9aa4b0";
+        ctx.fillRect(bx,by,w,18); ctx.strokeRect(bx,by,w,18);
+        ctx.fillStyle="#34495e"; ctx.textAlign="left"; ctx.textBaseline="middle";
+        ctx.fillText(txt,bx+6,by+9);
+      }
+    }
+    return {X,Y,Lmax,Amax,m,pw,ph};
+    function circ(x,y,r){ ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fill(); }
+  }
+
+  /* ---------------- resultados ---------------- */
+  function renderOutL(p){
+    const f=(v,d=1)=>isFinite(v)?v.toFixed(d):"—";
+    if(!p.crest && !p.sag){
+      $("outL").innerHTML='<div class="k">g₁ = g₂ → A = 0: no se requiere curva vertical.</div>';
+      return;
+    }
+    const tipo=p.crest?'<span class="badge crest">CIMA</span>':'<span class="badge sag">COLUMPIO</span>';
+    const crit=p.crest?(p.usePsd?"rebase (PSD, Tabla 3-4)":"frenado (SSD, Tabla 3-1)"):"faros / frenado (SSD)";
+    const cumple = p.Lcur >= p.Ldes - 0.05;
+    const drenOjo = p.Kcur > 51;
+    let rows = `
+      <div style="margin-bottom:8px">${tipo} &nbsp;<span class="k">criterio: ${crit}</span></div>
+      <div><span class="k">A = |g₂−g₁|:</span> <span class="v">${f(p.A,2)} %</span></div>
+      <div><span class="k">S (${st.manS?"manual":"tabla"}):</span> <span class="v">${f(p.S,0)} m</span></div>
+      <div><span class="k">Régimen:</span> <span class="v">${p.sight.regime}</span></div>
+      <hr style="border:none;border-top:1px solid var(--grid);margin:8px 0">
+      <div><span class="k">K calculado = S²/${p.crest?p.C:"(120+3.5S)"}:</span> <span class="v">${f(p.Kcalc,1)}</span></div>
+      <div><span class="k">K de diseño (tabla):</span> <span class="v">${f(p.Kdes,0)}</span></div>
+      <div><span class="k">L visibilidad (calc.):</span> <span class="v">${f(p.sight.L)} m</span></div>
+      <div><span class="k">L mínima = 0.6·V:</span> <span class="v">${f(p.Lmin)} m</span></div>`;
+    if(p.sag){
+      rows += `
+      <div><span class="k">L comodidad = AV²/395:</span> <span class="v">${f(p.Lconf)} m</span></div>
+      <div><span class="k">L apariencia = 30·A:</span> <span class="v">${f(p.Lapp)} m</span></div>`;
+    }
+    rows += `
+      <div><span class="k">L drenaje (máx) = 51·A:</span> <span class="v">${f(p.Ldrain)} m</span></div>
+      <hr style="border:none;border-top:1px solid var(--grid);margin:8px 0">
+      <div><span class="k">L calculada ≥:</span> <span class="v">${f(p.Lcalc)} m</span></div>
+      <div><span class="k">L de diseño = máx(K·A, 0.6V):</span> <span class="v" style="color:var(--accent2)">${f(p.Ldes)} m</span></div>
+      <hr style="border:none;border-top:1px solid var(--grid);margin:8px 0">
+      <div><span class="k">L actual de la curva:</span> <span class="v">${f(p.Lcur)} m</span> &nbsp; K = <span class="v">${f(p.Kcur,1)}</span></div>
+      <div style="margin-top:6px">${cumple
+        ? '<span class="badge sag">✓ CUMPLE — L actual ≥ L de diseño</span>'
+        : '<span class="badge crest">✗ NO CUMPLE — aumentar L a ≥ '+f(p.Ldes)+' m</span>'}</div>
+      ${drenOjo?'<div class="hint" style="color:#8e44ad;margin-top:6px">⚠ K &gt; 51: curva muy plana cerca del punto '+(p.crest?'alto':'bajo')+' — revisar drenaje (no es un máximo de diseño).</div>':''}`;
+    $("outL").innerHTML=rows;
+  }
+
+  function renderKTable(){
+    let h='<table style="border-collapse:collapse;width:100%;font-size:11px;text-align:center"><tr style="color:#6b7686"><th>V<br>km/h</th><th>SSD<br>m</th><th>K cima<br>(3-35)</th><th>K col.<br>(3-37)</th><th>PSD<br>m</th><th>K rebase<br>(3-36)</th></tr>';
+    TAB.V.forEach((v,i)=>{
+      const j=TAB.Vp.indexOf(v);
+      h+=`<tr id="ktr${v}"><td>${v}</td><td>${TAB.SSD[i]}</td><td>${TAB.Kc[i]}</td><td>${TAB.Ks[i]}</td><td>${j>=0?TAB.PSD[j]:"—"}</td><td>${j>=0?TAB.Kp[j]:"—"}</td></tr>`;
+    });
+    $("kTable").innerHTML=h+'</table>';
+  }
+  function highlightKRow(V){
+    TAB.V.forEach(v=>{
+      const tr=$("ktr"+v); if(!tr) return;
+      tr.style.background = v===V ? "#e3eefb" : "";
+      tr.style.fontWeight = v===V ? "600" : "";
+    });
+  }
+
+  let geo=null;
+  function update(){
+    const p=calc();
+    $("VdVal").textContent=p.V+" km/h";
+    $("critRow").style.display = p.crest ? "" : "none";
+    geo=drawChart(p);
+    renderOutL(p);
+    highlightKRow(p.V);
+  }
+
+  /* ---------------- eventos ---------------- */
+  $("Vd").addEventListener("input",update);
+  $("critSeg").addEventListener("click",e=>{
+    const b=e.target.closest("button"); if(!b) return;
+    [...$("critSeg").children].forEach(x=>x.classList.remove("active"));
+    b.classList.add("active"); st.crit=b.dataset.c; update();
+  });
+  $("manS").addEventListener("change",e=>{
+    const wasManual=st.manS;
+    st.manS=false; const Stab=calc().S; // valor de tabla actual
+    st.manS=e.target.checked;
+    $("manSRow").style.display=st.manS?"":"none";
+    if(st.manS && !wasManual) $("Sman").value=Math.round(Stab);
+    update();
+  });
+  $("Sman").addEventListener("input",update);
+  $("showKlines").addEventListener("change",e=>{st.showK=e.target.checked;update();});
+  $("showDrain").addEventListener("change",e=>{st.showDrain=e.target.checked;update();});
+
+  // recalcular cuando cambian g1, g2 o L en la sección superior
+  ["g1","g1r","g2","g2r","L","Lr"].forEach(id=>$(id).addEventListener("input",update));
+
+  function setMainL(L){
+    L=Math.max(20,Math.round(L));
+    const Lr=$("Lr"); if(L>parseFloat(Lr.max)) Lr.max=Math.ceil(L*1.2);
+    $("L").value=L;
+    $("L").dispatchEvent(new Event("input")); // sincroniza slider y redibuja todo
+  }
+  $("applyLdes").addEventListener("click",()=>{
+    // la SSD del perfil ya se actualiza sola con la velocidad de diseño
+    const p=calc(); if(p.A>0) setMainL(p.Ldes);
+  });
+
+  // clic en la gráfica → asignar L; movimiento → crosshair
+  cvL.addEventListener("pointermove",e=>{
+    const r=cvL.getBoundingClientRect();
+    st.mouse={px:(e.clientX-r.left)*(cvL.width/r.width), py:(e.clientY-r.top)*(cvL.height/r.height)};
+    update();
+  });
+  cvL.addEventListener("pointerleave",()=>{st.mouse=null;update();});
+  cvL.addEventListener("click",e=>{
+    if(!geo) return;
+    const r=cvL.getBoundingClientRect();
+    const px=(e.clientX-r.left)*(cvL.width/r.width);
+    if(px<geo.m.l||px>geo.m.l+geo.pw) return;
+    setMainL((px-geo.m.l)/geo.pw*geo.Lmax);
+  });
+
+  renderKTable();
+  update();
+})();
+</script>
+</body>
+</html>

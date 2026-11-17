@@ -1,0 +1,1793 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Distancia de Visibilidad de Frenado — Dr. Elvis A. Castillo-Camarena, Ph.D.</title>
+<meta name="author" content="Dr. Elvis A. Castillo-Camarena, Ph.D.">
+  <style>
+    :root {
+      --purple: #5b21b6;
+      --purple-light: #7c3aed;
+      --bg: #f4f0f8;
+      --card: #ffffff;
+      --text: #1a1a2e;
+      --accent: #a855f7;
+      --green: #2e7d32;
+      --red: #c62828;
+      --orange: #e65100;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    header {
+      background: linear-gradient(135deg, var(--purple) 0%, #3a006f 100%);
+      color: white;
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    header .logo {
+      width: 52px; height: 52px;
+      border: 3px solid white;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: bold; font-size: 10px; text-align: center;
+      line-height: 1.2;
+    }
+    header h1 { font-size: 1.4rem; font-weight: 700; line-height: 1.3; }
+    header p { font-size: 0.8rem; opacity: 0.85; }
+
+    .main-layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 20px;
+      padding: 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* PANEL DE PARÁMETROS */
+    .panel {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 20px rgba(106,26,138,0.1);
+      border-left: 5px solid var(--purple);
+      height: fit-content;
+    }
+    .panel h2 {
+      font-size: 1rem;
+      color: var(--purple);
+      font-weight: 700;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .param-group { margin-bottom: 20px; }
+    .param-group label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #444;
+      margin-bottom: 6px;
+    }
+    .param-group label span.val {
+      color: var(--purple);
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+    input[type=range] {
+      width: 100%;
+      accent-color: var(--purple);
+      cursor: pointer;
+      height: 6px;
+    }
+    .param-desc {
+      font-size: 0.75rem;
+      color: #888;
+      margin-top: 4px;
+    }
+    .divider {
+      border: none;
+      border-top: 1px solid #e0d4f0;
+      margin: 18px 0;
+    }
+    .results-box {
+      background: linear-gradient(135deg, #f3e5f5, #ede7f6);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 8px;
+    }
+    .results-box h3 { font-size: 0.85rem; color: var(--purple); margin-bottom: 12px; font-weight: 700; }
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .result-row span { font-size: 0.82rem; color: #555; }
+    .result-row .num {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--purple);
+      background: white;
+      border-radius: 6px;
+      padding: 2px 10px;
+    }
+    .result-row.total .num {
+      background: var(--purple);
+      color: white;
+      font-size: 1.1rem;
+    }
+    .result-row.total span { font-weight: 700; color: var(--text); }
+
+    .btn-play {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--purple), var(--purple-light));
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 16px;
+      transition: transform 0.1s, box-shadow 0.2s;
+      box-shadow: 0 4px 12px rgba(106,26,138,0.3);
+      letter-spacing: 0.5px;
+    }
+    .btn-play:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(106,26,138,0.4); }
+    .btn-play:active { transform: translateY(0); }
+    .btn-reset {
+      width: 100%;
+      padding: 10px;
+      background: transparent;
+      color: var(--purple);
+      border: 2px solid var(--purple);
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: all 0.2s;
+    }
+    .btn-reset:hover { background: var(--purple); color: white; }
+
+    /* ÁREA DE ANIMACIÓN */
+    .anim-area {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .canvas-wrapper {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 4px 20px rgba(106,26,138,0.1);
+      position: relative;
+    }
+    .canvas-wrapper h2 {
+      font-size: 0.9rem;
+      color: var(--purple);
+      font-weight: 700;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    canvas {
+      width: 100%;
+      border-radius: 10px;
+      display: block;
+    }
+
+    /* STATUS BAR */
+    .status-bar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .status-chip {
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      background: #e8e0f0;
+      color: var(--purple);
+      transition: all 0.3s;
+    }
+    .status-chip.active { background: var(--purple); color: white; }
+    .status-chip.done { background: var(--green); color: white; }
+
+    /* FASE INFO */
+    .phase-info {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 20px 24px;
+      box-shadow: 0 4px 20px rgba(106,26,138,0.08);
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+    }
+    .phase-card {
+      border-radius: 12px;
+      padding: 14px 16px;
+      text-align: center;
+      border: 2px solid transparent;
+      transition: all 0.3s;
+    }
+    .phase-card.idle { background: #f5f5f5; border-color: #ddd; }
+    .phase-card.active { background: #fff3e0; border-color: #ff9800; }
+    .phase-card.done { background: #e8f5e9; border-color: #4caf50; }
+    .phase-card h4 { font-size: 0.78rem; text-transform: uppercase; color: #888; margin-bottom: 6px; }
+    .phase-card .phase-val { font-size: 1.3rem; font-weight: 700; color: var(--text); }
+    .phase-card .phase-label { font-size: 0.75rem; color: #666; margin-top: 4px; }
+
+    /* FORMULA BOX */
+    .formula-box {
+      background: linear-gradient(135deg, #1a0030, #3a006f);
+      color: white;
+      border-radius: 16px;
+      padding: 20px 24px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+    .formula-box h3 { font-size: 0.85rem; opacity: 0.7; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .formula-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .formula-item {
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .formula-item .f-label { font-size: 0.72rem; opacity: 0.7; margin-bottom: 6px; }
+    .formula-item .f-eq { font-size: 0.85rem; font-family: 'Courier New', monospace; color: #e040fb; font-weight: 600; }
+
+    .speed-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: #555;
+      margin-top: 8px;
+    }
+    .speed-bar-outer {
+      flex: 1;
+      height: 8px;
+      background: #e0e0e0;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .speed-bar-inner {
+      height: 100%;
+      background: linear-gradient(90deg, var(--green), var(--orange), var(--red));
+      border-radius: 4px;
+      transition: width 0.1s;
+    }
+
+    /* CONTROL DE VELOCIDAD DE REPRODUCCIÓN */
+    .playback-control {
+      margin-top: 14px;
+      padding: 12px 16px;
+      background: linear-gradient(135deg, #f3e5f5, #ede7f6);
+      border-radius: 10px;
+      border-left: 4px solid var(--purple);
+    }
+    .playback-control label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--purple);
+      margin-bottom: 8px;
+    }
+    .playback-control label .val {
+      background: var(--purple);
+      color: white;
+      border-radius: 12px;
+      padding: 2px 12px;
+      font-size: 0.85rem;
+      min-width: 56px;
+      text-align: center;
+    }
+    .playback-control input[type=range] {
+      width: 100%;
+      margin: 2px 0 8px;
+    }
+    .playback-presets {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .playback-presets button {
+      flex: 1;
+      min-width: 50px;
+      padding: 5px 6px;
+      background: white;
+      color: var(--purple);
+      border: 1.5px solid var(--purple);
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .playback-presets button:hover {
+      background: #e1bee7;
+    }
+    .playback-presets button.active {
+      background: var(--purple);
+      color: white;
+      box-shadow: 0 2px 6px rgba(106,26,138,0.3);
+    }
+
+    @media (max-width: 900px) {
+      .main-layout { grid-template-columns: 1fr; }
+      .phase-info { grid-template-columns: 1fr; }
+      .formula-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+<link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="app-shell.css">
+</head>
+<body>
+
+<header class="ec-topbar">
+  <a class="ec-back" href="../index.html" title="Volver al índice de herramientas" aria-label="Volver al índice de herramientas">‹</a>
+  <div class="ec-id">
+    <h1>Distancia de Visibilidad de Frenado</h1>
+    <div class="ec-sub">Diseño Geométrico · AASHTO 2018</div>
+    <div class="ec-author">Autor: <b>Dr. Elvis A. Castillo-Camarena, Ph.D.</b></div>
+  </div>
+</header>
+
+<div class="main-layout">
+  <!-- PANEL IZQUIERDO -->
+  <div>
+    <div class="panel">
+      <h2>⚙ Parámetros de Diseño</h2>
+
+      <div class="param-group">
+        <label>
+          Velocidad de Diseño (V)
+          <span class="val" id="lbl-v">100 km/h</span>
+        </label>
+        <input type="range" id="sl-v" min="20" max="140" step="10" value="100" />
+        <div class="param-desc">Velocidad inicial del vehículo. Rango: 20–140 km/h</div>
+      </div>
+
+      <div class="param-group">
+        <label>
+          Tiempo de Reacción (t<sub>0</sub>)
+          <span class="val" id="lbl-t">2.5 s</span>
+        </label>
+        <input type="range" id="sl-t" min="1.0" max="4.0" step="0.1" value="2.5" />
+        <div class="param-desc">AASHTO 2018: t₀ = 2.5 s (diseño). Promedio estadístico: 1.64 s</div>
+      </div>
+
+      <div class="param-group">
+        <label>
+          Desaceleración (a)
+          <span class="val" id="lbl-a">3.4 m/s²</span>
+        </label>
+        <input type="range" id="sl-a" min="1.5" max="6.0" step="0.1" value="3.4" />
+        <div class="param-desc">AASHTO 2018: a = 3.4 m/s² (90% conductores frena cómodo)</div>
+      </div>
+
+      <div class="param-group">
+        <label>
+          Pendiente Longitudinal (G)
+          <span class="val" id="lbl-g">0.0%</span>
+        </label>
+        <input type="range" id="sl-g" min="-9" max="9" step="0.5" value="0" />
+        <div class="param-desc">Positivo = subida (+), negativo = bajada (−)</div>
+      </div>
+
+      <hr class="divider" />
+
+      <div class="param-group">
+        <label>
+          Escala del Dibujo
+          <span class="val" id="lbl-scale">3.0 px/m</span>
+        </label>
+        <input type="range" id="sl-scale" min="0.3" max="10" step="0.1" value="3.0" />
+        <div class="param-desc" style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
+          <span id="scale-info">SSD ≈ 549 px</span>
+          <button type="button" id="btn-auto-scale" style="padding:3px 10px; border:1.5px solid var(--purple); background:transparent; color:var(--purple); border-radius:6px; cursor:pointer; font-size:0.72rem; font-weight:600;">Auto-ajustar</button>
+        </div>
+        <div class="param-desc" style="margin-top:4px;">Pixeles por metro. Animal en posición fija; el vehículo se aleja al aumentar SSD.</div>
+      </div>
+
+      <hr class="divider" />
+
+      <div class="results-box">
+        <h3>📐 Resultados</h3>
+        <div class="result-row">
+          <span>d₁ — Percepción-Reacción</span>
+          <span class="num" id="res-d1">69.4 m</span>
+        </div>
+        <div class="result-row">
+          <span>d₂ — Frenado</span>
+          <span class="num" id="res-d2">113.6 m</span>
+        </div>
+        <hr class="divider" style="margin:10px 0" />
+        <div class="result-row total">
+          <span>SSD = d₁ + d₂</span>
+          <span class="num" id="res-ssd">183.0 m</span>
+        </div>
+        <div style="font-size:0.72rem; color:#888; margin-top:8px; text-align:center;">
+          AASHTO Table 3-1 (nivel): diseño = <span id="res-aashto">185 m</span>
+        </div>
+      </div>
+
+      <button class="btn-play" id="btn-play" onclick="startAnimation()">▶ Iniciar Simulación</button>
+      <button class="btn-reset" onclick="resetAnimation()">↺ Reiniciar</button>
+    </div>
+
+    <!-- FÓRMULAS -->
+    <div class="formula-box" style="margin-top:16px;">
+      <h3>Fórmulas AASHTO 2018</h3>
+      <div class="formula-grid">
+        <div class="formula-item">
+          <div class="f-label">Percepción-Reacción</div>
+          <div class="f-eq">d₁ = 0.278 · V · t</div>
+        </div>
+        <div class="formula-item">
+          <div class="f-label">Frenado (nivel)</div>
+          <div class="f-eq">d₂ = V² / (254·(a/g))</div>
+        </div>
+        <div class="formula-item">
+          <div class="f-label">Frenado (pendiente)</div>
+          <div class="f-eq">d_B = V² / (254·(a/g ± G))</div>
+        </div>
+        <div class="formula-item">
+          <div class="f-label">SSD Total</div>
+          <div class="f-eq">SSD = d₁ + d₂</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ÁREA DERECHA -->
+  <div class="anim-area">
+    <!-- CHIPS DE ESTADO -->
+    <div class="status-bar">
+      <div class="status-chip" id="chip-idle">⏸ Esperando</div>
+      <div class="status-chip" id="chip-event">⚠️ ¡Obstáculo!</div>
+      <div class="status-chip" id="chip-react">🧠 Percepción-Reacción (d₁)</div>
+      <div class="status-chip" id="chip-brake">🔴 Frenado (d₂)</div>
+      <div class="status-chip" id="chip-stop">✅ Detenido</div>
+    </div>
+
+    <!-- CANVAS PRINCIPAL -->
+    <div class="canvas-wrapper">
+      <h2>🎬 Animación — Vista lateral</h2>
+      <canvas id="cnv" width="900" height="480"></canvas>
+      <div class="speed-indicator">
+        <span style="min-width:80px" id="spd-label">0 km/h</span>
+        <div class="speed-bar-outer">
+          <div class="speed-bar-inner" id="spd-bar" style="width:0%"></div>
+        </div>
+        <span style="min-width:80px; text-align:right;" id="phase-label-inline">—</span>
+      </div>
+
+      <!-- Control de velocidad de reproducción -->
+      <div class="playback-control">
+        <label>
+          ⏯ Velocidad de Reproducción
+          <span class="val" id="lbl-playback">1.00x</span>
+        </label>
+        <input type="range" id="sl-playback" min="0.1" max="3.0" step="0.05" value="1.0" />
+        <div class="playback-presets">
+          <button type="button" data-rate="0.25">0.25x</button>
+          <button type="button" data-rate="0.5">0.5x</button>
+          <button type="button" data-rate="1" class="active">1x</button>
+          <button type="button" data-rate="1.5">1.5x</button>
+          <button type="button" data-rate="2">2x</button>
+          <button type="button" data-rate="3">3x</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARDS DE FASES -->
+    <div class="phase-info">
+      <div class="phase-card idle" id="pc-react">
+        <h4>d₁ · Percepción-Reacción</h4>
+        <div class="phase-val" id="pv-d1">—</div>
+        <div class="phase-label">Velocidad constante · t₀ = <span id="pl-t">2.5</span> s</div>
+      </div>
+      <div class="phase-card idle" id="pc-brake">
+        <h4>d₂ · Distancia de Frenado</h4>
+        <div class="phase-val" id="pv-d2">—</div>
+        <div class="phase-label">Desaceleración · a = <span id="pl-a">3.4</span> m/s²</div>
+      </div>
+      <div class="phase-card idle" id="pc-ssd">
+        <h4>SSD · Distancia Total</h4>
+        <div class="phase-val" id="pv-ssd">—</div>
+        <div class="phase-label">d₁ + d₂ · V = <span id="pl-v">100</span> km/h</div>
+      </div>
+    </div>
+
+    <!-- CANVAS DIAGRAMA DE DISTANCIAS -->
+    <div class="canvas-wrapper">
+      <h2>📊 Diagrama de Distancias</h2>
+      <canvas id="cnv-diagram" width="900" height="160"></canvas>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── PARÁMETROS ───────────────────────────────────────────────────────────────
+const params = { V: 100, t: 2.5, a: 3.4, G: 0.0, scale: 3.0 };
+
+// Posición del animal (fracción del ancho del canvas) — fija, no depende de SSD
+const ANIMAL_X_FRAC = 0.88;
+
+// Velocidad de reproducción de la animación (1.0 = normal). Se puede cambiar
+// en vivo mientras la animación corre.
+let playbackRate = 1.0;
+
+// AASHTO Table 3-1 metric design SSD (level)
+const aashtoTable = {20:20,30:35,40:50,50:65,60:85,70:105,80:130,90:160,100:185,110:220,120:250,130:285,140:325};
+
+function calcSSD() {
+  const Vm = params.V / 3.6; // m/s
+  const d1 = 0.278 * params.V * params.t;
+  const d2 = (params.V * params.V) / (254 * (params.a / 9.81 + params.G / 100));
+  const ssd = d1 + d2;
+  return { d1, d2, ssd, Vm };
+}
+
+// ─── SLIDERS ──────────────────────────────────────────────────────────────────
+function initSliders() {
+  const slV = document.getElementById('sl-v');
+  const slT = document.getElementById('sl-t');
+  const slA = document.getElementById('sl-a');
+  const slG = document.getElementById('sl-g');
+  const slScale = document.getElementById('sl-scale');
+  const btnAutoScale = document.getElementById('btn-auto-scale');
+
+  function update() {
+    params.V = +slV.value;
+    params.t = +slT.value;
+    params.a = +slA.value;
+    params.G = +slG.value;
+    params.scale = +slScale.value;
+
+    document.getElementById('lbl-v').textContent = params.V + ' km/h';
+    document.getElementById('lbl-t').textContent = params.t.toFixed(1) + ' s';
+    document.getElementById('lbl-a').textContent = params.a.toFixed(1) + ' m/s²';
+    document.getElementById('lbl-g').textContent = (params.G >= 0 ? '+' : '') + params.G.toFixed(1) + '%';
+    document.getElementById('lbl-scale').textContent = params.scale.toFixed(1) + ' px/m';
+
+    const { d1, d2, ssd } = calcSSD();
+    document.getElementById('res-d1').textContent = d1.toFixed(1) + ' m';
+    document.getElementById('res-d2').textContent = d2.toFixed(1) + ' m';
+    document.getElementById('res-ssd').textContent = ssd.toFixed(1) + ' m';
+
+    // Nearest AASHTO value
+    const keys = Object.keys(aashtoTable).map(Number);
+    const nearest = keys.reduce((a,b) => Math.abs(b-params.V) < Math.abs(a-params.V) ? b : a);
+    document.getElementById('res-aashto').textContent = (aashtoTable[nearest] || '—') + ' m';
+
+    document.getElementById('pl-t').textContent = params.t.toFixed(1);
+    document.getElementById('pl-a').textContent = params.a.toFixed(1);
+    document.getElementById('pl-v').textContent = params.V;
+
+    // Info de escala — alerta si el vehículo cae fuera del canvas
+    const ssdPx = ssd * params.scale;
+    const W = getW();
+    const startX = W * ANIMAL_X_FRAC - 32 - ssdPx;
+    const info = document.getElementById('scale-info');
+    if (startX < 0) {
+      info.innerHTML = `SSD ≈ ${Math.round(ssdPx)} px <span style="color:#c62828; font-weight:600;">⚠ vehículo fuera del canvas</span>`;
+    } else {
+      info.textContent = `SSD ≈ ${Math.round(ssdPx)} px`;
+    }
+
+    if (!animRunning) {
+      drawStaticScene();
+      drawDiagram(d1, d2, 0, 'idle');
+    }
+  }
+
+  slV.addEventListener('input', update);
+  slT.addEventListener('input', update);
+  slA.addEventListener('input', update);
+  slG.addEventListener('input', update);
+  slScale.addEventListener('input', update);
+
+  // Botón "Auto-ajustar": calcula la escala que hace que SSD ocupe ~78% del ancho
+  btnAutoScale.addEventListener('click', () => {
+    const W = getW();
+    const { ssd } = calcSSD();
+    const sMin = +slScale.min, sMax = +slScale.max;
+    const newScale = Math.max(sMin, Math.min(sMax, (W * 0.78) / ssd));
+    slScale.value = newScale.toFixed(1);
+    update();
+  });
+
+  update();
+}
+
+// ─── CANVAS SETUP ────────────────────────────────────────────────────────────
+const cnv = document.getElementById('cnv');
+const ctx = cnv.getContext('2d');
+const dpr = window.devicePixelRatio || 1;
+
+function resizeCanvas() {
+  const w = cnv.parentElement.clientWidth - 32;
+  cnv.style.width  = w + 'px';
+  cnv.style.height = (w * 480 / 900) + 'px';
+  cnv.width  = w * dpr;
+  cnv.height = (w * 480 / 900) * dpr;
+  ctx.scale(dpr, dpr);
+
+  const d2cvs = document.getElementById('cnv-diagram');
+  d2cvs.style.width  = w + 'px';
+  d2cvs.style.height = (w * 160 / 900) + 'px';
+  d2cvs.width  = w * dpr;
+  d2cvs.height = (w * 160 / 900) * dpr;
+  d2cvs.getContext('2d').scale(dpr, dpr);
+}
+
+function getW() { return cnv.width / dpr; }
+function getH() { return cnv.height / dpr; }
+
+// ─── ROAD GEOMETRY HELPERS ────────────────────────────────────────────────────
+const ROAD_Y_FRAC = 0.44;   // reference y of road surface (fraction of canvas H)
+const ROAD_H     = 26;      // road asphalt thickness (logical px)
+
+function roadY()          { return getH() * ROAD_Y_FRAC; }
+function roadSurfaceY(x)  { return roadY() - x * (params.G / 100); }  // top of asphalt at x
+function roadBottomY(x)   { return roadSurfaceY(x) + ROAD_H; }
+function maxRoadBottomY() { return Math.max(roadBottomY(0), roadBottomY(getW())); }
+
+// ─── DRAW ROAD ────────────────────────────────────────────────────────────────
+function drawRoad() {
+  const W = getW(), H = getH();
+
+  // Sky gradient (full canvas background)
+  const sky = ctx.createLinearGradient(0, 0, 0, roadY() * 0.9);
+  sky.addColorStop(0,   '#4a90d9');
+  sky.addColorStop(0.5, '#87bfec');
+  sky.addColorStop(1,   '#c8e6fa');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, W, H);
+
+  // Decorative clouds
+  function cloud(cx, cy, r) {
+    ctx.save();
+    ctx.fillStyle = 'rgba(255,255,255,0.72)';
+    ctx.beginPath();
+    ctx.arc(cx,          cy,          r,      0, Math.PI * 2);
+    ctx.arc(cx + r*0.85, cy - r*0.25, r*0.65, 0, Math.PI * 2);
+    ctx.arc(cx + r*1.6,  cy + r*0.05, r*0.55, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+  cloud(W * 0.18, H * 0.09, 20);
+  cloud(W * 0.52, H * 0.06, 16);
+  cloud(W * 0.78, H * 0.11, 13);
+
+  // Grass polygon — follows road grade so it always sits below the road
+  const gGrd = ctx.createLinearGradient(0, roadY(), 0, H);
+  gGrd.addColorStop(0,    '#7cb87e');
+  gGrd.addColorStop(0.15, '#4caf50');
+  gGrd.addColorStop(1,    '#2e7d32');
+  ctx.fillStyle = gGrd;
+  ctx.beginPath();
+  ctx.moveTo(0, roadBottomY(0));
+  ctx.lineTo(W, roadBottomY(W));
+  ctx.lineTo(W, H);
+  ctx.lineTo(0, H);
+  ctx.closePath();
+  ctx.fill();
+
+  // Grass texture strokes
+  ctx.save();
+  ctx.globalAlpha = 0.18;
+  ctx.strokeStyle = '#1b5e20';
+  ctx.lineWidth = 1.5;
+  for (let gx = 8; gx < W; gx += 20) {
+    const gy = roadBottomY(gx) + 6;
+    if (gy < H - 4) {
+      ctx.beginPath();
+      ctx.moveTo(gx,     gy); ctx.lineTo(gx - 3, gy - 8);
+      ctx.moveTo(gx + 6, gy); ctx.lineTo(gx + 4, gy - 7);
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+
+  // Road asphalt polygon (tilted by grade)
+  const aspGrd = ctx.createLinearGradient(0, roadY(), 0, roadY() + ROAD_H);
+  aspGrd.addColorStop(0,   '#7a9099');
+  aspGrd.addColorStop(0.4, '#546e7a');
+  aspGrd.addColorStop(1,   '#37474f');
+  ctx.fillStyle = aspGrd;
+  ctx.beginPath();
+  ctx.moveTo(0, roadSurfaceY(0));
+  ctx.lineTo(W, roadSurfaceY(W));
+  ctx.lineTo(W, roadBottomY(W));
+  ctx.lineTo(0, roadBottomY(0));
+  ctx.closePath();
+  ctx.fill();
+
+  // Road surface highlight
+  ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, roadSurfaceY(0) + 1);
+  ctx.lineTo(W, roadSurfaceY(W) + 1);
+  ctx.stroke();
+
+  // Center dashed line
+  ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([28, 18]);
+  ctx.beginPath();
+  ctx.moveTo(0, roadSurfaceY(0) + ROAD_H * 0.46);
+  ctx.lineTo(W, roadSurfaceY(W) + ROAD_H * 0.46);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Right edge line (yellow)
+  ctx.strokeStyle = '#ffee58';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(0, roadSurfaceY(0) + ROAD_H * 0.86);
+  ctx.lineTo(W, roadSurfaceY(W) + ROAD_H * 0.86);
+  ctx.stroke();
+
+  // Grade badge
+  if (params.G !== 0) {
+    const sign = params.G > 0 ? '▲ +' : '▼ ';
+    const col  = params.G > 0 ? '#69f0ae' : '#ff6e6e';
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,0.65)';
+    ctx.beginPath(); ctx.roundRect(10, 8, 102, 30, 7); ctx.fill();
+    ctx.fillStyle = col;
+    ctx.font = 'bold 14px Segoe UI';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(sign + params.G.toFixed(1) + '%', 18, 23);
+    ctx.restore();
+  }
+}
+
+// ─── DRAW CAR ─────────────────────────────────────────────────────────────────
+// Anchor point: wheel bottoms sit at anchor_y + WHEEL_BOTTOM (= 31)
+// So call: drawCar(carX, roadSurfaceY(carX) - 31, angle, phase, alarmIntensity)
+const WHEEL_BOTTOM = 31;  // px below car anchor to wheel contact patch
+
+function drawCar(x, y, angle, phase, alarmIntensity = 0) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+
+  const w = 96, h = 40;
+  const wheelY = h / 2 - 2;   // wheel center Y in car-local space
+  const wheelR = 13;
+
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.18)';
+  ctx.beginPath();
+  ctx.ellipse(0, wheelY + wheelR + 3, w * 0.48, 6, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Body
+  const bodyGrad = ctx.createLinearGradient(-w/2, -h, w/2, h/2);
+  if (phase === 'brake') {
+    bodyGrad.addColorStop(0, '#ef9a9a');
+    bodyGrad.addColorStop(0.4, '#e53935');
+    bodyGrad.addColorStop(1, '#b71c1c');
+  } else {
+    bodyGrad.addColorStop(0, '#ef9a9a');
+    bodyGrad.addColorStop(0.4, '#e53935');
+    bodyGrad.addColorStop(1, '#c62828');
+  }
+  ctx.fillStyle = bodyGrad;
+  ctx.beginPath();
+  ctx.roundRect(-w/2, -h/2 + 10, w, h - 10, [4, 4, 8, 8]);
+  ctx.fill();
+
+  // Roof
+  const roofGrad = ctx.createLinearGradient(-w*0.25, -h, w*0.25, -h/2+10);
+  roofGrad.addColorStop(0, '#ef9a9a');
+  roofGrad.addColorStop(1, '#e53935');
+  ctx.fillStyle = roofGrad;
+  ctx.beginPath();
+  ctx.roundRect(-w*0.28, -h/2 - 2, w*0.56, h/2 + 10, [8, 8, 2, 2]);
+  ctx.fill();
+
+  // Windshield
+  ctx.fillStyle = 'rgba(176, 224, 248, 0.7)';
+  ctx.beginPath();
+  ctx.roundRect(w*0.05, -h/2 + 2, w*0.2, h/2 + 6, [3, 3, 1, 1]);
+  ctx.fill();
+
+  // Rear window
+  ctx.beginPath();
+  ctx.roundRect(-w*0.26, -h/2 + 2, w*0.18, h/2 + 6, [3, 3, 1, 1]);
+  ctx.fill();
+
+  // Windows highlight
+  ctx.fillStyle = 'rgba(255,255,255,0.25)';
+  ctx.beginPath();
+  ctx.roundRect(w*0.06, -h/2 + 3, w*0.18, 6, [2]);
+  ctx.fill();
+
+  // ── CARTOON EYES (en el parabrisas) ──
+  const eyeY  = -h/2 + 6;
+  const eyeXL = w * 0.085;
+  const eyeXR = w * 0.205;
+  const baseEyeR = 5;
+  const eyeR  = baseEyeR + alarmIntensity * 3.2;     // ojos más grandes cuando se asusta
+  const pupilR = Math.max(1.1, 3 - alarmIntensity * 1.9);  // pupilas chiquitas (sorprendido)
+  const pupilOffX = 1.6;                              // mirando al frente
+  // Ligero rebote vertical de la pupila al asombro
+  const pupilOffY = -alarmIntensity * 0.6;
+
+  [eyeXL, eyeXR].forEach(ex => {
+    // Blanco del ojo
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(ex, eyeY, eyeR, 0, Math.PI * 2);
+    ctx.fill();
+    // Borde negro
+    ctx.strokeStyle = '#1a1a1a';
+    ctx.lineWidth = 1.3;
+    ctx.stroke();
+    // Pupila
+    ctx.fillStyle = '#1a1a1a';
+    ctx.beginPath();
+    ctx.arc(ex + pupilOffX, eyeY + pupilOffY, pupilR, 0, Math.PI * 2);
+    ctx.fill();
+    // Brillo en la pupila (toque caricaturesco)
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(ex + pupilOffX - pupilR * 0.4, eyeY + pupilOffY - pupilR * 0.4,
+            Math.max(0.6, pupilR * 0.4), 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  // Cejas levantadas cuando alarma > 0.7 (cartoon-shock)
+  if (alarmIntensity > 0.6) {
+    ctx.strokeStyle = '#1a1a1a';
+    ctx.lineWidth = 1.6;
+    ctx.lineCap = 'round';
+    const browLift = (alarmIntensity - 0.6) * 6;
+    [eyeXL, eyeXR].forEach(ex => {
+      ctx.beginPath();
+      ctx.moveTo(ex - eyeR * 0.7, eyeY - eyeR - 1 - browLift);
+      ctx.lineTo(ex + eyeR * 0.7, eyeY - eyeR - 1 - browLift * 0.6);
+      ctx.stroke();
+    });
+  }
+
+  // Headlight
+  ctx.fillStyle = '#fff176';
+  ctx.beginPath();
+  ctx.roundRect(w/2 - 6, -h/2 + 14, 7, 8, [2]);
+  ctx.fill();
+  if (phase === 'react' || phase === 'cruise') {
+    ctx.fillStyle = 'rgba(255, 245, 100, 0.4)';
+    ctx.beginPath();
+    ctx.ellipse(w/2 + 20, -h/2 + 18, 28, 10, 0, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  // Brake light
+  ctx.fillStyle = phase === 'brake' ? '#ff1744' : '#b71c1c';
+  ctx.beginPath();
+  ctx.roundRect(-w/2 - 1, -h/2 + 14, 7, 8, [2]);
+  ctx.fill();
+  if (phase === 'brake') {
+    ctx.fillStyle = 'rgba(255,23,68,0.35)';
+    ctx.beginPath();
+    ctx.ellipse(-w/2 - 22, -h/2 + 18, 25, 10, 0, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  // Wheels
+  [-w*0.3, w*0.25].forEach(wx => {
+    // Tire
+    ctx.fillStyle = '#1a1a1a';
+    ctx.beginPath(); ctx.arc(wx, wheelY, wheelR, 0, Math.PI * 2); ctx.fill();
+    // Rim
+    ctx.fillStyle = '#6e6e6e';
+    ctx.beginPath(); ctx.arc(wx, wheelY, 9, 0, Math.PI * 2); ctx.fill();
+    // Hub
+    ctx.fillStyle = '#bdbdbd';
+    ctx.beginPath(); ctx.arc(wx, wheelY, 4, 0, Math.PI * 2); ctx.fill();
+    // Spokes
+    ctx.strokeStyle = '#555';
+    ctx.lineWidth = 1.5;
+    for (let s = 0; s < 4; s++) {
+      const sa = s * Math.PI / 2;
+      ctx.beginPath();
+      ctx.moveTo(wx + 4 * Math.cos(sa), wheelY + 4 * Math.sin(sa));
+      ctx.lineTo(wx + 9 * Math.cos(sa), wheelY + 9 * Math.sin(sa));
+      ctx.stroke();
+    }
+  });
+
+  ctx.restore();
+}
+
+// ─── DESTELLO DE SORPRESA (estilo caricatura) ────────────────────────────────
+// intensity: 1 al inicio (justo cuando ve obstáculo), decae a 0
+function drawSurpriseFlash(x, y, intensity) {
+  if (intensity <= 0) return;
+
+  // Pop-bounce: arranca pequeño, crece, luego disminuye
+  const popScale = 0.55 + 0.65 * Math.sin(intensity * Math.PI);
+
+  ctx.save();
+  ctx.translate(x, y);
+
+  // ── Líneas radiales de movimiento (alrededor de la explosión) ──
+  ctx.save();
+  ctx.globalAlpha = Math.min(1, intensity);
+  ctx.strokeStyle = '#ef6c00';
+  ctx.lineWidth = 2.6;
+  ctx.lineCap = 'round';
+  const r1 = 46 * popScale + 8;
+  const r2 = r1 + 16 + (1 - intensity) * 14;
+  for (let i = 0; i < 9; i++) {
+    const ang = (i / 9) * Math.PI * 2 + (1 - intensity) * 0.4;
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(ang) * r1, Math.sin(ang) * r1);
+    ctx.lineTo(Math.cos(ang) * r2, Math.sin(ang) * r2);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // ── Estrella/explosión de cómic ──
+  ctx.save();
+  ctx.scale(popScale, popScale);
+  ctx.globalAlpha = Math.min(1, intensity * 1.3);
+
+  const numPoints = 12;
+  const outerR = 38;
+  const innerR = 17;
+  ctx.beginPath();
+  for (let i = 0; i < numPoints * 2; i++) {
+    const ang = (i / (numPoints * 2)) * Math.PI * 2 - Math.PI / 2;
+    const r = i % 2 === 0 ? outerR : innerR;
+    if (i === 0) ctx.moveTo(Math.cos(ang) * r, Math.sin(ang) * r);
+    else ctx.lineTo(Math.cos(ang) * r, Math.sin(ang) * r);
+  }
+  ctx.closePath();
+  ctx.fillStyle = '#ffeb3b';
+  ctx.fill();
+  ctx.strokeStyle = '#ef6c00';
+  ctx.lineWidth = 3;
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+
+  // Brillo blanco interno
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  ctx.beginPath();
+  ctx.arc(0, 0, 13, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Signo de exclamación
+  ctx.fillStyle = '#c62828';
+  ctx.font = 'bold 30px Segoe UI';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('!', 0, 1);
+  ctx.restore();
+
+  // ── Estrellitas pequeñas alrededor (extra cartoon) ──
+  ctx.save();
+  ctx.globalAlpha = Math.min(1, intensity * 0.9);
+  ctx.fillStyle = '#fff176';
+  ctx.strokeStyle = '#ef6c00';
+  ctx.lineWidth = 1.5;
+  const starOffsets = [
+    { dx: -42,  dy: -24, s: 0.55 },
+    { dx:  44,  dy: -28, s: 0.50 },
+    { dx: -36,  dy:  30, s: 0.45 },
+    { dx:  38,  dy:  26, s: 0.55 },
+  ];
+  starOffsets.forEach(({ dx, dy, s }) => {
+    const sx = dx * (1 + (1 - intensity) * 0.4);
+    const sy = dy * (1 + (1 - intensity) * 0.4);
+    ctx.save();
+    ctx.translate(sx, sy);
+    ctx.scale(s, s);
+    ctx.beginPath();
+    for (let i = 0; i < 10; i++) {
+      const ang = (i / 10) * Math.PI * 2 - Math.PI / 2;
+      const r = i % 2 === 0 ? 9 : 4;
+      if (i === 0) ctx.moveTo(Math.cos(ang) * r, Math.sin(ang) * r);
+      else ctx.lineTo(Math.cos(ang) * r, Math.sin(ang) * r);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  });
+  ctx.restore();
+
+  ctx.restore();
+}
+
+// ─── DRAW ANIMAL (obstáculo) ───────────────────────────────────────────────────
+function drawAnimal(x, y, visible, scared) {
+  if (!visible) return;
+  ctx.save();
+  ctx.translate(x, y);
+
+  if (scared) {
+    // Alarma
+    ctx.fillStyle = 'rgba(255,87,34,0.15)';
+    ctx.beginPath();
+    ctx.arc(0, -30, 35, 0, Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = '#ff5722';
+    ctx.font = 'bold 22px Segoe UI';
+    ctx.textAlign = 'center';
+    ctx.fillText('⚠️', 0, -42);
+  }
+
+  // Simple deer/animal silhouette using shapes
+  ctx.fillStyle = '#795548';
+
+  // Body
+  ctx.beginPath();
+  ctx.ellipse(0, -8, 16, 10, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // Head
+  ctx.beginPath();
+  ctx.arc(16, -16, 8, 0, Math.PI*2);
+  ctx.fill();
+
+  // Snout
+  ctx.beginPath();
+  ctx.ellipse(22, -14, 5, 3, -0.3, 0, Math.PI*2);
+  ctx.fill();
+
+  // Eye
+  ctx.fillStyle = scared ? '#fff' : '#212121';
+  ctx.beginPath();
+  ctx.arc(18, -18, 2.5, 0, Math.PI*2);
+  ctx.fill();
+  if (scared) {
+    ctx.fillStyle = '#212121';
+    ctx.beginPath();
+    ctx.arc(18, -18, 1.2, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  // Antlers
+  ctx.strokeStyle = '#5d4037';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(14, -22); ctx.lineTo(12, -34); ctx.lineTo(8, -40);
+  ctx.moveTo(12, -34); ctx.lineTo(16, -40);
+  ctx.moveTo(20, -22); ctx.lineTo(22, -34); ctx.lineTo(18, -40);
+  ctx.moveTo(22, -34); ctx.lineTo(26, -40);
+  ctx.stroke();
+
+  // Legs
+  ctx.fillStyle = '#795548';
+  [[-10, 0], [-4, 0], [4, 0], [10, 0]].forEach(([lx]) => {
+    ctx.beginPath();
+    ctx.roundRect(lx - 2, 0, 4, 14, 2);
+    ctx.fill();
+  });
+
+  ctx.restore();
+}
+
+// ─── ANNOTATION BRACKET ───────────────────────────────────────────────────────
+function drawBracket(x1, x2, y, color, mainLabel, subLabel, alpha) {
+  if (x2 - x1 < 8) return;
+  ctx.save();
+  ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+
+  const midX = (x1 + x2) / 2;
+  const tickH = 11, ahLen = 12, ahW = 5;
+
+  // Light background band
+  ctx.fillStyle = color + '1a';
+  ctx.fillRect(x1, y - tickH - 2, x2 - x1, (tickH + 2) * 2);
+
+  // Vertical tick marks at both ends
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(x1, y - tickH); ctx.lineTo(x1, y + tickH);
+  ctx.moveTo(x2, y - tickH); ctx.lineTo(x2, y + tickH);
+  ctx.stroke();
+
+  // Horizontal dimension line
+  ctx.beginPath();
+  ctx.moveTo(x1, y); ctx.lineTo(x2, y);
+  ctx.stroke();
+
+  // Solid arrowheads
+  ctx.fillStyle = color;
+  ctx.beginPath(); // Left arrow
+  ctx.moveTo(x1, y);
+  ctx.lineTo(x1 + ahLen, y - ahW);
+  ctx.lineTo(x1 + ahLen, y + ahW);
+  ctx.closePath(); ctx.fill();
+  ctx.beginPath(); // Right arrow
+  ctx.moveTo(x2, y);
+  ctx.lineTo(x2 - ahLen, y - ahW);
+  ctx.lineTo(x2 - ahLen, y + ahW);
+  ctx.closePath(); ctx.fill();
+
+  // Main label pill (colored background)
+  ctx.font = 'bold 13px Segoe UI';
+  ctx.textBaseline = 'middle';
+  const lw = ctx.measureText(mainLabel).width;
+  const lpad = 10, lh = 20;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.roundRect(midX - lw / 2 - lpad, y - tickH - lh - 5, lw + lpad * 2, lh, 5);
+  ctx.fill();
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  ctx.fillText(mainLabel, midX, y - tickH - 5 - lh / 2);
+
+  // Sub label below the line
+  ctx.fillStyle = color;
+  ctx.font = '11px Segoe UI';
+  ctx.fillText(subLabel, midX, y + tickH + 12);
+
+  ctx.restore();
+}
+
+// ─── DRAW DISTANCE ANNOTATIONS ────────────────────────────────────────────────
+function drawAnnotations(eventX, d1Px, d2Px, phase, progress) {
+  const W = getW(), H = getH();
+  const { d1, d2, ssd } = calcSSD();
+  const d1End = eventX + d1Px;
+  const d2End = d1End + d2Px;
+
+  // ── Colored zone overlays on road surface ──
+  if (phase === 'react' || phase === 'brake' || phase === 'stop') {
+    ctx.save();
+    ctx.globalAlpha = 0.22;
+    ctx.fillStyle = '#1565c0';
+    ctx.beginPath();
+    ctx.moveTo(eventX, roadSurfaceY(eventX));
+    ctx.lineTo(d1End,  roadSurfaceY(d1End));
+    ctx.lineTo(d1End,  roadBottomY(d1End));
+    ctx.lineTo(eventX, roadBottomY(eventX));
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+  if (phase === 'brake' || phase === 'stop') {
+    ctx.save();
+    ctx.globalAlpha = 0.22;
+    ctx.fillStyle = '#c62828';
+    ctx.beginPath();
+    ctx.moveTo(d1End, roadSurfaceY(d1End));
+    ctx.lineTo(d2End, roadSurfaceY(d2End));
+    ctx.lineTo(d2End, roadBottomY(d2End));
+    ctx.lineTo(d1End, roadBottomY(d1End));
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // ── Annotation strip (below road) ──
+  const annoTop = maxRoadBottomY() + 5;
+  ctx.fillStyle = 'rgba(245, 240, 252, 0.95)';
+  ctx.fillRect(0, annoTop, W, H - annoTop);
+  ctx.strokeStyle = 'rgba(106,26,138,0.12)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, annoTop); ctx.lineTo(W, annoTop);
+  ctx.stroke();
+
+  const aY1 = annoTop + 38;   // d1 bracket
+  const aY2 = annoTop + 88;   // d2 bracket
+  const aY3 = annoTop + 138;  // SSD bracket
+
+  // Dashed connector lines from road-bottom to annotation bracket
+  function connector(x, fromY, toY, col) {
+    ctx.save();
+    ctx.globalAlpha = 0.3;
+    ctx.strokeStyle = col;
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 5]);
+    ctx.beginPath();
+    ctx.moveTo(x, fromY);
+    ctx.lineTo(x, toY - 16);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+
+  if (phase === 'react' || phase === 'brake' || phase === 'stop') {
+    const alpha = phase === 'react' ? Math.min(progress * 5, 1) : 1;
+    connector(eventX, roadBottomY(eventX), aY1, '#1565c0');
+    connector(d1End,  roadBottomY(d1End),  aY1, '#1565c0');
+    drawBracket(eventX, d1End, aY1, '#1565c0',
+      `d₁ = ${d1.toFixed(1)} m`, 'Percepción-Reacción', alpha);
+  }
+  if (phase === 'brake' || phase === 'stop') {
+    const alpha = phase === 'brake' ? Math.min(progress * 5, 1) : 1;
+    connector(d1End, roadBottomY(d1End), aY2, '#c62828');
+    connector(d2End, roadBottomY(d2End), aY2, '#c62828');
+    drawBracket(d1End, d2End, aY2, '#c62828',
+      `d₂ = ${d2.toFixed(1)} m`, 'Frenado (desaceleración)', alpha);
+  }
+  if (phase === 'stop') {
+    connector(eventX, annoTop + 5,        aY3, '#6a1a8a');
+    connector(d2End,  roadBottomY(d2End), aY3, '#6a1a8a');
+    drawBracket(eventX, d2End, aY3, '#6a1a8a',
+      `SSD = ${ssd.toFixed(1)} m`, 'Distancia de Visibilidad de Frenado', 1);
+  }
+}
+
+// ─── SPEEDOMETER GAUGE ────────────────────────────────────────────────────────
+function drawSpeedometer(cx, cy, r, speedKmh, maxKmh) {
+  const D = Math.PI / 180;
+  const startAngle = 225 * D;   // 0 km/h → 7-o'clock
+  const totalSweep = 270 * D;   // sweeps counter-clockwise to 5-o'clock
+  const clampedFrac = Math.max(0, Math.min(1, speedKmh / maxKmh));
+
+  ctx.save();
+
+  // Drop shadow
+  ctx.shadowColor = 'rgba(0,0,0,0.55)';
+  ctx.shadowBlur = 14;
+
+  // Gauge background
+  const bgGrd = ctx.createRadialGradient(cx - r * 0.2, cy - r * 0.2, 0, cx, cy, r);
+  bgGrd.addColorStop(0, '#3a3a4a');
+  bgGrd.addColorStop(1, '#15151e');
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.fillStyle = bgGrd;
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // Chrome outer ring
+  const chromeGrd = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r);
+  chromeGrd.addColorStop(0, '#888'); chromeGrd.addColorStop(0.4, '#eee');
+  chromeGrd.addColorStop(0.6, '#bbb'); chromeGrd.addColorStop(1, '#555');
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.strokeStyle = chromeGrd;
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // Color arc zones
+  [
+    { from: 0,    to: 0.55, color: '#2e7d32' },
+    { from: 0.55, to: 0.78, color: '#e65100' },
+    { from: 0.78, to: 1.0,  color: '#c62828' },
+  ].forEach(z => {
+    ctx.beginPath();
+    ctx.arc(cx, cy, r - 5, startAngle - z.from * totalSweep, startAngle - z.to * totalSweep, true);
+    ctx.strokeStyle = z.color;
+    ctx.lineWidth = 8;
+    ctx.stroke();
+  });
+
+  // Tick marks + numbers
+  const numMajor = 6;
+  for (let i = 0; i <= numMajor * 5; i++) {
+    const frac = i / (numMajor * 5);
+    const ang  = startAngle - frac * totalSweep;
+    const isMajor = (i % 5 === 0);
+    const tickLen = isMajor ? r * 0.20 : r * 0.10;
+    const outerR  = r - 16, innerR = outerR - tickLen;
+    ctx.beginPath();
+    ctx.moveTo(cx + innerR * Math.cos(ang), cy + innerR * Math.sin(ang));
+    ctx.lineTo(cx + outerR * Math.cos(ang), cy + outerR * Math.sin(ang));
+    ctx.strokeStyle = isMajor ? '#e0e0e0' : '#666';
+    ctx.lineWidth = isMajor ? 2.5 : 1;
+    ctx.stroke();
+    if (isMajor) {
+      const nr = innerR - r * 0.12;
+      ctx.fillStyle = '#ccc';
+      ctx.font = `bold ${Math.max(8, Math.round(r * 0.145))}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(Math.round(frac * maxKmh), cx + nr * Math.cos(ang), cy + nr * Math.sin(ang));
+    }
+  }
+
+  // Active arc (speed indicator glow)
+  if (clampedFrac > 0.01) {
+    ctx.beginPath();
+    ctx.arc(cx, cy, r - 5, startAngle, startAngle - clampedFrac * totalSweep, true);
+    ctx.strokeStyle = clampedFrac < 0.55 ? '#69f0ae' : clampedFrac < 0.78 ? '#ffb74d' : '#ff5252';
+    ctx.lineWidth = 4;
+    ctx.globalAlpha = 0.65;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  // Needle
+  const needleAngle = startAngle - clampedFrac * totalSweep;
+  ctx.save();
+  ctx.shadowColor = 'rgba(255,87,34,0.7)';
+  ctx.shadowBlur = 8;
+  ctx.beginPath();
+  ctx.moveTo(cx - r * 0.16 * Math.cos(needleAngle), cy - r * 0.16 * Math.sin(needleAngle));
+  ctx.lineTo(cx + r * 0.74 * Math.cos(needleAngle), cy + r * 0.74 * Math.sin(needleAngle));
+  ctx.strokeStyle = '#ff5722';
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+  ctx.restore();
+
+  // Center cap
+  const capGrd = ctx.createRadialGradient(cx, cy - r * 0.03, 0, cx, cy, r * 0.12);
+  capGrd.addColorStop(0, '#ff8a65');
+  capGrd.addColorStop(1, '#bf360c');
+  ctx.beginPath();
+  ctx.arc(cx, cy, r * 0.11, 0, Math.PI * 2);
+  ctx.fillStyle = capGrd;
+  ctx.fill();
+
+  // Digital readout
+  const boxW = r * 0.82, boxH = r * 0.38;
+  const boxX = cx - boxW / 2, boxY = cy + r * 0.28;
+  ctx.fillStyle = 'rgba(0,0,0,0.65)';
+  ctx.beginPath();
+  ctx.roundRect(boxX, boxY, boxW, boxH, 4);
+  ctx.fill();
+  ctx.fillStyle = '#00e676';
+  ctx.font = `bold ${Math.round(r * 0.27)}px 'Courier New', monospace`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(Math.round(clampedFrac * maxKmh).toString(), cx, boxY + boxH * 0.44);
+  ctx.fillStyle = '#888';
+  ctx.font = `${Math.round(r * 0.14)}px Arial`;
+  ctx.fillText('km/h', cx, boxY + boxH * 0.82);
+
+  ctx.restore();
+}
+
+// ─── DIAGRAM CANVAS ───────────────────────────────────────────────────────────
+function drawDiagram(d1, d2, progress, phase) {
+  const cvs = document.getElementById('cnv-diagram');
+  const c = cvs.getContext('2d');
+  const W = cvs.width / dpr, H = cvs.height / dpr;
+  c.clearRect(0, 0, cvs.width, cvs.height);
+
+  const margin = 20;
+  const ssd = d1 + d2;
+  const totalW = W - margin * 2;
+
+  const d1w = (d1 / ssd) * totalW;
+  const d2w = (d2 / ssd) * totalW;
+
+  const barH = 36;
+  const barY = H * 0.38;
+
+  // Background
+  c.fillStyle = '#fafafa';
+  c.fillRect(0, 0, W, H);
+
+  // D1 bar
+  const d1Fill = phase === 'idle' ? 0 : phase === 'react' ? progress : 1;
+  c.fillStyle = '#e3f2fd';
+  c.beginPath();
+  c.roundRect(margin, barY, d1w, barH, [6, 0, 0, 6]);
+  c.fill();
+  c.fillStyle = '#1565c0';
+  c.beginPath();
+  c.roundRect(margin, barY, d1w * d1Fill, barH, [6, 0, 0, 6]);
+  c.fill();
+
+  // D2 bar
+  const d2Fill = phase === 'brake' ? progress : phase === 'stop' ? 1 : 0;
+  c.fillStyle = '#ffebee';
+  c.beginPath();
+  c.roundRect(margin + d1w, barY, d2w, barH, [0, 6, 6, 0]);
+  c.fill();
+  c.fillStyle = '#c62828';
+  c.beginPath();
+  c.roundRect(margin + d1w, barY, d2w * d2Fill, barH, [0, 6, 6, 0]);
+  c.fill();
+
+  // Divider
+  c.strokeStyle = '#666';
+  c.lineWidth = 2;
+  c.setLineDash([4, 3]);
+  c.beginPath();
+  c.moveTo(margin + d1w, barY - 8);
+  c.lineTo(margin + d1w, barY + barH + 8);
+  c.stroke();
+  c.setLineDash([]);
+
+  // Labels
+  c.font = 'bold 13px Segoe UI';
+  c.textAlign = 'center';
+  c.fillStyle = '#1565c0';
+  c.fillText('d₁ = ' + d1.toFixed(1) + ' m', margin + d1w / 2, barY - 10);
+  c.fillStyle = '#c62828';
+  c.fillText('d₂ = ' + d2.toFixed(1) + ' m', margin + d1w + d2w / 2, barY - 10);
+
+  // White text in bars
+  c.fillStyle = 'rgba(255,255,255,0.9)';
+  c.font = 'bold 12px Segoe UI';
+  c.fillText('Percepción-Reacción', margin + d1w / 2, barY + barH / 2 + 5);
+  c.fillText('Frenado', margin + d1w + d2w / 2, barY + barH / 2 + 5);
+
+  // Total
+  c.fillStyle = '#6a1a8a';
+  c.font = 'bold 14px Segoe UI';
+  c.textAlign = 'left';
+  c.fillText('SSD = ' + ssd.toFixed(1) + ' m', margin, barY + barH + 22);
+
+  // Percentage
+  c.textAlign = 'right';
+  c.font = '12px Segoe UI';
+  c.fillStyle = '#888';
+  c.fillText('d₁: ' + (d1/ssd*100).toFixed(0) + '%   d₂: ' + (d2/ssd*100).toFixed(0) + '%', W - margin, barY + barH + 22);
+}
+
+// ─── STATIC SCENE ─────────────────────────────────────────────────────────────
+function drawStaticScene() {
+  const W = getW(), H = getH();
+  const { d1, d2, ssd } = calcSSD();
+  const gradeAngle = -Math.atan(params.G / 100);
+
+  ctx.clearRect(0, 0, W * dpr, H * dpr);
+  drawRoad();
+
+  // Escala fija (px por metro). Animal en posición fija; vehículo se desplaza según SSD.
+  const scale   = params.scale;
+  const d1Px    = d1 * scale;
+  const d2Px    = d2 * scale;
+  const animalX = W * ANIMAL_X_FRAC;        // Posición del animal: FIJA
+  const startX  = animalX - 32 - d1Px - d2Px;  // Posición inicial del vehículo varía con SSD
+  const eventX  = startX + 15;
+
+  // Car sits on road surface (ojos calmados en la escena estática)
+  drawCar(startX, roadSurfaceY(startX) - WHEEL_BOTTOM, gradeAngle, 'cruise', 0.15);
+
+  // Animal sits on road surface (feet at road surface → anchor = surface - 15)
+  drawAnimal(animalX, roadSurfaceY(animalX) - 15, true, false);
+
+  // Event marker
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,87,34,0.45)';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([5, 4]);
+  ctx.beginPath();
+  ctx.moveTo(eventX, roadSurfaceY(eventX) - 55);
+  ctx.lineTo(eventX, roadBottomY(eventX));
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+
+  drawAnnotations(eventX, d1Px, d2Px, 'stop', 1);
+
+  // Speedometer at design speed
+  drawSpeedometer(W - 82, 72, 60, params.V, params.V);
+}
+
+// ─── ANIMATION ────────────────────────────────────────────────────────────────
+let animRunning = false;
+let animRAF     = null;
+let animStart   = null;
+
+function setChips(phase) {
+  const map = { idle:'chip-idle', event:'chip-event', react:'chip-react', brake:'chip-brake', stop:'chip-stop' };
+  Object.values(map).forEach(id => { document.getElementById(id).className = 'status-chip'; });
+  if (map[phase]) document.getElementById(map[phase]).className = 'status-chip active';
+
+  // Marcar fases anteriores como completadas (verde)
+  const order = ['idle', 'event', 'react', 'brake', 'stop'];
+  const idx = order.indexOf(phase);
+  for (let i = 1; i < idx; i++) {
+    document.getElementById(map[order[i]]).className = 'status-chip done';
+  }
+  if (phase === 'stop') document.getElementById('chip-stop').className = 'status-chip done';
+}
+
+function setPhaseCards(phase, d1, d2) {
+  ['pc-react','pc-brake','pc-ssd'].forEach(id =>
+    document.getElementById(id).className = 'phase-card idle');
+  if (phase === 'react') document.getElementById('pc-react').className = 'phase-card active';
+  if (phase === 'brake') {
+    document.getElementById('pc-react').className = 'phase-card done';
+    document.getElementById('pc-brake').className = 'phase-card active';
+  }
+  if (phase === 'stop') {
+    document.getElementById('pc-react').className = 'phase-card done';
+    document.getElementById('pc-brake').className = 'phase-card done';
+    document.getElementById('pc-ssd').className   = 'phase-card done';
+  }
+  document.getElementById('pv-d1').textContent = d1.toFixed(1) + ' m';
+  document.getElementById('pv-d2').textContent = d2.toFixed(1) + ' m';
+  document.getElementById('pv-ssd').textContent = (d1 + d2).toFixed(1) + ' m';
+}
+
+function updateSpeedBar(v, vMax) {
+  const pct = Math.min(100, (v / vMax) * 100);
+  document.getElementById('spd-bar').style.width = pct + '%';
+  document.getElementById('spd-label').textContent = (v * 3.6).toFixed(1) + ' km/h';
+}
+
+function startAnimation() {
+  if (animRunning) return;
+  animRunning = true;
+  document.getElementById('btn-play').textContent = '⏸ Simulando...';
+  document.getElementById('btn-play').disabled = true;
+
+  // Tiempo virtual de animación: se acumula multiplicando dt real × playbackRate.
+  // Permite cambiar la velocidad de reproducción en vivo sin saltos.
+  let virtualElapsed = 0;
+  let lastTs = null;
+
+  const { d1, d2, ssd, Vm } = calcSSD();
+  const gradeAngle = -Math.atan(params.G / 100);
+  const W = getW(), H = getH();
+
+  // Escala fija: el animal queda en una posición fija, y el vehículo se posiciona
+  // según el SSD (mayor SSD → vehículo más a la izquierda)
+  const scale   = params.scale;
+  const d1Px    = d1 * scale;
+  const d2Px    = d2 * scale;
+  const animalX_fixed = W * ANIMAL_X_FRAC;
+  const startX  = animalX_fixed - 32 - d1Px - d2Px;
+  const eventX  = startX + 15;
+
+  // ── Physics-based timing: durations are proportional to real time ──────────
+  // This ensures pixel speed is continuous at the reaction→braking transition.
+  // d(carX)/dt must be equal at both sides: d1Px/reactDur == 2*d2Px/brakeDur
+  // (factor 2 comes from the d(2p-p²)/dp = 2 at p=0)
+  // Both conditions are satisfied when reactDur/brakeDur = t_react/t_brake.
+  const t_react_real = params.t;
+  const t_brake_real = Vm / params.a;        // time to brake from V to 0
+  const t_move_total = t_react_real + t_brake_real;
+  const ANIM_MOVE    = 5500;                 // total ms for moving phases
+  const cruiseDur    = 1400;
+  // Sin pausa de evento: el destello cartoon ocurre al inicio de la fase react
+  const reactDur     = (t_react_real / t_move_total) * ANIM_MOVE;
+  const brakeDur     = (t_brake_real / t_move_total) * ANIM_MOVE;
+  const stopDur      = 2500;
+  const FLASH_DUR    = 600;                  // ms que dura el destello de sorpresa
+  const totalDur     = cruiseDur + reactDur + brakeDur + stopDur;
+
+  // Distancia que recorre el auto durante el cruise para mantener
+  // velocidad pixelar idéntica a la fase react (continuidad de velocidad).
+  // Velocidad react = d1Px / reactDur  →  cruiseDist = velRect · cruiseDur
+  const cruiseDist = d1Px * (cruiseDur / reactDur);
+
+  const phaseLabels = {
+    cruise: 'Circulando',
+    event:  '⚠️ ¡Obstáculo!',
+    react:  'Percepción-Reacción',
+    brake:  '🔴 Frenando',
+    stop:   '✅ Detenido',
+  };
+
+  function frame(ts) {
+    if (lastTs === null) lastTs = ts;
+    const dtReal = ts - lastTs;
+    lastTs = ts;
+    virtualElapsed += dtReal * playbackRate;
+    const elapsed = virtualElapsed;
+
+    ctx.clearRect(0, 0, W * dpr, H * dpr);
+    drawRoad();
+
+    let phase, carX, currentV, diagProgress, diagPhase;
+    let alarmIntensity = 0;     // tamaño/apertura de los ojos
+    let flashIntensity = 0;     // 0 a 1 — destello cartoon
+
+    if (elapsed < cruiseDur) {
+      // Car drives in from left a la misma velocidad pixelar que en la fase react
+      phase = 'cruise'; diagPhase = 'idle'; diagProgress = 0;
+      carX     = startX - cruiseDist + (elapsed / cruiseDur) * cruiseDist;
+      currentV = Vm;
+      alarmIntensity = 0.15;     // ojos calmados, semi-abiertos
+      setChips('idle');
+
+    } else if (elapsed < cruiseDur + reactDur) {
+      // Perception-reaction: constant speed, d1 covered.
+      // Sin pausa: justo al iniciar esta fase aparece el destello cartoon.
+      phase = 'react';
+      const tInReact = elapsed - cruiseDur;
+      const p = tInReact / reactDur;
+      diagPhase = 'react'; diagProgress = p;
+      carX     = startX + p * d1Px;
+      currentV = Vm;
+      alarmIntensity = 1.0;      // ¡ojos enormes!
+      flashIntensity = Math.max(0, 1 - tInReact / FLASH_DUR);
+      // Durante el flash mostrar chip ¡Obstáculo!, luego pasar a Reacción
+      if (tInReact < FLASH_DUR) setChips('event');
+      else setChips('react');
+      setPhaseCards('react', d1, d2);
+
+    } else if (elapsed < cruiseDur + reactDur + brakeDur) {
+      // Braking: constant deceleration — x(p) = d2*(2p-p²), v(p) = V*(1-p)
+      phase = 'brake';
+      const p = (elapsed - cruiseDur - reactDur) / brakeDur;
+      diagPhase = 'brake'; diagProgress = p;
+      const eased = 2 * p - p * p;   // physics-correct: s = Vt - ½at²
+      carX     = startX + d1Px + eased * d2Px;
+      currentV = Vm * (1 - p);
+      alarmIntensity = 0.85;     // ojos siguen alarmados durante el frenado
+      setChips('brake');
+      setPhaseCards('brake', d1, d2);
+
+    } else {
+      // Stopped
+      phase = 'stop'; diagPhase = 'stop'; diagProgress = 1;
+      carX     = startX + d1Px + d2Px;
+      currentV = 0;
+      alarmIntensity = 0.45;     // ojos un poco más relajados después del frenado
+      setChips('stop');
+      setPhaseCards('stop', d1, d2);
+    }
+
+    updateSpeedBar(currentV, Vm);
+    document.getElementById('phase-label-inline').textContent = phaseLabels[phase] || '';
+
+    // Car Y tracks road surface
+    const carY = roadSurfaceY(carX) - WHEEL_BOTTOM;
+
+    // Skid marks (follow road grade)
+    if (phase === 'brake' || phase === 'stop') {
+      const skidStart = startX + d1Px;
+      const skidEnd   = phase === 'stop' ? startX + d1Px + d2Px : carX;
+      ctx.save();
+      ctx.globalAlpha = 0.35;
+      ctx.strokeStyle = '#111';
+      ctx.lineWidth = 4;
+      ctx.setLineDash([6, 10]);
+      [-11, 11].forEach(off => {
+        ctx.beginPath();
+        for (let sx = skidStart; sx <= skidEnd; sx += 2) {
+          const sy = roadSurfaceY(sx) + ROAD_H * 0.72 + off;
+          if (sx === skidStart) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
+        }
+        ctx.stroke();
+      });
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+
+    // Event marker (vertical dashed line)
+    if (phase !== 'cruise') {
+      ctx.save();
+      ctx.strokeStyle = '#ff5722';
+      ctx.lineWidth = 1.5;
+      ctx.globalAlpha = 0.55;
+      ctx.setLineDash([5, 4]);
+      ctx.beginPath();
+      ctx.moveTo(eventX, roadSurfaceY(eventX) - 65);
+      ctx.lineTo(eventX, roadBottomY(eventX));
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+
+    // Animal on road surface
+    const animalX = startX + d1Px + d2Px + 32;
+    drawAnimal(animalX, roadSurfaceY(animalX) - 15, true,
+      phase === 'react' || phase === 'brake');
+
+    // Car (con ojos)
+    drawCar(carX, carY, gradeAngle, phase, alarmIntensity);
+
+    // Destello de sorpresa cartoon (encima del auto, justo al ver el obstáculo)
+    if (flashIntensity > 0) {
+      drawSurpriseFlash(carX + 25, carY - 55, flashIntensity);
+    }
+
+    // Annotations (appear progressively)
+    if (phase !== 'cruise') {
+      const pp = phase === 'react'
+        ? (elapsed - cruiseDur) / reactDur
+        : phase === 'brake'
+          ? (elapsed - cruiseDur - reactDur) / brakeDur
+          : 1;
+      drawAnnotations(eventX, d1Px, d2Px, phase, pp);
+    }
+
+    // Speedometer — always visible
+    drawSpeedometer(W - 82, 72, 60, currentV * 3.6, params.V);
+
+    drawDiagram(d1, d2, diagProgress, diagPhase);
+
+    if (elapsed < totalDur) {
+      animRAF = requestAnimationFrame(frame);
+    } else {
+      drawDiagram(d1, d2, 1, 'stop');
+      animRunning = false;
+      document.getElementById('btn-play').textContent = '▶ Repetir Simulación';
+      document.getElementById('btn-play').disabled = false;
+      animStart = null;
+    }
+  }
+
+  animRAF = requestAnimationFrame(frame);
+}
+
+function resetAnimation() {
+  if (animRAF) cancelAnimationFrame(animRAF);
+  animRunning = false;
+  animStart = null;
+  document.getElementById('btn-play').textContent = '▶ Iniciar Simulación';
+  document.getElementById('btn-play').disabled = false;
+
+  setChips('idle');
+  ['pc-react','pc-brake','pc-ssd'].forEach(id => document.getElementById(id).className = 'phase-card idle');
+  ['pv-d1','pv-d2','pv-ssd'].forEach(id => document.getElementById(id).textContent = '—');
+  document.getElementById('spd-bar').style.width = '0%';
+  document.getElementById('spd-label').textContent = '0 km/h';
+  document.getElementById('phase-label-inline').textContent = '—';
+
+  const { d1, d2 } = calcSSD();
+  drawStaticScene();
+  drawDiagram(d1, d2, 0, 'idle');
+}
+
+// ─── PLAYBACK CONTROLS ────────────────────────────────────────────────────────
+function initPlaybackControls() {
+  const sl   = document.getElementById('sl-playback');
+  const lbl  = document.getElementById('lbl-playback');
+  const btns = document.querySelectorAll('.playback-presets button');
+
+  function setRate(rate) {
+    playbackRate = rate;
+    sl.value = rate;
+    lbl.textContent = rate.toFixed(2) + 'x';
+    // Marcar el botón activo si coincide exactamente con un preset
+    btns.forEach(b => {
+      const r = +b.dataset.rate;
+      b.classList.toggle('active', Math.abs(r - rate) < 1e-6);
+    });
+  }
+
+  sl.addEventListener('input', () => setRate(+sl.value));
+  btns.forEach(btn => {
+    btn.addEventListener('click', () => setRate(+btn.dataset.rate));
+  });
+
+  setRate(1.0);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  resizeCanvas();
+  initSliders();
+  initPlaybackControls();
+});
+
+window.addEventListener('resize', () => {
+  resizeCanvas();
+  const { d1, d2 } = calcSSD();
+  if (!animRunning) {
+    drawStaticScene();
+    drawDiagram(d1, d2, 0, 'idle');
+  }
+});
+</script>
+</body>
+</html>
